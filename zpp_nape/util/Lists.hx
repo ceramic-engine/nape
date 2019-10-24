@@ -1,183 +1,183 @@
 package zpp_nape.util;
 import zpp_nape.Const;
-import zpp_nape.constraint.PivotJoint;
 import zpp_nape.ID;
-import zpp_nape.constraint.Constraint;
-import zpp_nape.constraint.WeldJoint;
-import zpp_nape.constraint.UserConstraint;
-import zpp_nape.constraint.DistanceJoint;
-import zpp_nape.constraint.LineJoint;
-import zpp_nape.constraint.LinearJoint;
-import zpp_nape.constraint.AngleJoint;
-import zpp_nape.constraint.MotorJoint;
-import zpp_nape.phys.Interactor;
-import zpp_nape.phys.FeatureMix;
-import zpp_nape.phys.Material;
-import zpp_nape.constraint.PulleyJoint;
-import zpp_nape.phys.FluidProperties;
-import zpp_nape.phys.Compound;
-import zpp_nape.callbacks.OptionType;
+import zpp_nape.util.Array2;
+import zpp_nape.util.Circular;
+import zpp_nape.util.DisjointSetForest;
+import zpp_nape.util.FastHash;
+import zpp_nape.util.Flags;
+import zpp_nape.util.Math;
+import zpp_nape.util.Names;
+import zpp_nape.util.Pool;
+import zpp_nape.util.Queue;
+import zpp_nape.util.RBTree;
+import zpp_nape.util.Debug;
+import zpp_nape.util.UserData;
+import zpp_nape.util.WrapLists;
+import zpp_nape.space.Broadphase;
+import zpp_nape.space.DynAABBPhase;
+import zpp_nape.space.SweepPhase;
+import zpp_nape.shape.Circle;
+import zpp_nape.shape.Edge;
+import zpp_nape.shape.Polygon;
+import zpp_nape.shape.Shape;
 import zpp_nape.phys.Body;
-import zpp_nape.callbacks.CbSetPair;
-import zpp_nape.callbacks.CbType;
-import zpp_nape.callbacks.Callback;
-import zpp_nape.callbacks.CbSet;
-import zpp_nape.callbacks.Listener;
+import zpp_nape.phys.Compound;
+import zpp_nape.phys.FeatureMix;
+import zpp_nape.phys.FluidProperties;
+import zpp_nape.phys.Interactor;
+import zpp_nape.phys.Material;
+import zpp_nape.geom.AABB;
+import zpp_nape.geom.Collide;
+import zpp_nape.geom.Convex;
+import zpp_nape.geom.ConvexRayResult;
+import zpp_nape.space.Space;
+import zpp_nape.geom.Cutter;
+import zpp_nape.geom.Geom;
 import zpp_nape.geom.GeomPoly;
 import zpp_nape.geom.Mat23;
-import zpp_nape.geom.ConvexRayResult;
-import zpp_nape.geom.Cutter;
-import zpp_nape.geom.Ray;
-import zpp_nape.geom.Vec2;
-import zpp_nape.geom.Convex;
+import zpp_nape.geom.MarchingSquares;
+import zpp_nape.geom.MatMN;
 import zpp_nape.geom.MatMath;
+import zpp_nape.geom.Monotone;
+import zpp_nape.geom.PolyIter;
 import zpp_nape.geom.PartitionedPoly;
+import zpp_nape.geom.Ray;
 import zpp_nape.geom.Simplify;
-import zpp_nape.geom.Triangular;
-import zpp_nape.geom.AABB;
 import zpp_nape.geom.Simple;
 import zpp_nape.geom.SweepDistance;
-import zpp_nape.geom.Monotone;
-import zpp_nape.geom.VecMath;
+import zpp_nape.geom.Vec2;
 import zpp_nape.geom.Vec3;
-import zpp_nape.geom.MatMN;
-import zpp_nape.geom.PolyIter;
-import zpp_nape.geom.MarchingSquares;
-import zpp_nape.geom.Geom;
-import zpp_nape.shape.Circle;
-import zpp_nape.geom.Collide;
-import zpp_nape.shape.Shape;
-import zpp_nape.shape.Edge;
-import zpp_nape.space.Broadphase;
-import zpp_nape.shape.Polygon;
-import zpp_nape.space.SweepPhase;
-import zpp_nape.space.DynAABBPhase;
+import zpp_nape.geom.Triangular;
+import zpp_nape.geom.VecMath;
 import zpp_nape.dynamics.Contact;
-import zpp_nape.space.Space;
-import zpp_nape.dynamics.Arbiter;
-import zpp_nape.dynamics.InteractionGroup;
 import zpp_nape.dynamics.InteractionFilter;
+import zpp_nape.dynamics.InteractionGroup;
 import zpp_nape.dynamics.SpaceArbiterList;
-import zpp_nape.util.Array2;
-import zpp_nape.util.Flags;
-import zpp_nape.util.Queue;
-import zpp_nape.util.Debug;
-import zpp_nape.util.FastHash;
-import zpp_nape.util.RBTree;
-import zpp_nape.util.Pool;
-import zpp_nape.util.Names;
-import zpp_nape.util.Circular;
-import zpp_nape.util.WrapLists;
-import zpp_nape.util.Math;
-import zpp_nape.util.UserData;
-import nape.TArray;
-import zpp_nape.util.DisjointSetForest;
+import zpp_nape.constraint.AngleJoint;
+import zpp_nape.constraint.Constraint;
+import zpp_nape.dynamics.Arbiter;
+import zpp_nape.constraint.DistanceJoint;
+import zpp_nape.constraint.LinearJoint;
+import zpp_nape.constraint.MotorJoint;
+import zpp_nape.constraint.PivotJoint;
+import zpp_nape.constraint.LineJoint;
+import zpp_nape.constraint.UserConstraint;
+import zpp_nape.constraint.WeldJoint;
+import zpp_nape.constraint.PulleyJoint;
+import zpp_nape.callbacks.Callback;
+import zpp_nape.callbacks.CbSetPair;
+import zpp_nape.callbacks.CbType;
+import zpp_nape.callbacks.CbSet;
+import zpp_nape.callbacks.OptionType;
+import zpp_nape.callbacks.Listener;
 import nape.Config;
-import nape.constraint.PivotJoint;
-import nape.constraint.WeldJoint;
-import nape.constraint.Constraint;
-import nape.constraint.UserConstraint;
-import nape.constraint.DistanceJoint;
-import nape.constraint.LineJoint;
-import nape.constraint.LinearJoint;
-import nape.constraint.ConstraintList;
-import nape.constraint.AngleJoint;
-import nape.constraint.MotorJoint;
-import nape.constraint.ConstraintIterator;
-import nape.phys.GravMassMode;
-import nape.phys.BodyList;
-import nape.phys.Interactor;
-import nape.phys.InertiaMode;
-import nape.phys.InteractorList;
-import nape.constraint.PulleyJoint;
-import nape.phys.MassMode;
-import nape.phys.Material;
-import nape.phys.InteractorIterator;
-import nape.phys.FluidProperties;
-import nape.phys.BodyIterator;
-import nape.phys.Compound;
-import nape.phys.CompoundList;
-import nape.phys.BodyType;
-import nape.phys.CompoundIterator;
-import nape.callbacks.InteractionListener;
-import nape.callbacks.OptionType;
-import nape.callbacks.PreListener;
-import nape.callbacks.BodyListener;
-import nape.callbacks.ListenerIterator;
-import nape.callbacks.CbType;
-import nape.callbacks.ListenerType;
-import nape.callbacks.PreFlag;
-import nape.callbacks.CbEvent;
-import nape.callbacks.InteractionType;
-import nape.callbacks.PreCallback;
-import nape.callbacks.InteractionCallback;
-import nape.callbacks.ListenerList;
-import nape.callbacks.ConstraintListener;
-import nape.phys.Body;
-import nape.callbacks.BodyCallback;
-import nape.callbacks.CbTypeList;
-import nape.callbacks.CbTypeIterator;
-import nape.callbacks.Callback;
-import nape.callbacks.ConstraintCallback;
-import nape.callbacks.Listener;
-import nape.geom.Mat23;
-import nape.geom.ConvexResultIterator;
-import nape.geom.GeomPoly;
-import nape.geom.Ray;
-import nape.geom.GeomPolyIterator;
-import nape.geom.Vec2Iterator;
-import nape.geom.RayResult;
-import nape.geom.Winding;
-import nape.geom.Vec2List;
-import nape.geom.RayResultIterator;
-import nape.geom.AABB;
-import nape.geom.IsoFunction;
-import nape.geom.GeomVertexIterator;
-import nape.geom.ConvexResult;
-import nape.geom.GeomPolyList;
-import nape.geom.Vec2;
-import nape.geom.RayResultList;
-import nape.geom.Vec3;
-import nape.geom.MatMN;
-import nape.geom.ConvexResultList;
-import nape.geom.MarchingSquares;
-import nape.shape.Circle;
-import nape.geom.Geom;
-import nape.shape.ValidationResult;
-import nape.shape.ShapeIterator;
-import nape.shape.Polygon;
-import nape.shape.Edge;
-import nape.shape.Shape;
-import nape.shape.EdgeList;
-import nape.shape.EdgeIterator;
-import nape.shape.ShapeList;
-import nape.shape.ShapeType;
-import nape.space.Broadphase;
-import nape.dynamics.Contact;
-import nape.dynamics.InteractionGroupList;
-import nape.dynamics.Arbiter;
-import nape.dynamics.InteractionGroup;
-import nape.space.Space;
-import nape.dynamics.ContactIterator;
-import nape.dynamics.ArbiterList;
-import nape.dynamics.InteractionFilter;
-import nape.dynamics.ArbiterIterator;
-import nape.dynamics.InteractionGroupIterator;
-import nape.dynamics.FluidArbiter;
-import nape.dynamics.ContactList;
-import nape.dynamics.ArbiterType;
-import nape.dynamics.CollisionArbiter;
+import nape.TArray;
 import nape.util.Debug;
 import nape.util.BitmapDebug;
+import nape.space.Broadphase;
 import nape.util.ShapeDebug;
+import nape.shape.Circle;
+import nape.shape.Edge;
+import nape.shape.EdgeIterator;
+import nape.shape.EdgeList;
+import nape.space.Space;
+import nape.shape.Polygon;
+import nape.shape.ShapeIterator;
+import nape.shape.ShapeList;
+import nape.shape.ShapeType;
+import nape.shape.ValidationResult;
+import nape.shape.Shape;
+import nape.phys.BodyIterator;
+import nape.phys.BodyList;
+import nape.phys.BodyType;
+import nape.phys.Compound;
+import nape.phys.CompoundIterator;
+import nape.phys.CompoundList;
+import nape.phys.FluidProperties;
+import nape.phys.GravMassMode;
+import nape.phys.InertiaMode;
+import nape.phys.Interactor;
+import nape.phys.InteractorIterator;
+import nape.phys.InteractorList;
+import nape.phys.MassMode;
+import nape.phys.Body;
+import nape.phys.Material;
+import nape.geom.ConvexResult;
+import nape.geom.ConvexResultIterator;
+import nape.geom.ConvexResultList;
+import nape.geom.AABB;
+import nape.geom.Geom;
+import nape.geom.GeomPolyIterator;
+import nape.geom.GeomPolyList;
+import nape.geom.GeomVertexIterator;
+import nape.geom.IsoFunction;
+import nape.geom.MarchingSquares;
+import nape.geom.GeomPoly;
+import nape.geom.MatMN;
+import nape.geom.Mat23;
+import nape.geom.Ray;
+import nape.geom.RayResultIterator;
+import nape.geom.RayResultList;
+import nape.geom.RayResult;
+import nape.geom.Vec2Iterator;
+import nape.geom.Vec2List;
+import nape.geom.Vec3;
+import nape.geom.Winding;
+import nape.dynamics.Arbiter;
+import nape.dynamics.ArbiterIterator;
+import nape.geom.Vec2;
+import nape.dynamics.ArbiterList;
+import nape.dynamics.ArbiterType;
+import nape.dynamics.Contact;
+import nape.dynamics.ContactIterator;
+import nape.dynamics.ContactList;
+import nape.dynamics.FluidArbiter;
+import nape.dynamics.CollisionArbiter;
+import nape.dynamics.InteractionFilter;
+import nape.dynamics.InteractionGroupIterator;
+import nape.dynamics.InteractionGroupList;
+import nape.dynamics.InteractionGroup;
+import nape.constraint.AngleJoint;
+import nape.constraint.ConstraintIterator;
+import nape.constraint.ConstraintList;
+import nape.constraint.DistanceJoint;
+import nape.constraint.LinearJoint;
+import nape.constraint.Constraint;
+import nape.constraint.LineJoint;
+import nape.constraint.PivotJoint;
+import nape.constraint.MotorJoint;
+import nape.constraint.PulleyJoint;
+import nape.constraint.UserConstraint;
+import nape.constraint.WeldJoint;
+import nape.callbacks.BodyCallback;
+import nape.callbacks.Callback;
+import nape.callbacks.BodyListener;
+import nape.callbacks.CbEvent;
+import nape.callbacks.CbTypeIterator;
+import nape.callbacks.CbTypeList;
+import nape.callbacks.ConstraintCallback;
+import nape.callbacks.CbType;
+import nape.callbacks.InteractionCallback;
+import nape.callbacks.ConstraintListener;
+import nape.callbacks.InteractionType;
+import nape.callbacks.InteractionListener;
+import nape.callbacks.ListenerIterator;
+import nape.callbacks.ListenerList;
+import nape.callbacks.ListenerType;
+import nape.callbacks.Listener;
+import nape.callbacks.OptionType;
+import nape.callbacks.PreFlag;
+import nape.callbacks.PreCallback;
+import nape.callbacks.PreListener;
 
 #if nape_swc@:keep #end
-class ZNPList_ZPP_CbType{
-    public var head:ZNPNode_ZPP_CbType=null;
+class ZNPList_ZPP_Compound{
+    public var head:ZNPNode_ZPP_Compound=null;
     public function new(){}
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function begin():ZNPNode_ZPP_CbType{
+    function begin():ZNPNode_ZPP_Compound{
         return head;
     }
     public var modified:Bool=false;
@@ -185,40 +185,40 @@ class ZNPList_ZPP_CbType{
     public var length:Int=0;
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function setbegin(i:ZNPNode_ZPP_CbType):Void{
+    function setbegin(i:ZNPNode_ZPP_Compound):Void{
         head=i;
         modified=true;
         pushmod=true;
     }
-    public function add(o:ZPP_CbType):ZPP_CbType{
+    public function add(o:ZPP_Compound):ZPP_Compound{
         return inlined_add(o);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_add(o:ZPP_CbType):ZPP_CbType{
+    function inlined_add(o:ZPP_Compound):ZPP_Compound{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 o!=null&&!has(o);
             };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_CbType"+"] add -> o="+o);
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_Compound"+"] add -> o="+o);
             #end
         };
         var temp={
             var ret;
             {
-                if(ZNPNode_ZPP_CbType.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_CbType();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_CbType.POOL_TOT++;
-                    ZNPNode_ZPP_CbType.POOL_ADDNEW++;
+                if(ZNPNode_ZPP_Compound.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_Compound();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_Compound.POOL_TOT++;
+                    ZNPNode_ZPP_Compound.POOL_ADDNEW++;
                     #end
                 }
                 else{
-                    ret=ZNPNode_ZPP_CbType.zpp_pool;
-                    ZNPNode_ZPP_CbType.zpp_pool=ret.next;
+                    ret=ZNPNode_ZPP_Compound.zpp_pool;
+                    ZNPNode_ZPP_Compound.zpp_pool=ret.next;
                     ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_CbType.POOL_CNT--;
-                    ZNPNode_ZPP_CbType.POOL_ADD++;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_Compound.POOL_CNT--;
+                    ZNPNode_ZPP_Compound.POOL_ADD++;
                     #end
                 }
                 ret.alloc();
@@ -232,13 +232,13 @@ class ZNPList_ZPP_CbType{
         length++;
         return o;
     }
-    public function addAll(x:ZNPList_ZPP_CbType):Void{
+    public function addAll(x:ZNPList_ZPP_Compound):Void{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 x!=null;
             };
-            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_CbType"+"] addAll -> "+x);
+            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_Compound"+"] addAll -> "+x);
             #end
         };
         {
@@ -250,35 +250,35 @@ class ZNPList_ZPP_CbType{
             }
         };
     }
-    public function insert(cur:ZNPNode_ZPP_CbType,o:ZPP_CbType):ZNPNode_ZPP_CbType{
+    public function insert(cur:ZNPNode_ZPP_Compound,o:ZPP_Compound):ZNPNode_ZPP_Compound{
         return inlined_insert(cur,o);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_insert(cur:ZNPNode_ZPP_CbType,o:ZPP_CbType):ZNPNode_ZPP_CbType{
+    function inlined_insert(cur:ZNPNode_ZPP_Compound,o:ZPP_Compound):ZNPNode_ZPP_Compound{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 o!=null&&!has(o);
             };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_CbType"+"] cur -> "+cur+" -> "+o);
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_Compound"+"] cur -> "+cur+" -> "+o);
             #end
         };
         var temp={
             var ret;
             {
-                if(ZNPNode_ZPP_CbType.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_CbType();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_CbType.POOL_TOT++;
-                    ZNPNode_ZPP_CbType.POOL_ADDNEW++;
+                if(ZNPNode_ZPP_Compound.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_Compound();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_Compound.POOL_TOT++;
+                    ZNPNode_ZPP_Compound.POOL_ADDNEW++;
                     #end
                 }
                 else{
-                    ret=ZNPNode_ZPP_CbType.zpp_pool;
-                    ZNPNode_ZPP_CbType.zpp_pool=ret.next;
+                    ret=ZNPNode_ZPP_Compound.zpp_pool;
+                    ZNPNode_ZPP_Compound.zpp_pool=ret.next;
                     ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_CbType.POOL_CNT--;
-                    ZNPNode_ZPP_CbType.POOL_ADD++;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_Compound.POOL_CNT--;
+                    ZNPNode_ZPP_Compound.POOL_ADD++;
                     #end
                 }
                 ret.alloc();
@@ -309,7 +309,7 @@ class ZNPList_ZPP_CbType{
             var res={
                 !empty();
             };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_CbType"+"] pop");
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Compound"+"] pop");
             #end
         };
         var ret=begin();
@@ -322,39 +322,39 @@ class ZNPList_ZPP_CbType{
                 var res={
                     o!=null;
                 };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_CbType"+", in obj: "+"ret"+")");
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_Compound"+", in obj: "+"ret"+")");
                 #end
             };
             o.free();
-            o.next=ZNPNode_ZPP_CbType.zpp_pool;
-            ZNPNode_ZPP_CbType.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_CbType.POOL_CNT++;
-            ZNPNode_ZPP_CbType.POOL_SUB++;
+            o.next=ZNPNode_ZPP_Compound.zpp_pool;
+            ZNPNode_ZPP_Compound.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_Compound.POOL_CNT++;
+            ZNPNode_ZPP_Compound.POOL_SUB++;
             #end
         };
         if(empty())pushmod=true;
         modified=true;
         length--;
     }
-    public function pop_unsafe():ZPP_CbType{
+    public function pop_unsafe():ZPP_Compound{
         return inlined_pop_unsafe();
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop_unsafe():ZPP_CbType{
+    function inlined_pop_unsafe():ZPP_Compound{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 !empty();
             };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_CbType"+"] pop_unsafe");
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Compound"+"] pop_unsafe");
             #end
         };
         var ret=front();
         pop();
         return ret;
     }
-    public function remove(obj:ZPP_CbType):Void{
+    public function remove(obj:ZPP_Compound):Void{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
@@ -365,13 +365,13 @@ class ZNPList_ZPP_CbType{
         };
         inlined_try_remove(obj);
     }
-    public function try_remove(obj:ZPP_CbType):Bool{
+    public function try_remove(obj:ZPP_Compound):Bool{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 obj!=null;
             };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_CbType"+"] remove -> "+obj);
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Compound"+"] remove -> "+obj);
             #end
         };
         var pre=null;
@@ -390,7 +390,7 @@ class ZNPList_ZPP_CbType{
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_remove(obj:ZPP_CbType):Void{
+    function inlined_remove(obj:ZPP_Compound):Void{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
@@ -403,13 +403,13 @@ class ZNPList_ZPP_CbType{
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_try_remove(obj:ZPP_CbType):Bool{
+    function inlined_try_remove(obj:ZPP_Compound):Bool{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 obj!=null;
             };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_CbType"+"] remove -> "+obj);
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Compound"+"] remove -> "+obj);
             #end
         };
         var pre=null;
@@ -426,22 +426,22 @@ class ZNPList_ZPP_CbType{
         }
         return ret;
     }
-    public function erase(pre:ZNPNode_ZPP_CbType):ZNPNode_ZPP_CbType{
+    public function erase(pre:ZNPNode_ZPP_Compound):ZNPNode_ZPP_Compound{
         return inlined_erase(pre);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_erase(pre:ZNPNode_ZPP_CbType):ZNPNode_ZPP_CbType{
+    function inlined_erase(pre:ZNPNode_ZPP_Compound):ZNPNode_ZPP_Compound{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 !empty();
             };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_CbType"+"] erase -> "+pre);
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Compound"+"] erase -> "+pre);
             #end
         };
-        var old:ZNPNode_ZPP_CbType;
-        var ret:ZNPNode_ZPP_CbType;
+        var old:ZNPNode_ZPP_Compound;
+        var ret:ZNPNode_ZPP_Compound;
         if(pre==null){
             old=begin();
             ret=old.next;
@@ -462,14 +462,14 @@ class ZNPList_ZPP_CbType{
                 var res={
                     o!=null;
                 };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_CbType"+", in obj: "+"old"+")");
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_Compound"+", in obj: "+"old"+")");
                 #end
             };
             o.free();
-            o.next=ZNPNode_ZPP_CbType.zpp_pool;
-            ZNPNode_ZPP_CbType.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_CbType.POOL_CNT++;
-            ZNPNode_ZPP_CbType.POOL_SUB++;
+            o.next=ZNPNode_ZPP_Compound.zpp_pool;
+            ZNPNode_ZPP_Compound.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_Compound.POOL_CNT++;
+            ZNPNode_ZPP_Compound.POOL_SUB++;
             #end
         };
         modified=true;
@@ -477,7 +477,7 @@ class ZNPList_ZPP_CbType{
         pushmod=true;
         return ret;
     }
-    public function splice(pre:ZNPNode_ZPP_CbType,n:Int):ZNPNode_ZPP_CbType{
+    public function splice(pre:ZNPNode_ZPP_Compound,n:Int):ZNPNode_ZPP_Compound{
         while(n-->0&&pre.next!=null)erase(pre);
         return pre.next;
     }
@@ -515,18 +515,18 @@ class ZNPList_ZPP_CbType{
     function size():Int{
         return length;
     }
-    public function has(obj:ZPP_CbType):Bool{
+    public function has(obj:ZPP_Compound):Bool{
         return inlined_has(obj);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_has(obj:ZPP_CbType):Bool{
+    function inlined_has(obj:ZPP_Compound):Bool{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 obj!=null;
             };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_CbType"+"] has -> "+obj);
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Compound"+"] has -> "+obj);
             #end
         };
         var ret;
@@ -550,10 +550,10 @@ class ZNPList_ZPP_CbType{
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function front():ZPP_CbType{
+    function front():ZPP_Compound{
         return begin().elem();
     }
-    public function back():ZPP_CbType{
+    public function back():ZPP_Compound{
         var ret=begin();
         var cur=ret;
         while(cur!=null){
@@ -562,26 +562,26 @@ class ZNPList_ZPP_CbType{
         }
         return ret.elem();
     }
-    public function iterator_at(ind:Int):ZNPNode_ZPP_CbType{
+    public function iterator_at(ind:Int):ZNPNode_ZPP_Compound{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 ind>=-1&&ind<size();
             };
-            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_CbType"+"] iterator_at -> "+ind);
+            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_Compound"+"] iterator_at -> "+ind);
             #end
         };
         var ret=begin();
         while(ind-->0&&ret!=null)ret=ret.next;
         return ret;
     }
-    public function at(ind:Int):ZPP_CbType{
+    public function at(ind:Int):ZPP_Compound{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 ind>=0&&ind<size();
             };
-            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_CbType"+"] at -> "+ind);
+            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_Compound"+"] at -> "+ind);
             #end
         };
         var it=iterator_at(ind);
@@ -589,12 +589,12 @@ class ZNPList_ZPP_CbType{
     }
 }
 #if nape_swc@:keep #end
-class ZNPList_ZPP_CallbackSet{
-    public var head:ZNPNode_ZPP_CallbackSet=null;
+class ZNPList_ZPP_AABBNode{
+    public var head:ZNPNode_ZPP_AABBNode=null;
     public function new(){}
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function begin():ZNPNode_ZPP_CallbackSet{
+    function begin():ZNPNode_ZPP_AABBNode{
         return head;
     }
     public var modified:Bool=false;
@@ -602,40 +602,40 @@ class ZNPList_ZPP_CallbackSet{
     public var length:Int=0;
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function setbegin(i:ZNPNode_ZPP_CallbackSet):Void{
+    function setbegin(i:ZNPNode_ZPP_AABBNode):Void{
         head=i;
         modified=true;
         pushmod=true;
     }
-    public function add(o:ZPP_CallbackSet):ZPP_CallbackSet{
+    public function add(o:ZPP_AABBNode):ZPP_AABBNode{
         return inlined_add(o);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_add(o:ZPP_CallbackSet):ZPP_CallbackSet{
+    function inlined_add(o:ZPP_AABBNode):ZPP_AABBNode{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 o!=null&&!has(o);
             };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_CallbackSet"+"] add -> o="+o);
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_AABBNode"+"] add -> o="+o);
             #end
         };
         var temp={
             var ret;
             {
-                if(ZNPNode_ZPP_CallbackSet.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_CallbackSet();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_CallbackSet.POOL_TOT++;
-                    ZNPNode_ZPP_CallbackSet.POOL_ADDNEW++;
+                if(ZNPNode_ZPP_AABBNode.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_AABBNode();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_AABBNode.POOL_TOT++;
+                    ZNPNode_ZPP_AABBNode.POOL_ADDNEW++;
                     #end
                 }
                 else{
-                    ret=ZNPNode_ZPP_CallbackSet.zpp_pool;
-                    ZNPNode_ZPP_CallbackSet.zpp_pool=ret.next;
+                    ret=ZNPNode_ZPP_AABBNode.zpp_pool;
+                    ZNPNode_ZPP_AABBNode.zpp_pool=ret.next;
                     ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_CallbackSet.POOL_CNT--;
-                    ZNPNode_ZPP_CallbackSet.POOL_ADD++;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_AABBNode.POOL_CNT--;
+                    ZNPNode_ZPP_AABBNode.POOL_ADD++;
                     #end
                 }
                 ret.alloc();
@@ -649,13 +649,13 @@ class ZNPList_ZPP_CallbackSet{
         length++;
         return o;
     }
-    public function addAll(x:ZNPList_ZPP_CallbackSet):Void{
+    public function addAll(x:ZNPList_ZPP_AABBNode):Void{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 x!=null;
             };
-            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_CallbackSet"+"] addAll -> "+x);
+            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_AABBNode"+"] addAll -> "+x);
             #end
         };
         {
@@ -667,35 +667,35 @@ class ZNPList_ZPP_CallbackSet{
             }
         };
     }
-    public function insert(cur:ZNPNode_ZPP_CallbackSet,o:ZPP_CallbackSet):ZNPNode_ZPP_CallbackSet{
+    public function insert(cur:ZNPNode_ZPP_AABBNode,o:ZPP_AABBNode):ZNPNode_ZPP_AABBNode{
         return inlined_insert(cur,o);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_insert(cur:ZNPNode_ZPP_CallbackSet,o:ZPP_CallbackSet):ZNPNode_ZPP_CallbackSet{
+    function inlined_insert(cur:ZNPNode_ZPP_AABBNode,o:ZPP_AABBNode):ZNPNode_ZPP_AABBNode{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 o!=null&&!has(o);
             };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_CallbackSet"+"] cur -> "+cur+" -> "+o);
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_AABBNode"+"] cur -> "+cur+" -> "+o);
             #end
         };
         var temp={
             var ret;
             {
-                if(ZNPNode_ZPP_CallbackSet.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_CallbackSet();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_CallbackSet.POOL_TOT++;
-                    ZNPNode_ZPP_CallbackSet.POOL_ADDNEW++;
+                if(ZNPNode_ZPP_AABBNode.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_AABBNode();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_AABBNode.POOL_TOT++;
+                    ZNPNode_ZPP_AABBNode.POOL_ADDNEW++;
                     #end
                 }
                 else{
-                    ret=ZNPNode_ZPP_CallbackSet.zpp_pool;
-                    ZNPNode_ZPP_CallbackSet.zpp_pool=ret.next;
+                    ret=ZNPNode_ZPP_AABBNode.zpp_pool;
+                    ZNPNode_ZPP_AABBNode.zpp_pool=ret.next;
                     ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_CallbackSet.POOL_CNT--;
-                    ZNPNode_ZPP_CallbackSet.POOL_ADD++;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_AABBNode.POOL_CNT--;
+                    ZNPNode_ZPP_AABBNode.POOL_ADD++;
                     #end
                 }
                 ret.alloc();
@@ -726,7 +726,7 @@ class ZNPList_ZPP_CallbackSet{
             var res={
                 !empty();
             };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_CallbackSet"+"] pop");
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_AABBNode"+"] pop");
             #end
         };
         var ret=begin();
@@ -739,39 +739,39 @@ class ZNPList_ZPP_CallbackSet{
                 var res={
                     o!=null;
                 };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_CallbackSet"+", in obj: "+"ret"+")");
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_AABBNode"+", in obj: "+"ret"+")");
                 #end
             };
             o.free();
-            o.next=ZNPNode_ZPP_CallbackSet.zpp_pool;
-            ZNPNode_ZPP_CallbackSet.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_CallbackSet.POOL_CNT++;
-            ZNPNode_ZPP_CallbackSet.POOL_SUB++;
+            o.next=ZNPNode_ZPP_AABBNode.zpp_pool;
+            ZNPNode_ZPP_AABBNode.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_AABBNode.POOL_CNT++;
+            ZNPNode_ZPP_AABBNode.POOL_SUB++;
             #end
         };
         if(empty())pushmod=true;
         modified=true;
         length--;
     }
-    public function pop_unsafe():ZPP_CallbackSet{
+    public function pop_unsafe():ZPP_AABBNode{
         return inlined_pop_unsafe();
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop_unsafe():ZPP_CallbackSet{
+    function inlined_pop_unsafe():ZPP_AABBNode{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 !empty();
             };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_CallbackSet"+"] pop_unsafe");
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_AABBNode"+"] pop_unsafe");
             #end
         };
         var ret=front();
         pop();
         return ret;
     }
-    public function remove(obj:ZPP_CallbackSet):Void{
+    public function remove(obj:ZPP_AABBNode):Void{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
@@ -782,13 +782,13 @@ class ZNPList_ZPP_CallbackSet{
         };
         inlined_try_remove(obj);
     }
-    public function try_remove(obj:ZPP_CallbackSet):Bool{
+    public function try_remove(obj:ZPP_AABBNode):Bool{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 obj!=null;
             };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_CallbackSet"+"] remove -> "+obj);
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_AABBNode"+"] remove -> "+obj);
             #end
         };
         var pre=null;
@@ -807,7 +807,7 @@ class ZNPList_ZPP_CallbackSet{
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_remove(obj:ZPP_CallbackSet):Void{
+    function inlined_remove(obj:ZPP_AABBNode):Void{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
@@ -820,13 +820,13 @@ class ZNPList_ZPP_CallbackSet{
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_try_remove(obj:ZPP_CallbackSet):Bool{
+    function inlined_try_remove(obj:ZPP_AABBNode):Bool{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 obj!=null;
             };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_CallbackSet"+"] remove -> "+obj);
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_AABBNode"+"] remove -> "+obj);
             #end
         };
         var pre=null;
@@ -843,22 +843,22 @@ class ZNPList_ZPP_CallbackSet{
         }
         return ret;
     }
-    public function erase(pre:ZNPNode_ZPP_CallbackSet):ZNPNode_ZPP_CallbackSet{
+    public function erase(pre:ZNPNode_ZPP_AABBNode):ZNPNode_ZPP_AABBNode{
         return inlined_erase(pre);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_erase(pre:ZNPNode_ZPP_CallbackSet):ZNPNode_ZPP_CallbackSet{
+    function inlined_erase(pre:ZNPNode_ZPP_AABBNode):ZNPNode_ZPP_AABBNode{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 !empty();
             };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_CallbackSet"+"] erase -> "+pre);
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_AABBNode"+"] erase -> "+pre);
             #end
         };
-        var old:ZNPNode_ZPP_CallbackSet;
-        var ret:ZNPNode_ZPP_CallbackSet;
+        var old:ZNPNode_ZPP_AABBNode;
+        var ret:ZNPNode_ZPP_AABBNode;
         if(pre==null){
             old=begin();
             ret=old.next;
@@ -879,14 +879,14 @@ class ZNPList_ZPP_CallbackSet{
                 var res={
                     o!=null;
                 };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_CallbackSet"+", in obj: "+"old"+")");
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_AABBNode"+", in obj: "+"old"+")");
                 #end
             };
             o.free();
-            o.next=ZNPNode_ZPP_CallbackSet.zpp_pool;
-            ZNPNode_ZPP_CallbackSet.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_CallbackSet.POOL_CNT++;
-            ZNPNode_ZPP_CallbackSet.POOL_SUB++;
+            o.next=ZNPNode_ZPP_AABBNode.zpp_pool;
+            ZNPNode_ZPP_AABBNode.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_AABBNode.POOL_CNT++;
+            ZNPNode_ZPP_AABBNode.POOL_SUB++;
             #end
         };
         modified=true;
@@ -894,7 +894,7 @@ class ZNPList_ZPP_CallbackSet{
         pushmod=true;
         return ret;
     }
-    public function splice(pre:ZNPNode_ZPP_CallbackSet,n:Int):ZNPNode_ZPP_CallbackSet{
+    public function splice(pre:ZNPNode_ZPP_AABBNode,n:Int):ZNPNode_ZPP_AABBNode{
         while(n-->0&&pre.next!=null)erase(pre);
         return pre.next;
     }
@@ -932,18 +932,18 @@ class ZNPList_ZPP_CallbackSet{
     function size():Int{
         return length;
     }
-    public function has(obj:ZPP_CallbackSet):Bool{
+    public function has(obj:ZPP_AABBNode):Bool{
         return inlined_has(obj);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_has(obj:ZPP_CallbackSet):Bool{
+    function inlined_has(obj:ZPP_AABBNode):Bool{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 obj!=null;
             };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_CallbackSet"+"] has -> "+obj);
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_AABBNode"+"] has -> "+obj);
             #end
         };
         var ret;
@@ -967,10 +967,10 @@ class ZNPList_ZPP_CallbackSet{
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function front():ZPP_CallbackSet{
+    function front():ZPP_AABBNode{
         return begin().elem();
     }
-    public function back():ZPP_CallbackSet{
+    public function back():ZPP_AABBNode{
         var ret=begin();
         var cur=ret;
         while(cur!=null){
@@ -979,26 +979,860 @@ class ZNPList_ZPP_CallbackSet{
         }
         return ret.elem();
     }
-    public function iterator_at(ind:Int):ZNPNode_ZPP_CallbackSet{
+    public function iterator_at(ind:Int):ZNPNode_ZPP_AABBNode{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 ind>=-1&&ind<size();
             };
-            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_CallbackSet"+"] iterator_at -> "+ind);
+            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_AABBNode"+"] iterator_at -> "+ind);
             #end
         };
         var ret=begin();
         while(ind-->0&&ret!=null)ret=ret.next;
         return ret;
     }
-    public function at(ind:Int):ZPP_CallbackSet{
+    public function at(ind:Int):ZPP_AABBNode{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 ind>=0&&ind<size();
             };
-            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_CallbackSet"+"] at -> "+ind);
+            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_AABBNode"+"] at -> "+ind);
+            #end
+        };
+        var it=iterator_at(ind);
+        return if(it!=null)it.elem()else null;
+    }
+}
+#if nape_swc@:keep #end
+class ZNPList_ZPP_Edge{
+    public var head:ZNPNode_ZPP_Edge=null;
+    public function new(){}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function begin():ZNPNode_ZPP_Edge{
+        return head;
+    }
+    public var modified:Bool=false;
+    public var pushmod:Bool=false;
+    public var length:Int=0;
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function setbegin(i:ZNPNode_ZPP_Edge):Void{
+        head=i;
+        modified=true;
+        pushmod=true;
+    }
+    public function add(o:ZPP_Edge):ZPP_Edge{
+        return inlined_add(o);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_add(o:ZPP_Edge):ZPP_Edge{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                o!=null&&!has(o);
+            };
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_Edge"+"] add -> o="+o);
+            #end
+        };
+        var temp={
+            var ret;
+            {
+                if(ZNPNode_ZPP_Edge.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_Edge();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_Edge.POOL_TOT++;
+                    ZNPNode_ZPP_Edge.POOL_ADDNEW++;
+                    #end
+                }
+                else{
+                    ret=ZNPNode_ZPP_Edge.zpp_pool;
+                    ZNPNode_ZPP_Edge.zpp_pool=ret.next;
+                    ret.next=null;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_Edge.POOL_CNT--;
+                    ZNPNode_ZPP_Edge.POOL_ADD++;
+                    #end
+                }
+                ret.alloc();
+            };
+            ret.elt=o;
+            ret;
+        };
+        temp.next=begin();
+        head=temp;
+        modified=true;
+        length++;
+        return o;
+    }
+    public function addAll(x:ZNPList_ZPP_Edge):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                x!=null;
+            };
+            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_Edge"+"] addAll -> "+x);
+            #end
+        };
+        {
+            var cx_ite=x.begin();
+            while(cx_ite!=null){
+                var i=cx_ite.elem();
+                add(i);
+                cx_ite=cx_ite.next;
+            }
+        };
+    }
+    public function insert(cur:ZNPNode_ZPP_Edge,o:ZPP_Edge):ZNPNode_ZPP_Edge{
+        return inlined_insert(cur,o);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_insert(cur:ZNPNode_ZPP_Edge,o:ZPP_Edge):ZNPNode_ZPP_Edge{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                o!=null&&!has(o);
+            };
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_Edge"+"] cur -> "+cur+" -> "+o);
+            #end
+        };
+        var temp={
+            var ret;
+            {
+                if(ZNPNode_ZPP_Edge.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_Edge();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_Edge.POOL_TOT++;
+                    ZNPNode_ZPP_Edge.POOL_ADDNEW++;
+                    #end
+                }
+                else{
+                    ret=ZNPNode_ZPP_Edge.zpp_pool;
+                    ZNPNode_ZPP_Edge.zpp_pool=ret.next;
+                    ret.next=null;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_Edge.POOL_CNT--;
+                    ZNPNode_ZPP_Edge.POOL_ADD++;
+                    #end
+                }
+                ret.alloc();
+            };
+            ret.elt=o;
+            ret;
+        };
+        if(cur==null){
+            temp.next=begin();
+            head=temp;
+        }
+        else{
+            temp.next=cur.next;
+            cur.next=temp;
+        }
+        pushmod=modified=true;
+        length++;
+        return temp;
+    }
+    public function pop():Void{
+        inlined_pop();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_pop():Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Edge"+"] pop");
+            #end
+        };
+        var ret=begin();
+        head=ret.next;
+        {};
+        {
+            var o=ret;
+            {
+                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+                var res={
+                    o!=null;
+                };
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_Edge"+", in obj: "+"ret"+")");
+                #end
+            };
+            o.free();
+            o.next=ZNPNode_ZPP_Edge.zpp_pool;
+            ZNPNode_ZPP_Edge.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_Edge.POOL_CNT++;
+            ZNPNode_ZPP_Edge.POOL_SUB++;
+            #end
+        };
+        if(empty())pushmod=true;
+        modified=true;
+        length--;
+    }
+    public function pop_unsafe():ZPP_Edge{
+        return inlined_pop_unsafe();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_pop_unsafe():ZPP_Edge{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Edge"+"] pop_unsafe");
+            #end
+        };
+        var ret=front();
+        pop();
+        return ret;
+    }
+    public function remove(obj:ZPP_Edge):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                has(obj);
+            };
+            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
+            #end
+        };
+        inlined_try_remove(obj);
+    }
+    public function try_remove(obj:ZPP_Edge):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Edge"+"] remove -> "+obj);
+            #end
+        };
+        var pre=null;
+        var cur=begin();
+        var ret=false;
+        while(cur!=null){
+            if(cur.elem()==obj){
+                erase(pre);
+                ret=true;
+                break;
+            }
+            pre=cur;
+            cur=cur.next;
+        }
+        return ret;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_remove(obj:ZPP_Edge):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                has(obj);
+            };
+            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
+            #end
+        };
+        inlined_try_remove(obj);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_try_remove(obj:ZPP_Edge):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Edge"+"] remove -> "+obj);
+            #end
+        };
+        var pre=null;
+        var cur=begin();
+        var ret=false;
+        while(cur!=null){
+            if(cur.elem()==obj){
+                inlined_erase(pre);
+                ret=true;
+                break;
+            }
+            pre=cur;
+            cur=cur.next;
+        }
+        return ret;
+    }
+    public function erase(pre:ZNPNode_ZPP_Edge):ZNPNode_ZPP_Edge{
+        return inlined_erase(pre);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_erase(pre:ZNPNode_ZPP_Edge):ZNPNode_ZPP_Edge{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Edge"+"] erase -> "+pre);
+            #end
+        };
+        var old:ZNPNode_ZPP_Edge;
+        var ret:ZNPNode_ZPP_Edge;
+        if(pre==null){
+            old=begin();
+            ret=old.next;
+            head=ret;
+            if(empty())pushmod=true;
+        }
+        else{
+            old=pre.next;
+            ret=old.next;
+            pre.next=ret;
+            if(ret==null)pushmod=true;
+        }
+        {};
+        {
+            var o=old;
+            {
+                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+                var res={
+                    o!=null;
+                };
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_Edge"+", in obj: "+"old"+")");
+                #end
+            };
+            o.free();
+            o.next=ZNPNode_ZPP_Edge.zpp_pool;
+            ZNPNode_ZPP_Edge.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_Edge.POOL_CNT++;
+            ZNPNode_ZPP_Edge.POOL_SUB++;
+            #end
+        };
+        modified=true;
+        length--;
+        pushmod=true;
+        return ret;
+    }
+    public function splice(pre:ZNPNode_ZPP_Edge,n:Int):ZNPNode_ZPP_Edge{
+        while(n-->0&&pre.next!=null)erase(pre);
+        return pre.next;
+    }
+    public function clear():Void{
+        inlined_clear();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_clear():Void{
+        if(true){
+            while(!empty())inlined_pop();
+            pushmod=true;
+        }
+    }
+    public function reverse():Void{
+        var cur=begin();
+        var pre=null;
+        while(cur!=null){
+            var nx=cur.next;
+            cur.next=pre;
+            head=cur;
+            pre=cur;
+            cur=nx;
+        }
+        modified=true;
+        pushmod=true;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function empty():Bool{
+        return begin()==null;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function size():Int{
+        return length;
+    }
+    public function has(obj:ZPP_Edge):Bool{
+        return inlined_has(obj);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_has(obj:ZPP_Edge):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Edge"+"] has -> "+obj);
+            #end
+        };
+        var ret;
+        {
+            ret=false;
+            {
+                var cx_ite=this.begin();
+                while(cx_ite!=null){
+                    var npite=cx_ite.elem();
+                    {
+                        if(npite==obj){
+                            ret=true;
+                            break;
+                        }
+                    };
+                    cx_ite=cx_ite.next;
+                }
+            };
+        };
+        return ret;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function front():ZPP_Edge{
+        return begin().elem();
+    }
+    public function back():ZPP_Edge{
+        var ret=begin();
+        var cur=ret;
+        while(cur!=null){
+            ret=cur;
+            cur=cur.next;
+        }
+        return ret.elem();
+    }
+    public function iterator_at(ind:Int):ZNPNode_ZPP_Edge{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                ind>=-1&&ind<size();
+            };
+            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_Edge"+"] iterator_at -> "+ind);
+            #end
+        };
+        var ret=begin();
+        while(ind-->0&&ret!=null)ret=ret.next;
+        return ret;
+    }
+    public function at(ind:Int):ZPP_Edge{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                ind>=0&&ind<size();
+            };
+            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_Edge"+"] at -> "+ind);
+            #end
+        };
+        var it=iterator_at(ind);
+        return if(it!=null)it.elem()else null;
+    }
+}
+#if nape_swc@:keep #end
+class ZNPList_ZPP_AABBPair{
+    public var head:ZNPNode_ZPP_AABBPair=null;
+    public function new(){}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function begin():ZNPNode_ZPP_AABBPair{
+        return head;
+    }
+    public var modified:Bool=false;
+    public var pushmod:Bool=false;
+    public var length:Int=0;
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function setbegin(i:ZNPNode_ZPP_AABBPair):Void{
+        head=i;
+        modified=true;
+        pushmod=true;
+    }
+    public function add(o:ZPP_AABBPair):ZPP_AABBPair{
+        return inlined_add(o);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_add(o:ZPP_AABBPair):ZPP_AABBPair{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                o!=null&&!has(o);
+            };
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_AABBPair"+"] add -> o="+o);
+            #end
+        };
+        var temp={
+            var ret;
+            {
+                if(ZNPNode_ZPP_AABBPair.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_AABBPair();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_AABBPair.POOL_TOT++;
+                    ZNPNode_ZPP_AABBPair.POOL_ADDNEW++;
+                    #end
+                }
+                else{
+                    ret=ZNPNode_ZPP_AABBPair.zpp_pool;
+                    ZNPNode_ZPP_AABBPair.zpp_pool=ret.next;
+                    ret.next=null;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_AABBPair.POOL_CNT--;
+                    ZNPNode_ZPP_AABBPair.POOL_ADD++;
+                    #end
+                }
+                ret.alloc();
+            };
+            ret.elt=o;
+            ret;
+        };
+        temp.next=begin();
+        head=temp;
+        modified=true;
+        length++;
+        return o;
+    }
+    public function addAll(x:ZNPList_ZPP_AABBPair):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                x!=null;
+            };
+            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_AABBPair"+"] addAll -> "+x);
+            #end
+        };
+        {
+            var cx_ite=x.begin();
+            while(cx_ite!=null){
+                var i=cx_ite.elem();
+                add(i);
+                cx_ite=cx_ite.next;
+            }
+        };
+    }
+    public function insert(cur:ZNPNode_ZPP_AABBPair,o:ZPP_AABBPair):ZNPNode_ZPP_AABBPair{
+        return inlined_insert(cur,o);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_insert(cur:ZNPNode_ZPP_AABBPair,o:ZPP_AABBPair):ZNPNode_ZPP_AABBPair{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                o!=null&&!has(o);
+            };
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_AABBPair"+"] cur -> "+cur+" -> "+o);
+            #end
+        };
+        var temp={
+            var ret;
+            {
+                if(ZNPNode_ZPP_AABBPair.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_AABBPair();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_AABBPair.POOL_TOT++;
+                    ZNPNode_ZPP_AABBPair.POOL_ADDNEW++;
+                    #end
+                }
+                else{
+                    ret=ZNPNode_ZPP_AABBPair.zpp_pool;
+                    ZNPNode_ZPP_AABBPair.zpp_pool=ret.next;
+                    ret.next=null;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_AABBPair.POOL_CNT--;
+                    ZNPNode_ZPP_AABBPair.POOL_ADD++;
+                    #end
+                }
+                ret.alloc();
+            };
+            ret.elt=o;
+            ret;
+        };
+        if(cur==null){
+            temp.next=begin();
+            head=temp;
+        }
+        else{
+            temp.next=cur.next;
+            cur.next=temp;
+        }
+        pushmod=modified=true;
+        length++;
+        return temp;
+    }
+    public function pop():Void{
+        inlined_pop();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_pop():Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_AABBPair"+"] pop");
+            #end
+        };
+        var ret=begin();
+        head=ret.next;
+        {};
+        {
+            var o=ret;
+            {
+                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+                var res={
+                    o!=null;
+                };
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_AABBPair"+", in obj: "+"ret"+")");
+                #end
+            };
+            o.free();
+            o.next=ZNPNode_ZPP_AABBPair.zpp_pool;
+            ZNPNode_ZPP_AABBPair.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_AABBPair.POOL_CNT++;
+            ZNPNode_ZPP_AABBPair.POOL_SUB++;
+            #end
+        };
+        if(empty())pushmod=true;
+        modified=true;
+        length--;
+    }
+    public function pop_unsafe():ZPP_AABBPair{
+        return inlined_pop_unsafe();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_pop_unsafe():ZPP_AABBPair{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_AABBPair"+"] pop_unsafe");
+            #end
+        };
+        var ret=front();
+        pop();
+        return ret;
+    }
+    public function remove(obj:ZPP_AABBPair):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                has(obj);
+            };
+            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
+            #end
+        };
+        inlined_try_remove(obj);
+    }
+    public function try_remove(obj:ZPP_AABBPair):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_AABBPair"+"] remove -> "+obj);
+            #end
+        };
+        var pre=null;
+        var cur=begin();
+        var ret=false;
+        while(cur!=null){
+            if(cur.elem()==obj){
+                erase(pre);
+                ret=true;
+                break;
+            }
+            pre=cur;
+            cur=cur.next;
+        }
+        return ret;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_remove(obj:ZPP_AABBPair):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                has(obj);
+            };
+            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
+            #end
+        };
+        inlined_try_remove(obj);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_try_remove(obj:ZPP_AABBPair):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_AABBPair"+"] remove -> "+obj);
+            #end
+        };
+        var pre=null;
+        var cur=begin();
+        var ret=false;
+        while(cur!=null){
+            if(cur.elem()==obj){
+                inlined_erase(pre);
+                ret=true;
+                break;
+            }
+            pre=cur;
+            cur=cur.next;
+        }
+        return ret;
+    }
+    public function erase(pre:ZNPNode_ZPP_AABBPair):ZNPNode_ZPP_AABBPair{
+        return inlined_erase(pre);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_erase(pre:ZNPNode_ZPP_AABBPair):ZNPNode_ZPP_AABBPair{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_AABBPair"+"] erase -> "+pre);
+            #end
+        };
+        var old:ZNPNode_ZPP_AABBPair;
+        var ret:ZNPNode_ZPP_AABBPair;
+        if(pre==null){
+            old=begin();
+            ret=old.next;
+            head=ret;
+            if(empty())pushmod=true;
+        }
+        else{
+            old=pre.next;
+            ret=old.next;
+            pre.next=ret;
+            if(ret==null)pushmod=true;
+        }
+        {};
+        {
+            var o=old;
+            {
+                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+                var res={
+                    o!=null;
+                };
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_AABBPair"+", in obj: "+"old"+")");
+                #end
+            };
+            o.free();
+            o.next=ZNPNode_ZPP_AABBPair.zpp_pool;
+            ZNPNode_ZPP_AABBPair.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_AABBPair.POOL_CNT++;
+            ZNPNode_ZPP_AABBPair.POOL_SUB++;
+            #end
+        };
+        modified=true;
+        length--;
+        pushmod=true;
+        return ret;
+    }
+    public function splice(pre:ZNPNode_ZPP_AABBPair,n:Int):ZNPNode_ZPP_AABBPair{
+        while(n-->0&&pre.next!=null)erase(pre);
+        return pre.next;
+    }
+    public function clear():Void{
+        inlined_clear();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_clear():Void{
+        if(true){
+            while(!empty())inlined_pop();
+            pushmod=true;
+        }
+    }
+    public function reverse():Void{
+        var cur=begin();
+        var pre=null;
+        while(cur!=null){
+            var nx=cur.next;
+            cur.next=pre;
+            head=cur;
+            pre=cur;
+            cur=nx;
+        }
+        modified=true;
+        pushmod=true;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function empty():Bool{
+        return begin()==null;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function size():Int{
+        return length;
+    }
+    public function has(obj:ZPP_AABBPair):Bool{
+        return inlined_has(obj);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_has(obj:ZPP_AABBPair):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_AABBPair"+"] has -> "+obj);
+            #end
+        };
+        var ret;
+        {
+            ret=false;
+            {
+                var cx_ite=this.begin();
+                while(cx_ite!=null){
+                    var npite=cx_ite.elem();
+                    {
+                        if(npite==obj){
+                            ret=true;
+                            break;
+                        }
+                    };
+                    cx_ite=cx_ite.next;
+                }
+            };
+        };
+        return ret;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function front():ZPP_AABBPair{
+        return begin().elem();
+    }
+    public function back():ZPP_AABBPair{
+        var ret=begin();
+        var cur=ret;
+        while(cur!=null){
+            ret=cur;
+            cur=cur.next;
+        }
+        return ret.elem();
+    }
+    public function iterator_at(ind:Int):ZNPNode_ZPP_AABBPair{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                ind>=-1&&ind<size();
+            };
+            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_AABBPair"+"] iterator_at -> "+ind);
+            #end
+        };
+        var ret=begin();
+        while(ind-->0&&ret!=null)ret=ret.next;
+        return ret;
+    }
+    public function at(ind:Int):ZPP_AABBPair{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                ind>=0&&ind<size();
+            };
+            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_AABBPair"+"] at -> "+ind);
             #end
         };
         var it=iterator_at(ind);
@@ -1423,12 +2257,12 @@ class ZNPList_ZPP_Shape{
     }
 }
 #if nape_swc@:keep #end
-class ZNPList_ZPP_Body{
-    public var head:ZNPNode_ZPP_Body=null;
+class ZNPList_ZPP_Arbiter{
+    public var head:ZNPNode_ZPP_Arbiter=null;
     public function new(){}
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function begin():ZNPNode_ZPP_Body{
+    function begin():ZNPNode_ZPP_Arbiter{
         return head;
     }
     public var modified:Bool=false;
@@ -1436,40 +2270,40 @@ class ZNPList_ZPP_Body{
     public var length:Int=0;
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function setbegin(i:ZNPNode_ZPP_Body):Void{
+    function setbegin(i:ZNPNode_ZPP_Arbiter):Void{
         head=i;
         modified=true;
         pushmod=true;
     }
-    public function add(o:ZPP_Body):ZPP_Body{
+    public function add(o:ZPP_Arbiter):ZPP_Arbiter{
         return inlined_add(o);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_add(o:ZPP_Body):ZPP_Body{
+    function inlined_add(o:ZPP_Arbiter):ZPP_Arbiter{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 o!=null&&!has(o);
             };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_Body"+"] add -> o="+o);
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_Arbiter"+"] add -> o="+o);
             #end
         };
         var temp={
             var ret;
             {
-                if(ZNPNode_ZPP_Body.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_Body();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_Body.POOL_TOT++;
-                    ZNPNode_ZPP_Body.POOL_ADDNEW++;
+                if(ZNPNode_ZPP_Arbiter.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_Arbiter();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_Arbiter.POOL_TOT++;
+                    ZNPNode_ZPP_Arbiter.POOL_ADDNEW++;
                     #end
                 }
                 else{
-                    ret=ZNPNode_ZPP_Body.zpp_pool;
-                    ZNPNode_ZPP_Body.zpp_pool=ret.next;
+                    ret=ZNPNode_ZPP_Arbiter.zpp_pool;
+                    ZNPNode_ZPP_Arbiter.zpp_pool=ret.next;
                     ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_Body.POOL_CNT--;
-                    ZNPNode_ZPP_Body.POOL_ADD++;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_Arbiter.POOL_CNT--;
+                    ZNPNode_ZPP_Arbiter.POOL_ADD++;
                     #end
                 }
                 ret.alloc();
@@ -1483,13 +2317,13 @@ class ZNPList_ZPP_Body{
         length++;
         return o;
     }
-    public function addAll(x:ZNPList_ZPP_Body):Void{
+    public function addAll(x:ZNPList_ZPP_Arbiter):Void{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 x!=null;
             };
-            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_Body"+"] addAll -> "+x);
+            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_Arbiter"+"] addAll -> "+x);
             #end
         };
         {
@@ -1501,35 +2335,35 @@ class ZNPList_ZPP_Body{
             }
         };
     }
-    public function insert(cur:ZNPNode_ZPP_Body,o:ZPP_Body):ZNPNode_ZPP_Body{
+    public function insert(cur:ZNPNode_ZPP_Arbiter,o:ZPP_Arbiter):ZNPNode_ZPP_Arbiter{
         return inlined_insert(cur,o);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_insert(cur:ZNPNode_ZPP_Body,o:ZPP_Body):ZNPNode_ZPP_Body{
+    function inlined_insert(cur:ZNPNode_ZPP_Arbiter,o:ZPP_Arbiter):ZNPNode_ZPP_Arbiter{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 o!=null&&!has(o);
             };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_Body"+"] cur -> "+cur+" -> "+o);
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_Arbiter"+"] cur -> "+cur+" -> "+o);
             #end
         };
         var temp={
             var ret;
             {
-                if(ZNPNode_ZPP_Body.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_Body();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_Body.POOL_TOT++;
-                    ZNPNode_ZPP_Body.POOL_ADDNEW++;
+                if(ZNPNode_ZPP_Arbiter.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_Arbiter();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_Arbiter.POOL_TOT++;
+                    ZNPNode_ZPP_Arbiter.POOL_ADDNEW++;
                     #end
                 }
                 else{
-                    ret=ZNPNode_ZPP_Body.zpp_pool;
-                    ZNPNode_ZPP_Body.zpp_pool=ret.next;
+                    ret=ZNPNode_ZPP_Arbiter.zpp_pool;
+                    ZNPNode_ZPP_Arbiter.zpp_pool=ret.next;
                     ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_Body.POOL_CNT--;
-                    ZNPNode_ZPP_Body.POOL_ADD++;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_Arbiter.POOL_CNT--;
+                    ZNPNode_ZPP_Arbiter.POOL_ADD++;
                     #end
                 }
                 ret.alloc();
@@ -1560,7 +2394,7 @@ class ZNPList_ZPP_Body{
             var res={
                 !empty();
             };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Body"+"] pop");
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Arbiter"+"] pop");
             #end
         };
         var ret=begin();
@@ -1573,39 +2407,39 @@ class ZNPList_ZPP_Body{
                 var res={
                     o!=null;
                 };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_Body"+", in obj: "+"ret"+")");
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_Arbiter"+", in obj: "+"ret"+")");
                 #end
             };
             o.free();
-            o.next=ZNPNode_ZPP_Body.zpp_pool;
-            ZNPNode_ZPP_Body.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_Body.POOL_CNT++;
-            ZNPNode_ZPP_Body.POOL_SUB++;
+            o.next=ZNPNode_ZPP_Arbiter.zpp_pool;
+            ZNPNode_ZPP_Arbiter.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_Arbiter.POOL_CNT++;
+            ZNPNode_ZPP_Arbiter.POOL_SUB++;
             #end
         };
         if(empty())pushmod=true;
         modified=true;
         length--;
     }
-    public function pop_unsafe():ZPP_Body{
+    public function pop_unsafe():ZPP_Arbiter{
         return inlined_pop_unsafe();
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop_unsafe():ZPP_Body{
+    function inlined_pop_unsafe():ZPP_Arbiter{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 !empty();
             };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Body"+"] pop_unsafe");
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Arbiter"+"] pop_unsafe");
             #end
         };
         var ret=front();
         pop();
         return ret;
     }
-    public function remove(obj:ZPP_Body):Void{
+    public function remove(obj:ZPP_Arbiter):Void{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
@@ -1616,13 +2450,13 @@ class ZNPList_ZPP_Body{
         };
         inlined_try_remove(obj);
     }
-    public function try_remove(obj:ZPP_Body):Bool{
+    public function try_remove(obj:ZPP_Arbiter):Bool{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 obj!=null;
             };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Body"+"] remove -> "+obj);
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Arbiter"+"] remove -> "+obj);
             #end
         };
         var pre=null;
@@ -1641,7 +2475,7 @@ class ZNPList_ZPP_Body{
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_remove(obj:ZPP_Body):Void{
+    function inlined_remove(obj:ZPP_Arbiter):Void{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
@@ -1654,13 +2488,13 @@ class ZNPList_ZPP_Body{
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_try_remove(obj:ZPP_Body):Bool{
+    function inlined_try_remove(obj:ZPP_Arbiter):Bool{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 obj!=null;
             };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Body"+"] remove -> "+obj);
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Arbiter"+"] remove -> "+obj);
             #end
         };
         var pre=null;
@@ -1677,22 +2511,22 @@ class ZNPList_ZPP_Body{
         }
         return ret;
     }
-    public function erase(pre:ZNPNode_ZPP_Body):ZNPNode_ZPP_Body{
+    public function erase(pre:ZNPNode_ZPP_Arbiter):ZNPNode_ZPP_Arbiter{
         return inlined_erase(pre);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_erase(pre:ZNPNode_ZPP_Body):ZNPNode_ZPP_Body{
+    function inlined_erase(pre:ZNPNode_ZPP_Arbiter):ZNPNode_ZPP_Arbiter{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 !empty();
             };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Body"+"] erase -> "+pre);
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Arbiter"+"] erase -> "+pre);
             #end
         };
-        var old:ZNPNode_ZPP_Body;
-        var ret:ZNPNode_ZPP_Body;
+        var old:ZNPNode_ZPP_Arbiter;
+        var ret:ZNPNode_ZPP_Arbiter;
         if(pre==null){
             old=begin();
             ret=old.next;
@@ -1713,14 +2547,14 @@ class ZNPList_ZPP_Body{
                 var res={
                     o!=null;
                 };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_Body"+", in obj: "+"old"+")");
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_Arbiter"+", in obj: "+"old"+")");
                 #end
             };
             o.free();
-            o.next=ZNPNode_ZPP_Body.zpp_pool;
-            ZNPNode_ZPP_Body.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_Body.POOL_CNT++;
-            ZNPNode_ZPP_Body.POOL_SUB++;
+            o.next=ZNPNode_ZPP_Arbiter.zpp_pool;
+            ZNPNode_ZPP_Arbiter.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_Arbiter.POOL_CNT++;
+            ZNPNode_ZPP_Arbiter.POOL_SUB++;
             #end
         };
         modified=true;
@@ -1728,7 +2562,7 @@ class ZNPList_ZPP_Body{
         pushmod=true;
         return ret;
     }
-    public function splice(pre:ZNPNode_ZPP_Body,n:Int):ZNPNode_ZPP_Body{
+    public function splice(pre:ZNPNode_ZPP_Arbiter,n:Int):ZNPNode_ZPP_Arbiter{
         while(n-->0&&pre.next!=null)erase(pre);
         return pre.next;
     }
@@ -1766,18 +2600,18 @@ class ZNPList_ZPP_Body{
     function size():Int{
         return length;
     }
-    public function has(obj:ZPP_Body):Bool{
+    public function has(obj:ZPP_Arbiter):Bool{
         return inlined_has(obj);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_has(obj:ZPP_Body):Bool{
+    function inlined_has(obj:ZPP_Arbiter):Bool{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 obj!=null;
             };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Body"+"] has -> "+obj);
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Arbiter"+"] has -> "+obj);
             #end
         };
         var ret;
@@ -1801,10 +2635,10 @@ class ZNPList_ZPP_Body{
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function front():ZPP_Body{
+    function front():ZPP_Arbiter{
         return begin().elem();
     }
-    public function back():ZPP_Body{
+    public function back():ZPP_Arbiter{
         var ret=begin();
         var cur=ret;
         while(cur!=null){
@@ -1813,26 +2647,26 @@ class ZNPList_ZPP_Body{
         }
         return ret.elem();
     }
-    public function iterator_at(ind:Int):ZNPNode_ZPP_Body{
+    public function iterator_at(ind:Int):ZNPNode_ZPP_Arbiter{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 ind>=-1&&ind<size();
             };
-            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_Body"+"] iterator_at -> "+ind);
+            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_Arbiter"+"] iterator_at -> "+ind);
             #end
         };
         var ret=begin();
         while(ind-->0&&ret!=null)ret=ret.next;
         return ret;
     }
-    public function at(ind:Int):ZPP_Body{
+    public function at(ind:Int):ZPP_Arbiter{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 ind>=0&&ind<size();
             };
-            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_Body"+"] at -> "+ind);
+            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_Arbiter"+"] at -> "+ind);
             #end
         };
         var it=iterator_at(ind);
@@ -2257,12 +3091,12 @@ class ZNPList_ZPP_Constraint{
     }
 }
 #if nape_swc@:keep #end
-class ZNPList_ZPP_Compound{
-    public var head:ZNPNode_ZPP_Compound=null;
+class ZNPList_ZPP_Body{
+    public var head:ZNPNode_ZPP_Body=null;
     public function new(){}
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function begin():ZNPNode_ZPP_Compound{
+    function begin():ZNPNode_ZPP_Body{
         return head;
     }
     public var modified:Bool=false;
@@ -2270,40 +3104,40 @@ class ZNPList_ZPP_Compound{
     public var length:Int=0;
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function setbegin(i:ZNPNode_ZPP_Compound):Void{
+    function setbegin(i:ZNPNode_ZPP_Body):Void{
         head=i;
         modified=true;
         pushmod=true;
     }
-    public function add(o:ZPP_Compound):ZPP_Compound{
+    public function add(o:ZPP_Body):ZPP_Body{
         return inlined_add(o);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_add(o:ZPP_Compound):ZPP_Compound{
+    function inlined_add(o:ZPP_Body):ZPP_Body{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 o!=null&&!has(o);
             };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_Compound"+"] add -> o="+o);
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_Body"+"] add -> o="+o);
             #end
         };
         var temp={
             var ret;
             {
-                if(ZNPNode_ZPP_Compound.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_Compound();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_Compound.POOL_TOT++;
-                    ZNPNode_ZPP_Compound.POOL_ADDNEW++;
+                if(ZNPNode_ZPP_Body.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_Body();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_Body.POOL_TOT++;
+                    ZNPNode_ZPP_Body.POOL_ADDNEW++;
                     #end
                 }
                 else{
-                    ret=ZNPNode_ZPP_Compound.zpp_pool;
-                    ZNPNode_ZPP_Compound.zpp_pool=ret.next;
+                    ret=ZNPNode_ZPP_Body.zpp_pool;
+                    ZNPNode_ZPP_Body.zpp_pool=ret.next;
                     ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_Compound.POOL_CNT--;
-                    ZNPNode_ZPP_Compound.POOL_ADD++;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_Body.POOL_CNT--;
+                    ZNPNode_ZPP_Body.POOL_ADD++;
                     #end
                 }
                 ret.alloc();
@@ -2317,13 +3151,13 @@ class ZNPList_ZPP_Compound{
         length++;
         return o;
     }
-    public function addAll(x:ZNPList_ZPP_Compound):Void{
+    public function addAll(x:ZNPList_ZPP_Body):Void{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 x!=null;
             };
-            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_Compound"+"] addAll -> "+x);
+            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_Body"+"] addAll -> "+x);
             #end
         };
         {
@@ -2335,35 +3169,35 @@ class ZNPList_ZPP_Compound{
             }
         };
     }
-    public function insert(cur:ZNPNode_ZPP_Compound,o:ZPP_Compound):ZNPNode_ZPP_Compound{
+    public function insert(cur:ZNPNode_ZPP_Body,o:ZPP_Body):ZNPNode_ZPP_Body{
         return inlined_insert(cur,o);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_insert(cur:ZNPNode_ZPP_Compound,o:ZPP_Compound):ZNPNode_ZPP_Compound{
+    function inlined_insert(cur:ZNPNode_ZPP_Body,o:ZPP_Body):ZNPNode_ZPP_Body{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 o!=null&&!has(o);
             };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_Compound"+"] cur -> "+cur+" -> "+o);
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_Body"+"] cur -> "+cur+" -> "+o);
             #end
         };
         var temp={
             var ret;
             {
-                if(ZNPNode_ZPP_Compound.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_Compound();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_Compound.POOL_TOT++;
-                    ZNPNode_ZPP_Compound.POOL_ADDNEW++;
+                if(ZNPNode_ZPP_Body.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_Body();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_Body.POOL_TOT++;
+                    ZNPNode_ZPP_Body.POOL_ADDNEW++;
                     #end
                 }
                 else{
-                    ret=ZNPNode_ZPP_Compound.zpp_pool;
-                    ZNPNode_ZPP_Compound.zpp_pool=ret.next;
+                    ret=ZNPNode_ZPP_Body.zpp_pool;
+                    ZNPNode_ZPP_Body.zpp_pool=ret.next;
                     ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_Compound.POOL_CNT--;
-                    ZNPNode_ZPP_Compound.POOL_ADD++;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_Body.POOL_CNT--;
+                    ZNPNode_ZPP_Body.POOL_ADD++;
                     #end
                 }
                 ret.alloc();
@@ -2394,7 +3228,7 @@ class ZNPList_ZPP_Compound{
             var res={
                 !empty();
             };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Compound"+"] pop");
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Body"+"] pop");
             #end
         };
         var ret=begin();
@@ -2407,39 +3241,39 @@ class ZNPList_ZPP_Compound{
                 var res={
                     o!=null;
                 };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_Compound"+", in obj: "+"ret"+")");
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_Body"+", in obj: "+"ret"+")");
                 #end
             };
             o.free();
-            o.next=ZNPNode_ZPP_Compound.zpp_pool;
-            ZNPNode_ZPP_Compound.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_Compound.POOL_CNT++;
-            ZNPNode_ZPP_Compound.POOL_SUB++;
+            o.next=ZNPNode_ZPP_Body.zpp_pool;
+            ZNPNode_ZPP_Body.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_Body.POOL_CNT++;
+            ZNPNode_ZPP_Body.POOL_SUB++;
             #end
         };
         if(empty())pushmod=true;
         modified=true;
         length--;
     }
-    public function pop_unsafe():ZPP_Compound{
+    public function pop_unsafe():ZPP_Body{
         return inlined_pop_unsafe();
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop_unsafe():ZPP_Compound{
+    function inlined_pop_unsafe():ZPP_Body{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 !empty();
             };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Compound"+"] pop_unsafe");
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Body"+"] pop_unsafe");
             #end
         };
         var ret=front();
         pop();
         return ret;
     }
-    public function remove(obj:ZPP_Compound):Void{
+    public function remove(obj:ZPP_Body):Void{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
@@ -2450,13 +3284,13 @@ class ZNPList_ZPP_Compound{
         };
         inlined_try_remove(obj);
     }
-    public function try_remove(obj:ZPP_Compound):Bool{
+    public function try_remove(obj:ZPP_Body):Bool{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 obj!=null;
             };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Compound"+"] remove -> "+obj);
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Body"+"] remove -> "+obj);
             #end
         };
         var pre=null;
@@ -2475,7 +3309,7 @@ class ZNPList_ZPP_Compound{
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_remove(obj:ZPP_Compound):Void{
+    function inlined_remove(obj:ZPP_Body):Void{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
@@ -2488,13 +3322,13 @@ class ZNPList_ZPP_Compound{
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_try_remove(obj:ZPP_Compound):Bool{
+    function inlined_try_remove(obj:ZPP_Body):Bool{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 obj!=null;
             };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Compound"+"] remove -> "+obj);
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Body"+"] remove -> "+obj);
             #end
         };
         var pre=null;
@@ -2511,22 +3345,22 @@ class ZNPList_ZPP_Compound{
         }
         return ret;
     }
-    public function erase(pre:ZNPNode_ZPP_Compound):ZNPNode_ZPP_Compound{
+    public function erase(pre:ZNPNode_ZPP_Body):ZNPNode_ZPP_Body{
         return inlined_erase(pre);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_erase(pre:ZNPNode_ZPP_Compound):ZNPNode_ZPP_Compound{
+    function inlined_erase(pre:ZNPNode_ZPP_Body):ZNPNode_ZPP_Body{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 !empty();
             };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Compound"+"] erase -> "+pre);
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Body"+"] erase -> "+pre);
             #end
         };
-        var old:ZNPNode_ZPP_Compound;
-        var ret:ZNPNode_ZPP_Compound;
+        var old:ZNPNode_ZPP_Body;
+        var ret:ZNPNode_ZPP_Body;
         if(pre==null){
             old=begin();
             ret=old.next;
@@ -2547,14 +3381,14 @@ class ZNPList_ZPP_Compound{
                 var res={
                     o!=null;
                 };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_Compound"+", in obj: "+"old"+")");
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_Body"+", in obj: "+"old"+")");
                 #end
             };
             o.free();
-            o.next=ZNPNode_ZPP_Compound.zpp_pool;
-            ZNPNode_ZPP_Compound.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_Compound.POOL_CNT++;
-            ZNPNode_ZPP_Compound.POOL_SUB++;
+            o.next=ZNPNode_ZPP_Body.zpp_pool;
+            ZNPNode_ZPP_Body.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_Body.POOL_CNT++;
+            ZNPNode_ZPP_Body.POOL_SUB++;
             #end
         };
         modified=true;
@@ -2562,7 +3396,7 @@ class ZNPList_ZPP_Compound{
         pushmod=true;
         return ret;
     }
-    public function splice(pre:ZNPNode_ZPP_Compound,n:Int):ZNPNode_ZPP_Compound{
+    public function splice(pre:ZNPNode_ZPP_Body,n:Int):ZNPNode_ZPP_Body{
         while(n-->0&&pre.next!=null)erase(pre);
         return pre.next;
     }
@@ -2600,18 +3434,18 @@ class ZNPList_ZPP_Compound{
     function size():Int{
         return length;
     }
-    public function has(obj:ZPP_Compound):Bool{
+    public function has(obj:ZPP_Body):Bool{
         return inlined_has(obj);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_has(obj:ZPP_Compound):Bool{
+    function inlined_has(obj:ZPP_Body):Bool{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 obj!=null;
             };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Compound"+"] has -> "+obj);
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Body"+"] has -> "+obj);
             #end
         };
         var ret;
@@ -2635,10 +3469,10 @@ class ZNPList_ZPP_Compound{
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function front():ZPP_Compound{
+    function front():ZPP_Body{
         return begin().elem();
     }
-    public function back():ZPP_Compound{
+    public function back():ZPP_Body{
         var ret=begin();
         var cur=ret;
         while(cur!=null){
@@ -2647,26 +3481,26 @@ class ZNPList_ZPP_Compound{
         }
         return ret.elem();
     }
-    public function iterator_at(ind:Int):ZNPNode_ZPP_Compound{
+    public function iterator_at(ind:Int):ZNPNode_ZPP_Body{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 ind>=-1&&ind<size();
             };
-            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_Compound"+"] iterator_at -> "+ind);
+            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_Body"+"] iterator_at -> "+ind);
             #end
         };
         var ret=begin();
         while(ind-->0&&ret!=null)ret=ret.next;
         return ret;
     }
-    public function at(ind:Int):ZPP_Compound{
+    public function at(ind:Int):ZPP_Body{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 ind>=0&&ind<size();
             };
-            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_Compound"+"] at -> "+ind);
+            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_Body"+"] at -> "+ind);
             #end
         };
         var it=iterator_at(ind);
@@ -2674,12 +3508,12 @@ class ZNPList_ZPP_Compound{
     }
 }
 #if nape_swc@:keep #end
-class ZNPList_ZPP_Arbiter{
-    public var head:ZNPNode_ZPP_Arbiter=null;
+class ZNPList_ZPP_CallbackSet{
+    public var head:ZNPNode_ZPP_CallbackSet=null;
     public function new(){}
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function begin():ZNPNode_ZPP_Arbiter{
+    function begin():ZNPNode_ZPP_CallbackSet{
         return head;
     }
     public var modified:Bool=false;
@@ -2687,40 +3521,40 @@ class ZNPList_ZPP_Arbiter{
     public var length:Int=0;
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function setbegin(i:ZNPNode_ZPP_Arbiter):Void{
+    function setbegin(i:ZNPNode_ZPP_CallbackSet):Void{
         head=i;
         modified=true;
         pushmod=true;
     }
-    public function add(o:ZPP_Arbiter):ZPP_Arbiter{
+    public function add(o:ZPP_CallbackSet):ZPP_CallbackSet{
         return inlined_add(o);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_add(o:ZPP_Arbiter):ZPP_Arbiter{
+    function inlined_add(o:ZPP_CallbackSet):ZPP_CallbackSet{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 o!=null&&!has(o);
             };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_Arbiter"+"] add -> o="+o);
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_CallbackSet"+"] add -> o="+o);
             #end
         };
         var temp={
             var ret;
             {
-                if(ZNPNode_ZPP_Arbiter.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_Arbiter();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_Arbiter.POOL_TOT++;
-                    ZNPNode_ZPP_Arbiter.POOL_ADDNEW++;
+                if(ZNPNode_ZPP_CallbackSet.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_CallbackSet();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_CallbackSet.POOL_TOT++;
+                    ZNPNode_ZPP_CallbackSet.POOL_ADDNEW++;
                     #end
                 }
                 else{
-                    ret=ZNPNode_ZPP_Arbiter.zpp_pool;
-                    ZNPNode_ZPP_Arbiter.zpp_pool=ret.next;
+                    ret=ZNPNode_ZPP_CallbackSet.zpp_pool;
+                    ZNPNode_ZPP_CallbackSet.zpp_pool=ret.next;
                     ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_Arbiter.POOL_CNT--;
-                    ZNPNode_ZPP_Arbiter.POOL_ADD++;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_CallbackSet.POOL_CNT--;
+                    ZNPNode_ZPP_CallbackSet.POOL_ADD++;
                     #end
                 }
                 ret.alloc();
@@ -2734,13 +3568,13 @@ class ZNPList_ZPP_Arbiter{
         length++;
         return o;
     }
-    public function addAll(x:ZNPList_ZPP_Arbiter):Void{
+    public function addAll(x:ZNPList_ZPP_CallbackSet):Void{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 x!=null;
             };
-            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_Arbiter"+"] addAll -> "+x);
+            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_CallbackSet"+"] addAll -> "+x);
             #end
         };
         {
@@ -2752,35 +3586,35 @@ class ZNPList_ZPP_Arbiter{
             }
         };
     }
-    public function insert(cur:ZNPNode_ZPP_Arbiter,o:ZPP_Arbiter):ZNPNode_ZPP_Arbiter{
+    public function insert(cur:ZNPNode_ZPP_CallbackSet,o:ZPP_CallbackSet):ZNPNode_ZPP_CallbackSet{
         return inlined_insert(cur,o);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_insert(cur:ZNPNode_ZPP_Arbiter,o:ZPP_Arbiter):ZNPNode_ZPP_Arbiter{
+    function inlined_insert(cur:ZNPNode_ZPP_CallbackSet,o:ZPP_CallbackSet):ZNPNode_ZPP_CallbackSet{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 o!=null&&!has(o);
             };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_Arbiter"+"] cur -> "+cur+" -> "+o);
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_CallbackSet"+"] cur -> "+cur+" -> "+o);
             #end
         };
         var temp={
             var ret;
             {
-                if(ZNPNode_ZPP_Arbiter.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_Arbiter();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_Arbiter.POOL_TOT++;
-                    ZNPNode_ZPP_Arbiter.POOL_ADDNEW++;
+                if(ZNPNode_ZPP_CallbackSet.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_CallbackSet();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_CallbackSet.POOL_TOT++;
+                    ZNPNode_ZPP_CallbackSet.POOL_ADDNEW++;
                     #end
                 }
                 else{
-                    ret=ZNPNode_ZPP_Arbiter.zpp_pool;
-                    ZNPNode_ZPP_Arbiter.zpp_pool=ret.next;
+                    ret=ZNPNode_ZPP_CallbackSet.zpp_pool;
+                    ZNPNode_ZPP_CallbackSet.zpp_pool=ret.next;
                     ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_Arbiter.POOL_CNT--;
-                    ZNPNode_ZPP_Arbiter.POOL_ADD++;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_CallbackSet.POOL_CNT--;
+                    ZNPNode_ZPP_CallbackSet.POOL_ADD++;
                     #end
                 }
                 ret.alloc();
@@ -2811,7 +3645,7 @@ class ZNPList_ZPP_Arbiter{
             var res={
                 !empty();
             };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Arbiter"+"] pop");
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_CallbackSet"+"] pop");
             #end
         };
         var ret=begin();
@@ -2824,39 +3658,39 @@ class ZNPList_ZPP_Arbiter{
                 var res={
                     o!=null;
                 };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_Arbiter"+", in obj: "+"ret"+")");
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_CallbackSet"+", in obj: "+"ret"+")");
                 #end
             };
             o.free();
-            o.next=ZNPNode_ZPP_Arbiter.zpp_pool;
-            ZNPNode_ZPP_Arbiter.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_Arbiter.POOL_CNT++;
-            ZNPNode_ZPP_Arbiter.POOL_SUB++;
+            o.next=ZNPNode_ZPP_CallbackSet.zpp_pool;
+            ZNPNode_ZPP_CallbackSet.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_CallbackSet.POOL_CNT++;
+            ZNPNode_ZPP_CallbackSet.POOL_SUB++;
             #end
         };
         if(empty())pushmod=true;
         modified=true;
         length--;
     }
-    public function pop_unsafe():ZPP_Arbiter{
+    public function pop_unsafe():ZPP_CallbackSet{
         return inlined_pop_unsafe();
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop_unsafe():ZPP_Arbiter{
+    function inlined_pop_unsafe():ZPP_CallbackSet{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 !empty();
             };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Arbiter"+"] pop_unsafe");
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_CallbackSet"+"] pop_unsafe");
             #end
         };
         var ret=front();
         pop();
         return ret;
     }
-    public function remove(obj:ZPP_Arbiter):Void{
+    public function remove(obj:ZPP_CallbackSet):Void{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
@@ -2867,13 +3701,13 @@ class ZNPList_ZPP_Arbiter{
         };
         inlined_try_remove(obj);
     }
-    public function try_remove(obj:ZPP_Arbiter):Bool{
+    public function try_remove(obj:ZPP_CallbackSet):Bool{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 obj!=null;
             };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Arbiter"+"] remove -> "+obj);
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_CallbackSet"+"] remove -> "+obj);
             #end
         };
         var pre=null;
@@ -2892,7 +3726,7 @@ class ZNPList_ZPP_Arbiter{
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_remove(obj:ZPP_Arbiter):Void{
+    function inlined_remove(obj:ZPP_CallbackSet):Void{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
@@ -2905,13 +3739,13 @@ class ZNPList_ZPP_Arbiter{
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_try_remove(obj:ZPP_Arbiter):Bool{
+    function inlined_try_remove(obj:ZPP_CallbackSet):Bool{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 obj!=null;
             };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Arbiter"+"] remove -> "+obj);
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_CallbackSet"+"] remove -> "+obj);
             #end
         };
         var pre=null;
@@ -2928,22 +3762,22 @@ class ZNPList_ZPP_Arbiter{
         }
         return ret;
     }
-    public function erase(pre:ZNPNode_ZPP_Arbiter):ZNPNode_ZPP_Arbiter{
+    public function erase(pre:ZNPNode_ZPP_CallbackSet):ZNPNode_ZPP_CallbackSet{
         return inlined_erase(pre);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_erase(pre:ZNPNode_ZPP_Arbiter):ZNPNode_ZPP_Arbiter{
+    function inlined_erase(pre:ZNPNode_ZPP_CallbackSet):ZNPNode_ZPP_CallbackSet{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 !empty();
             };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Arbiter"+"] erase -> "+pre);
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_CallbackSet"+"] erase -> "+pre);
             #end
         };
-        var old:ZNPNode_ZPP_Arbiter;
-        var ret:ZNPNode_ZPP_Arbiter;
+        var old:ZNPNode_ZPP_CallbackSet;
+        var ret:ZNPNode_ZPP_CallbackSet;
         if(pre==null){
             old=begin();
             ret=old.next;
@@ -2964,14 +3798,14 @@ class ZNPList_ZPP_Arbiter{
                 var res={
                     o!=null;
                 };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_Arbiter"+", in obj: "+"old"+")");
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_CallbackSet"+", in obj: "+"old"+")");
                 #end
             };
             o.free();
-            o.next=ZNPNode_ZPP_Arbiter.zpp_pool;
-            ZNPNode_ZPP_Arbiter.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_Arbiter.POOL_CNT++;
-            ZNPNode_ZPP_Arbiter.POOL_SUB++;
+            o.next=ZNPNode_ZPP_CallbackSet.zpp_pool;
+            ZNPNode_ZPP_CallbackSet.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_CallbackSet.POOL_CNT++;
+            ZNPNode_ZPP_CallbackSet.POOL_SUB++;
             #end
         };
         modified=true;
@@ -2979,7 +3813,7 @@ class ZNPList_ZPP_Arbiter{
         pushmod=true;
         return ret;
     }
-    public function splice(pre:ZNPNode_ZPP_Arbiter,n:Int):ZNPNode_ZPP_Arbiter{
+    public function splice(pre:ZNPNode_ZPP_CallbackSet,n:Int):ZNPNode_ZPP_CallbackSet{
         while(n-->0&&pre.next!=null)erase(pre);
         return pre.next;
     }
@@ -3017,18 +3851,18 @@ class ZNPList_ZPP_Arbiter{
     function size():Int{
         return length;
     }
-    public function has(obj:ZPP_Arbiter):Bool{
+    public function has(obj:ZPP_CallbackSet):Bool{
         return inlined_has(obj);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_has(obj:ZPP_Arbiter):Bool{
+    function inlined_has(obj:ZPP_CallbackSet):Bool{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 obj!=null;
             };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Arbiter"+"] has -> "+obj);
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_CallbackSet"+"] has -> "+obj);
             #end
         };
         var ret;
@@ -3052,10 +3886,10 @@ class ZNPList_ZPP_Arbiter{
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function front():ZPP_Arbiter{
+    function front():ZPP_CallbackSet{
         return begin().elem();
     }
-    public function back():ZPP_Arbiter{
+    public function back():ZPP_CallbackSet{
         var ret=begin();
         var cur=ret;
         while(cur!=null){
@@ -3064,26 +3898,26 @@ class ZNPList_ZPP_Arbiter{
         }
         return ret.elem();
     }
-    public function iterator_at(ind:Int):ZNPNode_ZPP_Arbiter{
+    public function iterator_at(ind:Int):ZNPNode_ZPP_CallbackSet{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 ind>=-1&&ind<size();
             };
-            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_Arbiter"+"] iterator_at -> "+ind);
+            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_CallbackSet"+"] iterator_at -> "+ind);
             #end
         };
         var ret=begin();
         while(ind-->0&&ret!=null)ret=ret.next;
         return ret;
     }
-    public function at(ind:Int):ZPP_Arbiter{
+    public function at(ind:Int):ZPP_CallbackSet{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 ind>=0&&ind<size();
             };
-            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_Arbiter"+"] at -> "+ind);
+            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_CallbackSet"+"] at -> "+ind);
             #end
         };
         var it=iterator_at(ind);
@@ -3091,12 +3925,12 @@ class ZNPList_ZPP_Arbiter{
     }
 }
 #if nape_swc@:keep #end
-class ZNPList_ZPP_InteractionListener{
-    public var head:ZNPNode_ZPP_InteractionListener=null;
+class ZNPList_ZPP_CbType{
+    public var head:ZNPNode_ZPP_CbType=null;
     public function new(){}
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function begin():ZNPNode_ZPP_InteractionListener{
+    function begin():ZNPNode_ZPP_CbType{
         return head;
     }
     public var modified:Bool=false;
@@ -3104,40 +3938,40 @@ class ZNPList_ZPP_InteractionListener{
     public var length:Int=0;
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function setbegin(i:ZNPNode_ZPP_InteractionListener):Void{
+    function setbegin(i:ZNPNode_ZPP_CbType):Void{
         head=i;
         modified=true;
         pushmod=true;
     }
-    public function add(o:ZPP_InteractionListener):ZPP_InteractionListener{
+    public function add(o:ZPP_CbType):ZPP_CbType{
         return inlined_add(o);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_add(o:ZPP_InteractionListener):ZPP_InteractionListener{
+    function inlined_add(o:ZPP_CbType):ZPP_CbType{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 o!=null&&!has(o);
             };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_InteractionListener"+"] add -> o="+o);
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_CbType"+"] add -> o="+o);
             #end
         };
         var temp={
             var ret;
             {
-                if(ZNPNode_ZPP_InteractionListener.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_InteractionListener();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_InteractionListener.POOL_TOT++;
-                    ZNPNode_ZPP_InteractionListener.POOL_ADDNEW++;
+                if(ZNPNode_ZPP_CbType.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_CbType();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_CbType.POOL_TOT++;
+                    ZNPNode_ZPP_CbType.POOL_ADDNEW++;
                     #end
                 }
                 else{
-                    ret=ZNPNode_ZPP_InteractionListener.zpp_pool;
-                    ZNPNode_ZPP_InteractionListener.zpp_pool=ret.next;
+                    ret=ZNPNode_ZPP_CbType.zpp_pool;
+                    ZNPNode_ZPP_CbType.zpp_pool=ret.next;
                     ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_InteractionListener.POOL_CNT--;
-                    ZNPNode_ZPP_InteractionListener.POOL_ADD++;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_CbType.POOL_CNT--;
+                    ZNPNode_ZPP_CbType.POOL_ADD++;
                     #end
                 }
                 ret.alloc();
@@ -3151,13 +3985,13 @@ class ZNPList_ZPP_InteractionListener{
         length++;
         return o;
     }
-    public function addAll(x:ZNPList_ZPP_InteractionListener):Void{
+    public function addAll(x:ZNPList_ZPP_CbType):Void{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 x!=null;
             };
-            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_InteractionListener"+"] addAll -> "+x);
+            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_CbType"+"] addAll -> "+x);
             #end
         };
         {
@@ -3169,35 +4003,35 @@ class ZNPList_ZPP_InteractionListener{
             }
         };
     }
-    public function insert(cur:ZNPNode_ZPP_InteractionListener,o:ZPP_InteractionListener):ZNPNode_ZPP_InteractionListener{
+    public function insert(cur:ZNPNode_ZPP_CbType,o:ZPP_CbType):ZNPNode_ZPP_CbType{
         return inlined_insert(cur,o);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_insert(cur:ZNPNode_ZPP_InteractionListener,o:ZPP_InteractionListener):ZNPNode_ZPP_InteractionListener{
+    function inlined_insert(cur:ZNPNode_ZPP_CbType,o:ZPP_CbType):ZNPNode_ZPP_CbType{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 o!=null&&!has(o);
             };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_InteractionListener"+"] cur -> "+cur+" -> "+o);
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_CbType"+"] cur -> "+cur+" -> "+o);
             #end
         };
         var temp={
             var ret;
             {
-                if(ZNPNode_ZPP_InteractionListener.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_InteractionListener();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_InteractionListener.POOL_TOT++;
-                    ZNPNode_ZPP_InteractionListener.POOL_ADDNEW++;
+                if(ZNPNode_ZPP_CbType.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_CbType();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_CbType.POOL_TOT++;
+                    ZNPNode_ZPP_CbType.POOL_ADDNEW++;
                     #end
                 }
                 else{
-                    ret=ZNPNode_ZPP_InteractionListener.zpp_pool;
-                    ZNPNode_ZPP_InteractionListener.zpp_pool=ret.next;
+                    ret=ZNPNode_ZPP_CbType.zpp_pool;
+                    ZNPNode_ZPP_CbType.zpp_pool=ret.next;
                     ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_InteractionListener.POOL_CNT--;
-                    ZNPNode_ZPP_InteractionListener.POOL_ADD++;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_CbType.POOL_CNT--;
+                    ZNPNode_ZPP_CbType.POOL_ADD++;
                     #end
                 }
                 ret.alloc();
@@ -3228,7 +4062,7 @@ class ZNPList_ZPP_InteractionListener{
             var res={
                 !empty();
             };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_InteractionListener"+"] pop");
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_CbType"+"] pop");
             #end
         };
         var ret=begin();
@@ -3241,39 +4075,39 @@ class ZNPList_ZPP_InteractionListener{
                 var res={
                     o!=null;
                 };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_InteractionListener"+", in obj: "+"ret"+")");
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_CbType"+", in obj: "+"ret"+")");
                 #end
             };
             o.free();
-            o.next=ZNPNode_ZPP_InteractionListener.zpp_pool;
-            ZNPNode_ZPP_InteractionListener.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_InteractionListener.POOL_CNT++;
-            ZNPNode_ZPP_InteractionListener.POOL_SUB++;
+            o.next=ZNPNode_ZPP_CbType.zpp_pool;
+            ZNPNode_ZPP_CbType.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_CbType.POOL_CNT++;
+            ZNPNode_ZPP_CbType.POOL_SUB++;
             #end
         };
         if(empty())pushmod=true;
         modified=true;
         length--;
     }
-    public function pop_unsafe():ZPP_InteractionListener{
+    public function pop_unsafe():ZPP_CbType{
         return inlined_pop_unsafe();
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop_unsafe():ZPP_InteractionListener{
+    function inlined_pop_unsafe():ZPP_CbType{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 !empty();
             };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_InteractionListener"+"] pop_unsafe");
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_CbType"+"] pop_unsafe");
             #end
         };
         var ret=front();
         pop();
         return ret;
     }
-    public function remove(obj:ZPP_InteractionListener):Void{
+    public function remove(obj:ZPP_CbType):Void{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
@@ -3284,13 +4118,13 @@ class ZNPList_ZPP_InteractionListener{
         };
         inlined_try_remove(obj);
     }
-    public function try_remove(obj:ZPP_InteractionListener):Bool{
+    public function try_remove(obj:ZPP_CbType):Bool{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 obj!=null;
             };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_InteractionListener"+"] remove -> "+obj);
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_CbType"+"] remove -> "+obj);
             #end
         };
         var pre=null;
@@ -3309,7 +4143,7 @@ class ZNPList_ZPP_InteractionListener{
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_remove(obj:ZPP_InteractionListener):Void{
+    function inlined_remove(obj:ZPP_CbType):Void{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
@@ -3322,13 +4156,13 @@ class ZNPList_ZPP_InteractionListener{
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_try_remove(obj:ZPP_InteractionListener):Bool{
+    function inlined_try_remove(obj:ZPP_CbType):Bool{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 obj!=null;
             };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_InteractionListener"+"] remove -> "+obj);
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_CbType"+"] remove -> "+obj);
             #end
         };
         var pre=null;
@@ -3345,22 +4179,22 @@ class ZNPList_ZPP_InteractionListener{
         }
         return ret;
     }
-    public function erase(pre:ZNPNode_ZPP_InteractionListener):ZNPNode_ZPP_InteractionListener{
+    public function erase(pre:ZNPNode_ZPP_CbType):ZNPNode_ZPP_CbType{
         return inlined_erase(pre);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_erase(pre:ZNPNode_ZPP_InteractionListener):ZNPNode_ZPP_InteractionListener{
+    function inlined_erase(pre:ZNPNode_ZPP_CbType):ZNPNode_ZPP_CbType{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 !empty();
             };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_InteractionListener"+"] erase -> "+pre);
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_CbType"+"] erase -> "+pre);
             #end
         };
-        var old:ZNPNode_ZPP_InteractionListener;
-        var ret:ZNPNode_ZPP_InteractionListener;
+        var old:ZNPNode_ZPP_CbType;
+        var ret:ZNPNode_ZPP_CbType;
         if(pre==null){
             old=begin();
             ret=old.next;
@@ -3381,14 +4215,14 @@ class ZNPList_ZPP_InteractionListener{
                 var res={
                     o!=null;
                 };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_InteractionListener"+", in obj: "+"old"+")");
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_CbType"+", in obj: "+"old"+")");
                 #end
             };
             o.free();
-            o.next=ZNPNode_ZPP_InteractionListener.zpp_pool;
-            ZNPNode_ZPP_InteractionListener.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_InteractionListener.POOL_CNT++;
-            ZNPNode_ZPP_InteractionListener.POOL_SUB++;
+            o.next=ZNPNode_ZPP_CbType.zpp_pool;
+            ZNPNode_ZPP_CbType.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_CbType.POOL_CNT++;
+            ZNPNode_ZPP_CbType.POOL_SUB++;
             #end
         };
         modified=true;
@@ -3396,7 +4230,7 @@ class ZNPList_ZPP_InteractionListener{
         pushmod=true;
         return ret;
     }
-    public function splice(pre:ZNPNode_ZPP_InteractionListener,n:Int):ZNPNode_ZPP_InteractionListener{
+    public function splice(pre:ZNPNode_ZPP_CbType,n:Int):ZNPNode_ZPP_CbType{
         while(n-->0&&pre.next!=null)erase(pre);
         return pre.next;
     }
@@ -3434,18 +4268,18 @@ class ZNPList_ZPP_InteractionListener{
     function size():Int{
         return length;
     }
-    public function has(obj:ZPP_InteractionListener):Bool{
+    public function has(obj:ZPP_CbType):Bool{
         return inlined_has(obj);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_has(obj:ZPP_InteractionListener):Bool{
+    function inlined_has(obj:ZPP_CbType):Bool{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 obj!=null;
             };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_InteractionListener"+"] has -> "+obj);
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_CbType"+"] has -> "+obj);
             #end
         };
         var ret;
@@ -3469,10 +4303,10 @@ class ZNPList_ZPP_InteractionListener{
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function front():ZPP_InteractionListener{
+    function front():ZPP_CbType{
         return begin().elem();
     }
-    public function back():ZPP_InteractionListener{
+    public function back():ZPP_CbType{
         var ret=begin();
         var cur=ret;
         while(cur!=null){
@@ -3481,26 +4315,26 @@ class ZNPList_ZPP_InteractionListener{
         }
         return ret.elem();
     }
-    public function iterator_at(ind:Int):ZNPNode_ZPP_InteractionListener{
+    public function iterator_at(ind:Int):ZNPNode_ZPP_CbType{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 ind>=-1&&ind<size();
             };
-            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_InteractionListener"+"] iterator_at -> "+ind);
+            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_CbType"+"] iterator_at -> "+ind);
             #end
         };
         var ret=begin();
         while(ind-->0&&ret!=null)ret=ret.next;
         return ret;
     }
-    public function at(ind:Int):ZPP_InteractionListener{
+    public function at(ind:Int):ZPP_CbType{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 ind>=0&&ind<size();
             };
-            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_InteractionListener"+"] at -> "+ind);
+            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_CbType"+"] at -> "+ind);
             #end
         };
         var it=iterator_at(ind);
@@ -3508,12 +4342,12 @@ class ZNPList_ZPP_InteractionListener{
     }
 }
 #if nape_swc@:keep #end
-class ZNPList_ZPP_CbSet{
-    public var head:ZNPNode_ZPP_CbSet=null;
+class ZNPList_ZPP_Component{
+    public var head:ZNPNode_ZPP_Component=null;
     public function new(){}
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function begin():ZNPNode_ZPP_CbSet{
+    function begin():ZNPNode_ZPP_Component{
         return head;
     }
     public var modified:Bool=false;
@@ -3521,40 +4355,40 @@ class ZNPList_ZPP_CbSet{
     public var length:Int=0;
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function setbegin(i:ZNPNode_ZPP_CbSet):Void{
+    function setbegin(i:ZNPNode_ZPP_Component):Void{
         head=i;
         modified=true;
         pushmod=true;
     }
-    public function add(o:ZPP_CbSet):ZPP_CbSet{
+    public function add(o:ZPP_Component):ZPP_Component{
         return inlined_add(o);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_add(o:ZPP_CbSet):ZPP_CbSet{
+    function inlined_add(o:ZPP_Component):ZPP_Component{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 o!=null&&!has(o);
             };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_CbSet"+"] add -> o="+o);
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_Component"+"] add -> o="+o);
             #end
         };
         var temp={
             var ret;
             {
-                if(ZNPNode_ZPP_CbSet.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_CbSet();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_CbSet.POOL_TOT++;
-                    ZNPNode_ZPP_CbSet.POOL_ADDNEW++;
+                if(ZNPNode_ZPP_Component.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_Component();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_Component.POOL_TOT++;
+                    ZNPNode_ZPP_Component.POOL_ADDNEW++;
                     #end
                 }
                 else{
-                    ret=ZNPNode_ZPP_CbSet.zpp_pool;
-                    ZNPNode_ZPP_CbSet.zpp_pool=ret.next;
+                    ret=ZNPNode_ZPP_Component.zpp_pool;
+                    ZNPNode_ZPP_Component.zpp_pool=ret.next;
                     ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_CbSet.POOL_CNT--;
-                    ZNPNode_ZPP_CbSet.POOL_ADD++;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_Component.POOL_CNT--;
+                    ZNPNode_ZPP_Component.POOL_ADD++;
                     #end
                 }
                 ret.alloc();
@@ -3568,13 +4402,13 @@ class ZNPList_ZPP_CbSet{
         length++;
         return o;
     }
-    public function addAll(x:ZNPList_ZPP_CbSet):Void{
+    public function addAll(x:ZNPList_ZPP_Component):Void{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 x!=null;
             };
-            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_CbSet"+"] addAll -> "+x);
+            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_Component"+"] addAll -> "+x);
             #end
         };
         {
@@ -3586,35 +4420,35 @@ class ZNPList_ZPP_CbSet{
             }
         };
     }
-    public function insert(cur:ZNPNode_ZPP_CbSet,o:ZPP_CbSet):ZNPNode_ZPP_CbSet{
+    public function insert(cur:ZNPNode_ZPP_Component,o:ZPP_Component):ZNPNode_ZPP_Component{
         return inlined_insert(cur,o);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_insert(cur:ZNPNode_ZPP_CbSet,o:ZPP_CbSet):ZNPNode_ZPP_CbSet{
+    function inlined_insert(cur:ZNPNode_ZPP_Component,o:ZPP_Component):ZNPNode_ZPP_Component{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 o!=null&&!has(o);
             };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_CbSet"+"] cur -> "+cur+" -> "+o);
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_Component"+"] cur -> "+cur+" -> "+o);
             #end
         };
         var temp={
             var ret;
             {
-                if(ZNPNode_ZPP_CbSet.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_CbSet();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_CbSet.POOL_TOT++;
-                    ZNPNode_ZPP_CbSet.POOL_ADDNEW++;
+                if(ZNPNode_ZPP_Component.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_Component();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_Component.POOL_TOT++;
+                    ZNPNode_ZPP_Component.POOL_ADDNEW++;
                     #end
                 }
                 else{
-                    ret=ZNPNode_ZPP_CbSet.zpp_pool;
-                    ZNPNode_ZPP_CbSet.zpp_pool=ret.next;
+                    ret=ZNPNode_ZPP_Component.zpp_pool;
+                    ZNPNode_ZPP_Component.zpp_pool=ret.next;
                     ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_CbSet.POOL_CNT--;
-                    ZNPNode_ZPP_CbSet.POOL_ADD++;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_Component.POOL_CNT--;
+                    ZNPNode_ZPP_Component.POOL_ADD++;
                     #end
                 }
                 ret.alloc();
@@ -3645,7 +4479,7 @@ class ZNPList_ZPP_CbSet{
             var res={
                 !empty();
             };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_CbSet"+"] pop");
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Component"+"] pop");
             #end
         };
         var ret=begin();
@@ -3658,39 +4492,39 @@ class ZNPList_ZPP_CbSet{
                 var res={
                     o!=null;
                 };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_CbSet"+", in obj: "+"ret"+")");
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_Component"+", in obj: "+"ret"+")");
                 #end
             };
             o.free();
-            o.next=ZNPNode_ZPP_CbSet.zpp_pool;
-            ZNPNode_ZPP_CbSet.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_CbSet.POOL_CNT++;
-            ZNPNode_ZPP_CbSet.POOL_SUB++;
+            o.next=ZNPNode_ZPP_Component.zpp_pool;
+            ZNPNode_ZPP_Component.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_Component.POOL_CNT++;
+            ZNPNode_ZPP_Component.POOL_SUB++;
             #end
         };
         if(empty())pushmod=true;
         modified=true;
         length--;
     }
-    public function pop_unsafe():ZPP_CbSet{
+    public function pop_unsafe():ZPP_Component{
         return inlined_pop_unsafe();
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop_unsafe():ZPP_CbSet{
+    function inlined_pop_unsafe():ZPP_Component{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 !empty();
             };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_CbSet"+"] pop_unsafe");
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Component"+"] pop_unsafe");
             #end
         };
         var ret=front();
         pop();
         return ret;
     }
-    public function remove(obj:ZPP_CbSet):Void{
+    public function remove(obj:ZPP_Component):Void{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
@@ -3701,13 +4535,13 @@ class ZNPList_ZPP_CbSet{
         };
         inlined_try_remove(obj);
     }
-    public function try_remove(obj:ZPP_CbSet):Bool{
+    public function try_remove(obj:ZPP_Component):Bool{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 obj!=null;
             };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_CbSet"+"] remove -> "+obj);
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Component"+"] remove -> "+obj);
             #end
         };
         var pre=null;
@@ -3726,7 +4560,7 @@ class ZNPList_ZPP_CbSet{
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_remove(obj:ZPP_CbSet):Void{
+    function inlined_remove(obj:ZPP_Component):Void{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
@@ -3739,13 +4573,13 @@ class ZNPList_ZPP_CbSet{
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_try_remove(obj:ZPP_CbSet):Bool{
+    function inlined_try_remove(obj:ZPP_Component):Bool{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 obj!=null;
             };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_CbSet"+"] remove -> "+obj);
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Component"+"] remove -> "+obj);
             #end
         };
         var pre=null;
@@ -3762,22 +4596,22 @@ class ZNPList_ZPP_CbSet{
         }
         return ret;
     }
-    public function erase(pre:ZNPNode_ZPP_CbSet):ZNPNode_ZPP_CbSet{
+    public function erase(pre:ZNPNode_ZPP_Component):ZNPNode_ZPP_Component{
         return inlined_erase(pre);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_erase(pre:ZNPNode_ZPP_CbSet):ZNPNode_ZPP_CbSet{
+    function inlined_erase(pre:ZNPNode_ZPP_Component):ZNPNode_ZPP_Component{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 !empty();
             };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_CbSet"+"] erase -> "+pre);
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Component"+"] erase -> "+pre);
             #end
         };
-        var old:ZNPNode_ZPP_CbSet;
-        var ret:ZNPNode_ZPP_CbSet;
+        var old:ZNPNode_ZPP_Component;
+        var ret:ZNPNode_ZPP_Component;
         if(pre==null){
             old=begin();
             ret=old.next;
@@ -3798,14 +4632,14 @@ class ZNPList_ZPP_CbSet{
                 var res={
                     o!=null;
                 };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_CbSet"+", in obj: "+"old"+")");
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_Component"+", in obj: "+"old"+")");
                 #end
             };
             o.free();
-            o.next=ZNPNode_ZPP_CbSet.zpp_pool;
-            ZNPNode_ZPP_CbSet.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_CbSet.POOL_CNT++;
-            ZNPNode_ZPP_CbSet.POOL_SUB++;
+            o.next=ZNPNode_ZPP_Component.zpp_pool;
+            ZNPNode_ZPP_Component.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_Component.POOL_CNT++;
+            ZNPNode_ZPP_Component.POOL_SUB++;
             #end
         };
         modified=true;
@@ -3813,7 +4647,7 @@ class ZNPList_ZPP_CbSet{
         pushmod=true;
         return ret;
     }
-    public function splice(pre:ZNPNode_ZPP_CbSet,n:Int):ZNPNode_ZPP_CbSet{
+    public function splice(pre:ZNPNode_ZPP_Component,n:Int):ZNPNode_ZPP_Component{
         while(n-->0&&pre.next!=null)erase(pre);
         return pre.next;
     }
@@ -3851,18 +4685,18 @@ class ZNPList_ZPP_CbSet{
     function size():Int{
         return length;
     }
-    public function has(obj:ZPP_CbSet):Bool{
+    public function has(obj:ZPP_Component):Bool{
         return inlined_has(obj);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_has(obj:ZPP_CbSet):Bool{
+    function inlined_has(obj:ZPP_Component):Bool{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 obj!=null;
             };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_CbSet"+"] has -> "+obj);
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Component"+"] has -> "+obj);
             #end
         };
         var ret;
@@ -3886,10 +4720,10 @@ class ZNPList_ZPP_CbSet{
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function front():ZPP_CbSet{
+    function front():ZPP_Component{
         return begin().elem();
     }
-    public function back():ZPP_CbSet{
+    public function back():ZPP_Component{
         var ret=begin();
         var cur=ret;
         while(cur!=null){
@@ -3898,26 +4732,26 @@ class ZNPList_ZPP_CbSet{
         }
         return ret.elem();
     }
-    public function iterator_at(ind:Int):ZNPNode_ZPP_CbSet{
+    public function iterator_at(ind:Int):ZNPNode_ZPP_Component{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 ind>=-1&&ind<size();
             };
-            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_CbSet"+"] iterator_at -> "+ind);
+            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_Component"+"] iterator_at -> "+ind);
             #end
         };
         var ret=begin();
         while(ind-->0&&ret!=null)ret=ret.next;
         return ret;
     }
-    public function at(ind:Int):ZPP_CbSet{
+    public function at(ind:Int):ZPP_Component{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 ind>=0&&ind<size();
             };
-            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_CbSet"+"] at -> "+ind);
+            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_Component"+"] at -> "+ind);
             #end
         };
         var it=iterator_at(ind);
@@ -3925,12 +4759,12 @@ class ZNPList_ZPP_CbSet{
     }
 }
 #if nape_swc@:keep #end
-class ZNPList_ZPP_Interactor{
-    public var head:ZNPNode_ZPP_Interactor=null;
+class ZNPList_ZPP_Vec2{
+    public var head:ZNPNode_ZPP_Vec2=null;
     public function new(){}
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function begin():ZNPNode_ZPP_Interactor{
+    function begin():ZNPNode_ZPP_Vec2{
         return head;
     }
     public var modified:Bool=false;
@@ -3938,40 +4772,40 @@ class ZNPList_ZPP_Interactor{
     public var length:Int=0;
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function setbegin(i:ZNPNode_ZPP_Interactor):Void{
+    function setbegin(i:ZNPNode_ZPP_Vec2):Void{
         head=i;
         modified=true;
         pushmod=true;
     }
-    public function add(o:ZPP_Interactor):ZPP_Interactor{
+    public function add(o:ZPP_Vec2):ZPP_Vec2{
         return inlined_add(o);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_add(o:ZPP_Interactor):ZPP_Interactor{
+    function inlined_add(o:ZPP_Vec2):ZPP_Vec2{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 o!=null&&!has(o);
             };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_Interactor"+"] add -> o="+o);
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_Vec2"+"] add -> o="+o);
             #end
         };
         var temp={
             var ret;
             {
-                if(ZNPNode_ZPP_Interactor.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_Interactor();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_Interactor.POOL_TOT++;
-                    ZNPNode_ZPP_Interactor.POOL_ADDNEW++;
+                if(ZNPNode_ZPP_Vec2.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_Vec2();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_Vec2.POOL_TOT++;
+                    ZNPNode_ZPP_Vec2.POOL_ADDNEW++;
                     #end
                 }
                 else{
-                    ret=ZNPNode_ZPP_Interactor.zpp_pool;
-                    ZNPNode_ZPP_Interactor.zpp_pool=ret.next;
+                    ret=ZNPNode_ZPP_Vec2.zpp_pool;
+                    ZNPNode_ZPP_Vec2.zpp_pool=ret.next;
                     ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_Interactor.POOL_CNT--;
-                    ZNPNode_ZPP_Interactor.POOL_ADD++;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_Vec2.POOL_CNT--;
+                    ZNPNode_ZPP_Vec2.POOL_ADD++;
                     #end
                 }
                 ret.alloc();
@@ -3985,13 +4819,13 @@ class ZNPList_ZPP_Interactor{
         length++;
         return o;
     }
-    public function addAll(x:ZNPList_ZPP_Interactor):Void{
+    public function addAll(x:ZNPList_ZPP_Vec2):Void{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 x!=null;
             };
-            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_Interactor"+"] addAll -> "+x);
+            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_Vec2"+"] addAll -> "+x);
             #end
         };
         {
@@ -4003,35 +4837,35 @@ class ZNPList_ZPP_Interactor{
             }
         };
     }
-    public function insert(cur:ZNPNode_ZPP_Interactor,o:ZPP_Interactor):ZNPNode_ZPP_Interactor{
+    public function insert(cur:ZNPNode_ZPP_Vec2,o:ZPP_Vec2):ZNPNode_ZPP_Vec2{
         return inlined_insert(cur,o);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_insert(cur:ZNPNode_ZPP_Interactor,o:ZPP_Interactor):ZNPNode_ZPP_Interactor{
+    function inlined_insert(cur:ZNPNode_ZPP_Vec2,o:ZPP_Vec2):ZNPNode_ZPP_Vec2{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 o!=null&&!has(o);
             };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_Interactor"+"] cur -> "+cur+" -> "+o);
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_Vec2"+"] cur -> "+cur+" -> "+o);
             #end
         };
         var temp={
             var ret;
             {
-                if(ZNPNode_ZPP_Interactor.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_Interactor();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_Interactor.POOL_TOT++;
-                    ZNPNode_ZPP_Interactor.POOL_ADDNEW++;
+                if(ZNPNode_ZPP_Vec2.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_Vec2();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_Vec2.POOL_TOT++;
+                    ZNPNode_ZPP_Vec2.POOL_ADDNEW++;
                     #end
                 }
                 else{
-                    ret=ZNPNode_ZPP_Interactor.zpp_pool;
-                    ZNPNode_ZPP_Interactor.zpp_pool=ret.next;
+                    ret=ZNPNode_ZPP_Vec2.zpp_pool;
+                    ZNPNode_ZPP_Vec2.zpp_pool=ret.next;
                     ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_Interactor.POOL_CNT--;
-                    ZNPNode_ZPP_Interactor.POOL_ADD++;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_Vec2.POOL_CNT--;
+                    ZNPNode_ZPP_Vec2.POOL_ADD++;
                     #end
                 }
                 ret.alloc();
@@ -4062,7 +4896,7 @@ class ZNPList_ZPP_Interactor{
             var res={
                 !empty();
             };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Interactor"+"] pop");
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Vec2"+"] pop");
             #end
         };
         var ret=begin();
@@ -4075,39 +4909,39 @@ class ZNPList_ZPP_Interactor{
                 var res={
                     o!=null;
                 };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_Interactor"+", in obj: "+"ret"+")");
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_Vec2"+", in obj: "+"ret"+")");
                 #end
             };
             o.free();
-            o.next=ZNPNode_ZPP_Interactor.zpp_pool;
-            ZNPNode_ZPP_Interactor.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_Interactor.POOL_CNT++;
-            ZNPNode_ZPP_Interactor.POOL_SUB++;
+            o.next=ZNPNode_ZPP_Vec2.zpp_pool;
+            ZNPNode_ZPP_Vec2.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_Vec2.POOL_CNT++;
+            ZNPNode_ZPP_Vec2.POOL_SUB++;
             #end
         };
         if(empty())pushmod=true;
         modified=true;
         length--;
     }
-    public function pop_unsafe():ZPP_Interactor{
+    public function pop_unsafe():ZPP_Vec2{
         return inlined_pop_unsafe();
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop_unsafe():ZPP_Interactor{
+    function inlined_pop_unsafe():ZPP_Vec2{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 !empty();
             };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Interactor"+"] pop_unsafe");
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Vec2"+"] pop_unsafe");
             #end
         };
         var ret=front();
         pop();
         return ret;
     }
-    public function remove(obj:ZPP_Interactor):Void{
+    public function remove(obj:ZPP_Vec2):Void{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
@@ -4118,13 +4952,13 @@ class ZNPList_ZPP_Interactor{
         };
         inlined_try_remove(obj);
     }
-    public function try_remove(obj:ZPP_Interactor):Bool{
+    public function try_remove(obj:ZPP_Vec2):Bool{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 obj!=null;
             };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Interactor"+"] remove -> "+obj);
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Vec2"+"] remove -> "+obj);
             #end
         };
         var pre=null;
@@ -4143,7 +4977,7 @@ class ZNPList_ZPP_Interactor{
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_remove(obj:ZPP_Interactor):Void{
+    function inlined_remove(obj:ZPP_Vec2):Void{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
@@ -4156,13 +4990,13 @@ class ZNPList_ZPP_Interactor{
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_try_remove(obj:ZPP_Interactor):Bool{
+    function inlined_try_remove(obj:ZPP_Vec2):Bool{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 obj!=null;
             };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Interactor"+"] remove -> "+obj);
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Vec2"+"] remove -> "+obj);
             #end
         };
         var pre=null;
@@ -4179,22 +5013,22 @@ class ZNPList_ZPP_Interactor{
         }
         return ret;
     }
-    public function erase(pre:ZNPNode_ZPP_Interactor):ZNPNode_ZPP_Interactor{
+    public function erase(pre:ZNPNode_ZPP_Vec2):ZNPNode_ZPP_Vec2{
         return inlined_erase(pre);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_erase(pre:ZNPNode_ZPP_Interactor):ZNPNode_ZPP_Interactor{
+    function inlined_erase(pre:ZNPNode_ZPP_Vec2):ZNPNode_ZPP_Vec2{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 !empty();
             };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Interactor"+"] erase -> "+pre);
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Vec2"+"] erase -> "+pre);
             #end
         };
-        var old:ZNPNode_ZPP_Interactor;
-        var ret:ZNPNode_ZPP_Interactor;
+        var old:ZNPNode_ZPP_Vec2;
+        var ret:ZNPNode_ZPP_Vec2;
         if(pre==null){
             old=begin();
             ret=old.next;
@@ -4215,14 +5049,14 @@ class ZNPList_ZPP_Interactor{
                 var res={
                     o!=null;
                 };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_Interactor"+", in obj: "+"old"+")");
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_Vec2"+", in obj: "+"old"+")");
                 #end
             };
             o.free();
-            o.next=ZNPNode_ZPP_Interactor.zpp_pool;
-            ZNPNode_ZPP_Interactor.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_Interactor.POOL_CNT++;
-            ZNPNode_ZPP_Interactor.POOL_SUB++;
+            o.next=ZNPNode_ZPP_Vec2.zpp_pool;
+            ZNPNode_ZPP_Vec2.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_Vec2.POOL_CNT++;
+            ZNPNode_ZPP_Vec2.POOL_SUB++;
             #end
         };
         modified=true;
@@ -4230,7 +5064,7 @@ class ZNPList_ZPP_Interactor{
         pushmod=true;
         return ret;
     }
-    public function splice(pre:ZNPNode_ZPP_Interactor,n:Int):ZNPNode_ZPP_Interactor{
+    public function splice(pre:ZNPNode_ZPP_Vec2,n:Int):ZNPNode_ZPP_Vec2{
         while(n-->0&&pre.next!=null)erase(pre);
         return pre.next;
     }
@@ -4268,18 +5102,18 @@ class ZNPList_ZPP_Interactor{
     function size():Int{
         return length;
     }
-    public function has(obj:ZPP_Interactor):Bool{
+    public function has(obj:ZPP_Vec2):Bool{
         return inlined_has(obj);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_has(obj:ZPP_Interactor):Bool{
+    function inlined_has(obj:ZPP_Vec2):Bool{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 obj!=null;
             };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Interactor"+"] has -> "+obj);
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Vec2"+"] has -> "+obj);
             #end
         };
         var ret;
@@ -4303,10 +5137,10 @@ class ZNPList_ZPP_Interactor{
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function front():ZPP_Interactor{
+    function front():ZPP_Vec2{
         return begin().elem();
     }
-    public function back():ZPP_Interactor{
+    public function back():ZPP_Vec2{
         var ret=begin();
         var cur=ret;
         while(cur!=null){
@@ -4315,26 +5149,26 @@ class ZNPList_ZPP_Interactor{
         }
         return ret.elem();
     }
-    public function iterator_at(ind:Int):ZNPNode_ZPP_Interactor{
+    public function iterator_at(ind:Int):ZNPNode_ZPP_Vec2{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 ind>=-1&&ind<size();
             };
-            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_Interactor"+"] iterator_at -> "+ind);
+            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_Vec2"+"] iterator_at -> "+ind);
             #end
         };
         var ret=begin();
         while(ind-->0&&ret!=null)ret=ret.next;
         return ret;
     }
-    public function at(ind:Int):ZPP_Interactor{
+    public function at(ind:Int):ZPP_Vec2{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 ind>=0&&ind<size();
             };
-            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_Interactor"+"] at -> "+ind);
+            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_Vec2"+"] at -> "+ind);
             #end
         };
         var it=iterator_at(ind);
@@ -4342,12 +5176,12 @@ class ZNPList_ZPP_Interactor{
     }
 }
 #if nape_swc@:keep #end
-class ZNPList_ZPP_BodyListener{
-    public var head:ZNPNode_ZPP_BodyListener=null;
+class ZNPList_ZPP_FluidArbiter{
+    public var head:ZNPNode_ZPP_FluidArbiter=null;
     public function new(){}
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function begin():ZNPNode_ZPP_BodyListener{
+    function begin():ZNPNode_ZPP_FluidArbiter{
         return head;
     }
     public var modified:Bool=false;
@@ -4355,40 +5189,40 @@ class ZNPList_ZPP_BodyListener{
     public var length:Int=0;
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function setbegin(i:ZNPNode_ZPP_BodyListener):Void{
+    function setbegin(i:ZNPNode_ZPP_FluidArbiter):Void{
         head=i;
         modified=true;
         pushmod=true;
     }
-    public function add(o:ZPP_BodyListener):ZPP_BodyListener{
+    public function add(o:ZPP_FluidArbiter):ZPP_FluidArbiter{
         return inlined_add(o);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_add(o:ZPP_BodyListener):ZPP_BodyListener{
+    function inlined_add(o:ZPP_FluidArbiter):ZPP_FluidArbiter{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 o!=null&&!has(o);
             };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_BodyListener"+"] add -> o="+o);
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_FluidArbiter"+"] add -> o="+o);
             #end
         };
         var temp={
             var ret;
             {
-                if(ZNPNode_ZPP_BodyListener.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_BodyListener();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_BodyListener.POOL_TOT++;
-                    ZNPNode_ZPP_BodyListener.POOL_ADDNEW++;
+                if(ZNPNode_ZPP_FluidArbiter.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_FluidArbiter();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_FluidArbiter.POOL_TOT++;
+                    ZNPNode_ZPP_FluidArbiter.POOL_ADDNEW++;
                     #end
                 }
                 else{
-                    ret=ZNPNode_ZPP_BodyListener.zpp_pool;
-                    ZNPNode_ZPP_BodyListener.zpp_pool=ret.next;
+                    ret=ZNPNode_ZPP_FluidArbiter.zpp_pool;
+                    ZNPNode_ZPP_FluidArbiter.zpp_pool=ret.next;
                     ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_BodyListener.POOL_CNT--;
-                    ZNPNode_ZPP_BodyListener.POOL_ADD++;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_FluidArbiter.POOL_CNT--;
+                    ZNPNode_ZPP_FluidArbiter.POOL_ADD++;
                     #end
                 }
                 ret.alloc();
@@ -4402,13 +5236,13 @@ class ZNPList_ZPP_BodyListener{
         length++;
         return o;
     }
-    public function addAll(x:ZNPList_ZPP_BodyListener):Void{
+    public function addAll(x:ZNPList_ZPP_FluidArbiter):Void{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 x!=null;
             };
-            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_BodyListener"+"] addAll -> "+x);
+            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_FluidArbiter"+"] addAll -> "+x);
             #end
         };
         {
@@ -4420,35 +5254,35 @@ class ZNPList_ZPP_BodyListener{
             }
         };
     }
-    public function insert(cur:ZNPNode_ZPP_BodyListener,o:ZPP_BodyListener):ZNPNode_ZPP_BodyListener{
+    public function insert(cur:ZNPNode_ZPP_FluidArbiter,o:ZPP_FluidArbiter):ZNPNode_ZPP_FluidArbiter{
         return inlined_insert(cur,o);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_insert(cur:ZNPNode_ZPP_BodyListener,o:ZPP_BodyListener):ZNPNode_ZPP_BodyListener{
+    function inlined_insert(cur:ZNPNode_ZPP_FluidArbiter,o:ZPP_FluidArbiter):ZNPNode_ZPP_FluidArbiter{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 o!=null&&!has(o);
             };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_BodyListener"+"] cur -> "+cur+" -> "+o);
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_FluidArbiter"+"] cur -> "+cur+" -> "+o);
             #end
         };
         var temp={
             var ret;
             {
-                if(ZNPNode_ZPP_BodyListener.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_BodyListener();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_BodyListener.POOL_TOT++;
-                    ZNPNode_ZPP_BodyListener.POOL_ADDNEW++;
+                if(ZNPNode_ZPP_FluidArbiter.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_FluidArbiter();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_FluidArbiter.POOL_TOT++;
+                    ZNPNode_ZPP_FluidArbiter.POOL_ADDNEW++;
                     #end
                 }
                 else{
-                    ret=ZNPNode_ZPP_BodyListener.zpp_pool;
-                    ZNPNode_ZPP_BodyListener.zpp_pool=ret.next;
+                    ret=ZNPNode_ZPP_FluidArbiter.zpp_pool;
+                    ZNPNode_ZPP_FluidArbiter.zpp_pool=ret.next;
                     ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_BodyListener.POOL_CNT--;
-                    ZNPNode_ZPP_BodyListener.POOL_ADD++;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_FluidArbiter.POOL_CNT--;
+                    ZNPNode_ZPP_FluidArbiter.POOL_ADD++;
                     #end
                 }
                 ret.alloc();
@@ -4479,7 +5313,7 @@ class ZNPList_ZPP_BodyListener{
             var res={
                 !empty();
             };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_BodyListener"+"] pop");
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_FluidArbiter"+"] pop");
             #end
         };
         var ret=begin();
@@ -4492,39 +5326,39 @@ class ZNPList_ZPP_BodyListener{
                 var res={
                     o!=null;
                 };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_BodyListener"+", in obj: "+"ret"+")");
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_FluidArbiter"+", in obj: "+"ret"+")");
                 #end
             };
             o.free();
-            o.next=ZNPNode_ZPP_BodyListener.zpp_pool;
-            ZNPNode_ZPP_BodyListener.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_BodyListener.POOL_CNT++;
-            ZNPNode_ZPP_BodyListener.POOL_SUB++;
+            o.next=ZNPNode_ZPP_FluidArbiter.zpp_pool;
+            ZNPNode_ZPP_FluidArbiter.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_FluidArbiter.POOL_CNT++;
+            ZNPNode_ZPP_FluidArbiter.POOL_SUB++;
             #end
         };
         if(empty())pushmod=true;
         modified=true;
         length--;
     }
-    public function pop_unsafe():ZPP_BodyListener{
+    public function pop_unsafe():ZPP_FluidArbiter{
         return inlined_pop_unsafe();
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop_unsafe():ZPP_BodyListener{
+    function inlined_pop_unsafe():ZPP_FluidArbiter{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 !empty();
             };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_BodyListener"+"] pop_unsafe");
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_FluidArbiter"+"] pop_unsafe");
             #end
         };
         var ret=front();
         pop();
         return ret;
     }
-    public function remove(obj:ZPP_BodyListener):Void{
+    public function remove(obj:ZPP_FluidArbiter):Void{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
@@ -4535,13 +5369,13 @@ class ZNPList_ZPP_BodyListener{
         };
         inlined_try_remove(obj);
     }
-    public function try_remove(obj:ZPP_BodyListener):Bool{
+    public function try_remove(obj:ZPP_FluidArbiter):Bool{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 obj!=null;
             };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_BodyListener"+"] remove -> "+obj);
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_FluidArbiter"+"] remove -> "+obj);
             #end
         };
         var pre=null;
@@ -4560,7 +5394,7 @@ class ZNPList_ZPP_BodyListener{
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_remove(obj:ZPP_BodyListener):Void{
+    function inlined_remove(obj:ZPP_FluidArbiter):Void{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
@@ -4573,13 +5407,13 @@ class ZNPList_ZPP_BodyListener{
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_try_remove(obj:ZPP_BodyListener):Bool{
+    function inlined_try_remove(obj:ZPP_FluidArbiter):Bool{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 obj!=null;
             };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_BodyListener"+"] remove -> "+obj);
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_FluidArbiter"+"] remove -> "+obj);
             #end
         };
         var pre=null;
@@ -4596,22 +5430,22 @@ class ZNPList_ZPP_BodyListener{
         }
         return ret;
     }
-    public function erase(pre:ZNPNode_ZPP_BodyListener):ZNPNode_ZPP_BodyListener{
+    public function erase(pre:ZNPNode_ZPP_FluidArbiter):ZNPNode_ZPP_FluidArbiter{
         return inlined_erase(pre);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_erase(pre:ZNPNode_ZPP_BodyListener):ZNPNode_ZPP_BodyListener{
+    function inlined_erase(pre:ZNPNode_ZPP_FluidArbiter):ZNPNode_ZPP_FluidArbiter{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 !empty();
             };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_BodyListener"+"] erase -> "+pre);
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_FluidArbiter"+"] erase -> "+pre);
             #end
         };
-        var old:ZNPNode_ZPP_BodyListener;
-        var ret:ZNPNode_ZPP_BodyListener;
+        var old:ZNPNode_ZPP_FluidArbiter;
+        var ret:ZNPNode_ZPP_FluidArbiter;
         if(pre==null){
             old=begin();
             ret=old.next;
@@ -4632,14 +5466,14 @@ class ZNPList_ZPP_BodyListener{
                 var res={
                     o!=null;
                 };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_BodyListener"+", in obj: "+"old"+")");
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_FluidArbiter"+", in obj: "+"old"+")");
                 #end
             };
             o.free();
-            o.next=ZNPNode_ZPP_BodyListener.zpp_pool;
-            ZNPNode_ZPP_BodyListener.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_BodyListener.POOL_CNT++;
-            ZNPNode_ZPP_BodyListener.POOL_SUB++;
+            o.next=ZNPNode_ZPP_FluidArbiter.zpp_pool;
+            ZNPNode_ZPP_FluidArbiter.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_FluidArbiter.POOL_CNT++;
+            ZNPNode_ZPP_FluidArbiter.POOL_SUB++;
             #end
         };
         modified=true;
@@ -4647,7 +5481,7 @@ class ZNPList_ZPP_BodyListener{
         pushmod=true;
         return ret;
     }
-    public function splice(pre:ZNPNode_ZPP_BodyListener,n:Int):ZNPNode_ZPP_BodyListener{
+    public function splice(pre:ZNPNode_ZPP_FluidArbiter,n:Int):ZNPNode_ZPP_FluidArbiter{
         while(n-->0&&pre.next!=null)erase(pre);
         return pre.next;
     }
@@ -4685,18 +5519,18 @@ class ZNPList_ZPP_BodyListener{
     function size():Int{
         return length;
     }
-    public function has(obj:ZPP_BodyListener):Bool{
+    public function has(obj:ZPP_FluidArbiter):Bool{
         return inlined_has(obj);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_has(obj:ZPP_BodyListener):Bool{
+    function inlined_has(obj:ZPP_FluidArbiter):Bool{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 obj!=null;
             };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_BodyListener"+"] has -> "+obj);
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_FluidArbiter"+"] has -> "+obj);
             #end
         };
         var ret;
@@ -4720,10 +5554,10 @@ class ZNPList_ZPP_BodyListener{
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function front():ZPP_BodyListener{
+    function front():ZPP_FluidArbiter{
         return begin().elem();
     }
-    public function back():ZPP_BodyListener{
+    public function back():ZPP_FluidArbiter{
         var ret=begin();
         var cur=ret;
         while(cur!=null){
@@ -4732,860 +5566,26 @@ class ZNPList_ZPP_BodyListener{
         }
         return ret.elem();
     }
-    public function iterator_at(ind:Int):ZNPNode_ZPP_BodyListener{
+    public function iterator_at(ind:Int):ZNPNode_ZPP_FluidArbiter{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 ind>=-1&&ind<size();
             };
-            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_BodyListener"+"] iterator_at -> "+ind);
+            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_FluidArbiter"+"] iterator_at -> "+ind);
             #end
         };
         var ret=begin();
         while(ind-->0&&ret!=null)ret=ret.next;
         return ret;
     }
-    public function at(ind:Int):ZPP_BodyListener{
+    public function at(ind:Int):ZPP_FluidArbiter{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 ind>=0&&ind<size();
             };
-            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_BodyListener"+"] at -> "+ind);
-            #end
-        };
-        var it=iterator_at(ind);
-        return if(it!=null)it.elem()else null;
-    }
-}
-#if nape_swc@:keep #end
-class ZNPList_ZPP_CbSetPair{
-    public var head:ZNPNode_ZPP_CbSetPair=null;
-    public function new(){}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function begin():ZNPNode_ZPP_CbSetPair{
-        return head;
-    }
-    public var modified:Bool=false;
-    public var pushmod:Bool=false;
-    public var length:Int=0;
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function setbegin(i:ZNPNode_ZPP_CbSetPair):Void{
-        head=i;
-        modified=true;
-        pushmod=true;
-    }
-    public function add(o:ZPP_CbSetPair):ZPP_CbSetPair{
-        return inlined_add(o);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_add(o:ZPP_CbSetPair):ZPP_CbSetPair{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                o!=null&&!has(o);
-            };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_CbSetPair"+"] add -> o="+o);
-            #end
-        };
-        var temp={
-            var ret;
-            {
-                if(ZNPNode_ZPP_CbSetPair.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_CbSetPair();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_CbSetPair.POOL_TOT++;
-                    ZNPNode_ZPP_CbSetPair.POOL_ADDNEW++;
-                    #end
-                }
-                else{
-                    ret=ZNPNode_ZPP_CbSetPair.zpp_pool;
-                    ZNPNode_ZPP_CbSetPair.zpp_pool=ret.next;
-                    ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_CbSetPair.POOL_CNT--;
-                    ZNPNode_ZPP_CbSetPair.POOL_ADD++;
-                    #end
-                }
-                ret.alloc();
-            };
-            ret.elt=o;
-            ret;
-        };
-        temp.next=begin();
-        head=temp;
-        modified=true;
-        length++;
-        return o;
-    }
-    public function addAll(x:ZNPList_ZPP_CbSetPair):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                x!=null;
-            };
-            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_CbSetPair"+"] addAll -> "+x);
-            #end
-        };
-        {
-            var cx_ite=x.begin();
-            while(cx_ite!=null){
-                var i=cx_ite.elem();
-                add(i);
-                cx_ite=cx_ite.next;
-            }
-        };
-    }
-    public function insert(cur:ZNPNode_ZPP_CbSetPair,o:ZPP_CbSetPair):ZNPNode_ZPP_CbSetPair{
-        return inlined_insert(cur,o);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_insert(cur:ZNPNode_ZPP_CbSetPair,o:ZPP_CbSetPair):ZNPNode_ZPP_CbSetPair{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                o!=null&&!has(o);
-            };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_CbSetPair"+"] cur -> "+cur+" -> "+o);
-            #end
-        };
-        var temp={
-            var ret;
-            {
-                if(ZNPNode_ZPP_CbSetPair.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_CbSetPair();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_CbSetPair.POOL_TOT++;
-                    ZNPNode_ZPP_CbSetPair.POOL_ADDNEW++;
-                    #end
-                }
-                else{
-                    ret=ZNPNode_ZPP_CbSetPair.zpp_pool;
-                    ZNPNode_ZPP_CbSetPair.zpp_pool=ret.next;
-                    ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_CbSetPair.POOL_CNT--;
-                    ZNPNode_ZPP_CbSetPair.POOL_ADD++;
-                    #end
-                }
-                ret.alloc();
-            };
-            ret.elt=o;
-            ret;
-        };
-        if(cur==null){
-            temp.next=begin();
-            head=temp;
-        }
-        else{
-            temp.next=cur.next;
-            cur.next=temp;
-        }
-        pushmod=modified=true;
-        length++;
-        return temp;
-    }
-    public function pop():Void{
-        inlined_pop();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop():Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_CbSetPair"+"] pop");
-            #end
-        };
-        var ret=begin();
-        head=ret.next;
-        {};
-        {
-            var o=ret;
-            {
-                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-                var res={
-                    o!=null;
-                };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_CbSetPair"+", in obj: "+"ret"+")");
-                #end
-            };
-            o.free();
-            o.next=ZNPNode_ZPP_CbSetPair.zpp_pool;
-            ZNPNode_ZPP_CbSetPair.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_CbSetPair.POOL_CNT++;
-            ZNPNode_ZPP_CbSetPair.POOL_SUB++;
-            #end
-        };
-        if(empty())pushmod=true;
-        modified=true;
-        length--;
-    }
-    public function pop_unsafe():ZPP_CbSetPair{
-        return inlined_pop_unsafe();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop_unsafe():ZPP_CbSetPair{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_CbSetPair"+"] pop_unsafe");
-            #end
-        };
-        var ret=front();
-        pop();
-        return ret;
-    }
-    public function remove(obj:ZPP_CbSetPair):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                has(obj);
-            };
-            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
-            #end
-        };
-        inlined_try_remove(obj);
-    }
-    public function try_remove(obj:ZPP_CbSetPair):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_CbSetPair"+"] remove -> "+obj);
-            #end
-        };
-        var pre=null;
-        var cur=begin();
-        var ret=false;
-        while(cur!=null){
-            if(cur.elem()==obj){
-                erase(pre);
-                ret=true;
-                break;
-            }
-            pre=cur;
-            cur=cur.next;
-        }
-        return ret;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_remove(obj:ZPP_CbSetPair):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                has(obj);
-            };
-            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
-            #end
-        };
-        inlined_try_remove(obj);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_try_remove(obj:ZPP_CbSetPair):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_CbSetPair"+"] remove -> "+obj);
-            #end
-        };
-        var pre=null;
-        var cur=begin();
-        var ret=false;
-        while(cur!=null){
-            if(cur.elem()==obj){
-                inlined_erase(pre);
-                ret=true;
-                break;
-            }
-            pre=cur;
-            cur=cur.next;
-        }
-        return ret;
-    }
-    public function erase(pre:ZNPNode_ZPP_CbSetPair):ZNPNode_ZPP_CbSetPair{
-        return inlined_erase(pre);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_erase(pre:ZNPNode_ZPP_CbSetPair):ZNPNode_ZPP_CbSetPair{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_CbSetPair"+"] erase -> "+pre);
-            #end
-        };
-        var old:ZNPNode_ZPP_CbSetPair;
-        var ret:ZNPNode_ZPP_CbSetPair;
-        if(pre==null){
-            old=begin();
-            ret=old.next;
-            head=ret;
-            if(empty())pushmod=true;
-        }
-        else{
-            old=pre.next;
-            ret=old.next;
-            pre.next=ret;
-            if(ret==null)pushmod=true;
-        }
-        {};
-        {
-            var o=old;
-            {
-                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-                var res={
-                    o!=null;
-                };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_CbSetPair"+", in obj: "+"old"+")");
-                #end
-            };
-            o.free();
-            o.next=ZNPNode_ZPP_CbSetPair.zpp_pool;
-            ZNPNode_ZPP_CbSetPair.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_CbSetPair.POOL_CNT++;
-            ZNPNode_ZPP_CbSetPair.POOL_SUB++;
-            #end
-        };
-        modified=true;
-        length--;
-        pushmod=true;
-        return ret;
-    }
-    public function splice(pre:ZNPNode_ZPP_CbSetPair,n:Int):ZNPNode_ZPP_CbSetPair{
-        while(n-->0&&pre.next!=null)erase(pre);
-        return pre.next;
-    }
-    public function clear():Void{
-        inlined_clear();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_clear():Void{
-        if(true){
-            while(!empty())inlined_pop();
-            pushmod=true;
-        }
-    }
-    public function reverse():Void{
-        var cur=begin();
-        var pre=null;
-        while(cur!=null){
-            var nx=cur.next;
-            cur.next=pre;
-            head=cur;
-            pre=cur;
-            cur=nx;
-        }
-        modified=true;
-        pushmod=true;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function empty():Bool{
-        return begin()==null;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function size():Int{
-        return length;
-    }
-    public function has(obj:ZPP_CbSetPair):Bool{
-        return inlined_has(obj);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_has(obj:ZPP_CbSetPair):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_CbSetPair"+"] has -> "+obj);
-            #end
-        };
-        var ret;
-        {
-            ret=false;
-            {
-                var cx_ite=this.begin();
-                while(cx_ite!=null){
-                    var npite=cx_ite.elem();
-                    {
-                        if(npite==obj){
-                            ret=true;
-                            break;
-                        }
-                    };
-                    cx_ite=cx_ite.next;
-                }
-            };
-        };
-        return ret;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function front():ZPP_CbSetPair{
-        return begin().elem();
-    }
-    public function back():ZPP_CbSetPair{
-        var ret=begin();
-        var cur=ret;
-        while(cur!=null){
-            ret=cur;
-            cur=cur.next;
-        }
-        return ret.elem();
-    }
-    public function iterator_at(ind:Int):ZNPNode_ZPP_CbSetPair{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                ind>=-1&&ind<size();
-            };
-            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_CbSetPair"+"] iterator_at -> "+ind);
-            #end
-        };
-        var ret=begin();
-        while(ind-->0&&ret!=null)ret=ret.next;
-        return ret;
-    }
-    public function at(ind:Int):ZPP_CbSetPair{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                ind>=0&&ind<size();
-            };
-            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_CbSetPair"+"] at -> "+ind);
-            #end
-        };
-        var it=iterator_at(ind);
-        return if(it!=null)it.elem()else null;
-    }
-}
-#if nape_swc@:keep #end
-class ZNPList_ZPP_ConstraintListener{
-    public var head:ZNPNode_ZPP_ConstraintListener=null;
-    public function new(){}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function begin():ZNPNode_ZPP_ConstraintListener{
-        return head;
-    }
-    public var modified:Bool=false;
-    public var pushmod:Bool=false;
-    public var length:Int=0;
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function setbegin(i:ZNPNode_ZPP_ConstraintListener):Void{
-        head=i;
-        modified=true;
-        pushmod=true;
-    }
-    public function add(o:ZPP_ConstraintListener):ZPP_ConstraintListener{
-        return inlined_add(o);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_add(o:ZPP_ConstraintListener):ZPP_ConstraintListener{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                o!=null&&!has(o);
-            };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_ConstraintListener"+"] add -> o="+o);
-            #end
-        };
-        var temp={
-            var ret;
-            {
-                if(ZNPNode_ZPP_ConstraintListener.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_ConstraintListener();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_ConstraintListener.POOL_TOT++;
-                    ZNPNode_ZPP_ConstraintListener.POOL_ADDNEW++;
-                    #end
-                }
-                else{
-                    ret=ZNPNode_ZPP_ConstraintListener.zpp_pool;
-                    ZNPNode_ZPP_ConstraintListener.zpp_pool=ret.next;
-                    ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_ConstraintListener.POOL_CNT--;
-                    ZNPNode_ZPP_ConstraintListener.POOL_ADD++;
-                    #end
-                }
-                ret.alloc();
-            };
-            ret.elt=o;
-            ret;
-        };
-        temp.next=begin();
-        head=temp;
-        modified=true;
-        length++;
-        return o;
-    }
-    public function addAll(x:ZNPList_ZPP_ConstraintListener):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                x!=null;
-            };
-            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_ConstraintListener"+"] addAll -> "+x);
-            #end
-        };
-        {
-            var cx_ite=x.begin();
-            while(cx_ite!=null){
-                var i=cx_ite.elem();
-                add(i);
-                cx_ite=cx_ite.next;
-            }
-        };
-    }
-    public function insert(cur:ZNPNode_ZPP_ConstraintListener,o:ZPP_ConstraintListener):ZNPNode_ZPP_ConstraintListener{
-        return inlined_insert(cur,o);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_insert(cur:ZNPNode_ZPP_ConstraintListener,o:ZPP_ConstraintListener):ZNPNode_ZPP_ConstraintListener{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                o!=null&&!has(o);
-            };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_ConstraintListener"+"] cur -> "+cur+" -> "+o);
-            #end
-        };
-        var temp={
-            var ret;
-            {
-                if(ZNPNode_ZPP_ConstraintListener.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_ConstraintListener();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_ConstraintListener.POOL_TOT++;
-                    ZNPNode_ZPP_ConstraintListener.POOL_ADDNEW++;
-                    #end
-                }
-                else{
-                    ret=ZNPNode_ZPP_ConstraintListener.zpp_pool;
-                    ZNPNode_ZPP_ConstraintListener.zpp_pool=ret.next;
-                    ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_ConstraintListener.POOL_CNT--;
-                    ZNPNode_ZPP_ConstraintListener.POOL_ADD++;
-                    #end
-                }
-                ret.alloc();
-            };
-            ret.elt=o;
-            ret;
-        };
-        if(cur==null){
-            temp.next=begin();
-            head=temp;
-        }
-        else{
-            temp.next=cur.next;
-            cur.next=temp;
-        }
-        pushmod=modified=true;
-        length++;
-        return temp;
-    }
-    public function pop():Void{
-        inlined_pop();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop():Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_ConstraintListener"+"] pop");
-            #end
-        };
-        var ret=begin();
-        head=ret.next;
-        {};
-        {
-            var o=ret;
-            {
-                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-                var res={
-                    o!=null;
-                };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_ConstraintListener"+", in obj: "+"ret"+")");
-                #end
-            };
-            o.free();
-            o.next=ZNPNode_ZPP_ConstraintListener.zpp_pool;
-            ZNPNode_ZPP_ConstraintListener.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_ConstraintListener.POOL_CNT++;
-            ZNPNode_ZPP_ConstraintListener.POOL_SUB++;
-            #end
-        };
-        if(empty())pushmod=true;
-        modified=true;
-        length--;
-    }
-    public function pop_unsafe():ZPP_ConstraintListener{
-        return inlined_pop_unsafe();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop_unsafe():ZPP_ConstraintListener{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_ConstraintListener"+"] pop_unsafe");
-            #end
-        };
-        var ret=front();
-        pop();
-        return ret;
-    }
-    public function remove(obj:ZPP_ConstraintListener):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                has(obj);
-            };
-            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
-            #end
-        };
-        inlined_try_remove(obj);
-    }
-    public function try_remove(obj:ZPP_ConstraintListener):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_ConstraintListener"+"] remove -> "+obj);
-            #end
-        };
-        var pre=null;
-        var cur=begin();
-        var ret=false;
-        while(cur!=null){
-            if(cur.elem()==obj){
-                erase(pre);
-                ret=true;
-                break;
-            }
-            pre=cur;
-            cur=cur.next;
-        }
-        return ret;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_remove(obj:ZPP_ConstraintListener):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                has(obj);
-            };
-            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
-            #end
-        };
-        inlined_try_remove(obj);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_try_remove(obj:ZPP_ConstraintListener):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_ConstraintListener"+"] remove -> "+obj);
-            #end
-        };
-        var pre=null;
-        var cur=begin();
-        var ret=false;
-        while(cur!=null){
-            if(cur.elem()==obj){
-                inlined_erase(pre);
-                ret=true;
-                break;
-            }
-            pre=cur;
-            cur=cur.next;
-        }
-        return ret;
-    }
-    public function erase(pre:ZNPNode_ZPP_ConstraintListener):ZNPNode_ZPP_ConstraintListener{
-        return inlined_erase(pre);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_erase(pre:ZNPNode_ZPP_ConstraintListener):ZNPNode_ZPP_ConstraintListener{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_ConstraintListener"+"] erase -> "+pre);
-            #end
-        };
-        var old:ZNPNode_ZPP_ConstraintListener;
-        var ret:ZNPNode_ZPP_ConstraintListener;
-        if(pre==null){
-            old=begin();
-            ret=old.next;
-            head=ret;
-            if(empty())pushmod=true;
-        }
-        else{
-            old=pre.next;
-            ret=old.next;
-            pre.next=ret;
-            if(ret==null)pushmod=true;
-        }
-        {};
-        {
-            var o=old;
-            {
-                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-                var res={
-                    o!=null;
-                };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_ConstraintListener"+", in obj: "+"old"+")");
-                #end
-            };
-            o.free();
-            o.next=ZNPNode_ZPP_ConstraintListener.zpp_pool;
-            ZNPNode_ZPP_ConstraintListener.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_ConstraintListener.POOL_CNT++;
-            ZNPNode_ZPP_ConstraintListener.POOL_SUB++;
-            #end
-        };
-        modified=true;
-        length--;
-        pushmod=true;
-        return ret;
-    }
-    public function splice(pre:ZNPNode_ZPP_ConstraintListener,n:Int):ZNPNode_ZPP_ConstraintListener{
-        while(n-->0&&pre.next!=null)erase(pre);
-        return pre.next;
-    }
-    public function clear():Void{
-        inlined_clear();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_clear():Void{
-        if(true){
-            while(!empty())inlined_pop();
-            pushmod=true;
-        }
-    }
-    public function reverse():Void{
-        var cur=begin();
-        var pre=null;
-        while(cur!=null){
-            var nx=cur.next;
-            cur.next=pre;
-            head=cur;
-            pre=cur;
-            cur=nx;
-        }
-        modified=true;
-        pushmod=true;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function empty():Bool{
-        return begin()==null;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function size():Int{
-        return length;
-    }
-    public function has(obj:ZPP_ConstraintListener):Bool{
-        return inlined_has(obj);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_has(obj:ZPP_ConstraintListener):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_ConstraintListener"+"] has -> "+obj);
-            #end
-        };
-        var ret;
-        {
-            ret=false;
-            {
-                var cx_ite=this.begin();
-                while(cx_ite!=null){
-                    var npite=cx_ite.elem();
-                    {
-                        if(npite==obj){
-                            ret=true;
-                            break;
-                        }
-                    };
-                    cx_ite=cx_ite.next;
-                }
-            };
-        };
-        return ret;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function front():ZPP_ConstraintListener{
-        return begin().elem();
-    }
-    public function back():ZPP_ConstraintListener{
-        var ret=begin();
-        var cur=ret;
-        while(cur!=null){
-            ret=cur;
-            cur=cur.next;
-        }
-        return ret.elem();
-    }
-    public function iterator_at(ind:Int):ZNPNode_ZPP_ConstraintListener{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                ind>=-1&&ind<size();
-            };
-            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_ConstraintListener"+"] iterator_at -> "+ind);
-            #end
-        };
-        var ret=begin();
-        while(ind-->0&&ret!=null)ret=ret.next;
-        return ret;
-    }
-    public function at(ind:Int):ZPP_ConstraintListener{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                ind>=0&&ind<size();
-            };
-            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_ConstraintListener"+"] at -> "+ind);
+            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_FluidArbiter"+"] at -> "+ind);
             #end
         };
         var it=iterator_at(ind);
@@ -6010,6 +6010,423 @@ class ZNPList_ZPP_CutInt{
     }
 }
 #if nape_swc@:keep #end
+class ZNPList_ZPP_SensorArbiter{
+    public var head:ZNPNode_ZPP_SensorArbiter=null;
+    public function new(){}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function begin():ZNPNode_ZPP_SensorArbiter{
+        return head;
+    }
+    public var modified:Bool=false;
+    public var pushmod:Bool=false;
+    public var length:Int=0;
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function setbegin(i:ZNPNode_ZPP_SensorArbiter):Void{
+        head=i;
+        modified=true;
+        pushmod=true;
+    }
+    public function add(o:ZPP_SensorArbiter):ZPP_SensorArbiter{
+        return inlined_add(o);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_add(o:ZPP_SensorArbiter):ZPP_SensorArbiter{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                o!=null&&!has(o);
+            };
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_SensorArbiter"+"] add -> o="+o);
+            #end
+        };
+        var temp={
+            var ret;
+            {
+                if(ZNPNode_ZPP_SensorArbiter.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_SensorArbiter();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_SensorArbiter.POOL_TOT++;
+                    ZNPNode_ZPP_SensorArbiter.POOL_ADDNEW++;
+                    #end
+                }
+                else{
+                    ret=ZNPNode_ZPP_SensorArbiter.zpp_pool;
+                    ZNPNode_ZPP_SensorArbiter.zpp_pool=ret.next;
+                    ret.next=null;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_SensorArbiter.POOL_CNT--;
+                    ZNPNode_ZPP_SensorArbiter.POOL_ADD++;
+                    #end
+                }
+                ret.alloc();
+            };
+            ret.elt=o;
+            ret;
+        };
+        temp.next=begin();
+        head=temp;
+        modified=true;
+        length++;
+        return o;
+    }
+    public function addAll(x:ZNPList_ZPP_SensorArbiter):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                x!=null;
+            };
+            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_SensorArbiter"+"] addAll -> "+x);
+            #end
+        };
+        {
+            var cx_ite=x.begin();
+            while(cx_ite!=null){
+                var i=cx_ite.elem();
+                add(i);
+                cx_ite=cx_ite.next;
+            }
+        };
+    }
+    public function insert(cur:ZNPNode_ZPP_SensorArbiter,o:ZPP_SensorArbiter):ZNPNode_ZPP_SensorArbiter{
+        return inlined_insert(cur,o);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_insert(cur:ZNPNode_ZPP_SensorArbiter,o:ZPP_SensorArbiter):ZNPNode_ZPP_SensorArbiter{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                o!=null&&!has(o);
+            };
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_SensorArbiter"+"] cur -> "+cur+" -> "+o);
+            #end
+        };
+        var temp={
+            var ret;
+            {
+                if(ZNPNode_ZPP_SensorArbiter.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_SensorArbiter();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_SensorArbiter.POOL_TOT++;
+                    ZNPNode_ZPP_SensorArbiter.POOL_ADDNEW++;
+                    #end
+                }
+                else{
+                    ret=ZNPNode_ZPP_SensorArbiter.zpp_pool;
+                    ZNPNode_ZPP_SensorArbiter.zpp_pool=ret.next;
+                    ret.next=null;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_SensorArbiter.POOL_CNT--;
+                    ZNPNode_ZPP_SensorArbiter.POOL_ADD++;
+                    #end
+                }
+                ret.alloc();
+            };
+            ret.elt=o;
+            ret;
+        };
+        if(cur==null){
+            temp.next=begin();
+            head=temp;
+        }
+        else{
+            temp.next=cur.next;
+            cur.next=temp;
+        }
+        pushmod=modified=true;
+        length++;
+        return temp;
+    }
+    public function pop():Void{
+        inlined_pop();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_pop():Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_SensorArbiter"+"] pop");
+            #end
+        };
+        var ret=begin();
+        head=ret.next;
+        {};
+        {
+            var o=ret;
+            {
+                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+                var res={
+                    o!=null;
+                };
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_SensorArbiter"+", in obj: "+"ret"+")");
+                #end
+            };
+            o.free();
+            o.next=ZNPNode_ZPP_SensorArbiter.zpp_pool;
+            ZNPNode_ZPP_SensorArbiter.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_SensorArbiter.POOL_CNT++;
+            ZNPNode_ZPP_SensorArbiter.POOL_SUB++;
+            #end
+        };
+        if(empty())pushmod=true;
+        modified=true;
+        length--;
+    }
+    public function pop_unsafe():ZPP_SensorArbiter{
+        return inlined_pop_unsafe();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_pop_unsafe():ZPP_SensorArbiter{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_SensorArbiter"+"] pop_unsafe");
+            #end
+        };
+        var ret=front();
+        pop();
+        return ret;
+    }
+    public function remove(obj:ZPP_SensorArbiter):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                has(obj);
+            };
+            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
+            #end
+        };
+        inlined_try_remove(obj);
+    }
+    public function try_remove(obj:ZPP_SensorArbiter):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_SensorArbiter"+"] remove -> "+obj);
+            #end
+        };
+        var pre=null;
+        var cur=begin();
+        var ret=false;
+        while(cur!=null){
+            if(cur.elem()==obj){
+                erase(pre);
+                ret=true;
+                break;
+            }
+            pre=cur;
+            cur=cur.next;
+        }
+        return ret;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_remove(obj:ZPP_SensorArbiter):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                has(obj);
+            };
+            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
+            #end
+        };
+        inlined_try_remove(obj);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_try_remove(obj:ZPP_SensorArbiter):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_SensorArbiter"+"] remove -> "+obj);
+            #end
+        };
+        var pre=null;
+        var cur=begin();
+        var ret=false;
+        while(cur!=null){
+            if(cur.elem()==obj){
+                inlined_erase(pre);
+                ret=true;
+                break;
+            }
+            pre=cur;
+            cur=cur.next;
+        }
+        return ret;
+    }
+    public function erase(pre:ZNPNode_ZPP_SensorArbiter):ZNPNode_ZPP_SensorArbiter{
+        return inlined_erase(pre);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_erase(pre:ZNPNode_ZPP_SensorArbiter):ZNPNode_ZPP_SensorArbiter{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_SensorArbiter"+"] erase -> "+pre);
+            #end
+        };
+        var old:ZNPNode_ZPP_SensorArbiter;
+        var ret:ZNPNode_ZPP_SensorArbiter;
+        if(pre==null){
+            old=begin();
+            ret=old.next;
+            head=ret;
+            if(empty())pushmod=true;
+        }
+        else{
+            old=pre.next;
+            ret=old.next;
+            pre.next=ret;
+            if(ret==null)pushmod=true;
+        }
+        {};
+        {
+            var o=old;
+            {
+                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+                var res={
+                    o!=null;
+                };
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_SensorArbiter"+", in obj: "+"old"+")");
+                #end
+            };
+            o.free();
+            o.next=ZNPNode_ZPP_SensorArbiter.zpp_pool;
+            ZNPNode_ZPP_SensorArbiter.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_SensorArbiter.POOL_CNT++;
+            ZNPNode_ZPP_SensorArbiter.POOL_SUB++;
+            #end
+        };
+        modified=true;
+        length--;
+        pushmod=true;
+        return ret;
+    }
+    public function splice(pre:ZNPNode_ZPP_SensorArbiter,n:Int):ZNPNode_ZPP_SensorArbiter{
+        while(n-->0&&pre.next!=null)erase(pre);
+        return pre.next;
+    }
+    public function clear():Void{
+        inlined_clear();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_clear():Void{
+        if(true){
+            while(!empty())inlined_pop();
+            pushmod=true;
+        }
+    }
+    public function reverse():Void{
+        var cur=begin();
+        var pre=null;
+        while(cur!=null){
+            var nx=cur.next;
+            cur.next=pre;
+            head=cur;
+            pre=cur;
+            cur=nx;
+        }
+        modified=true;
+        pushmod=true;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function empty():Bool{
+        return begin()==null;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function size():Int{
+        return length;
+    }
+    public function has(obj:ZPP_SensorArbiter):Bool{
+        return inlined_has(obj);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_has(obj:ZPP_SensorArbiter):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_SensorArbiter"+"] has -> "+obj);
+            #end
+        };
+        var ret;
+        {
+            ret=false;
+            {
+                var cx_ite=this.begin();
+                while(cx_ite!=null){
+                    var npite=cx_ite.elem();
+                    {
+                        if(npite==obj){
+                            ret=true;
+                            break;
+                        }
+                    };
+                    cx_ite=cx_ite.next;
+                }
+            };
+        };
+        return ret;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function front():ZPP_SensorArbiter{
+        return begin().elem();
+    }
+    public function back():ZPP_SensorArbiter{
+        var ret=begin();
+        var cur=ret;
+        while(cur!=null){
+            ret=cur;
+            cur=cur.next;
+        }
+        return ret.elem();
+    }
+    public function iterator_at(ind:Int):ZNPNode_ZPP_SensorArbiter{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                ind>=-1&&ind<size();
+            };
+            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_SensorArbiter"+"] iterator_at -> "+ind);
+            #end
+        };
+        var ret=begin();
+        while(ind-->0&&ret!=null)ret=ret.next;
+        return ret;
+    }
+    public function at(ind:Int):ZPP_SensorArbiter{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                ind>=0&&ind<size();
+            };
+            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_SensorArbiter"+"] at -> "+ind);
+            #end
+        };
+        var it=iterator_at(ind);
+        return if(it!=null)it.elem()else null;
+    }
+}
+#if nape_swc@:keep #end
 class ZNPList_ZPP_CutVert{
     public var head:ZNPNode_ZPP_CutVert=null;
     public function new(){}
@@ -6420,6 +6837,2091 @@ class ZNPList_ZPP_CutVert{
                 ind>=0&&ind<size();
             };
             if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_CutVert"+"] at -> "+ind);
+            #end
+        };
+        var it=iterator_at(ind);
+        return if(it!=null)it.elem()else null;
+    }
+}
+#if nape_swc@:keep #end
+class ZNPList_ZPP_Listener{
+    public var head:ZNPNode_ZPP_Listener=null;
+    public function new(){}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function begin():ZNPNode_ZPP_Listener{
+        return head;
+    }
+    public var modified:Bool=false;
+    public var pushmod:Bool=false;
+    public var length:Int=0;
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function setbegin(i:ZNPNode_ZPP_Listener):Void{
+        head=i;
+        modified=true;
+        pushmod=true;
+    }
+    public function add(o:ZPP_Listener):ZPP_Listener{
+        return inlined_add(o);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_add(o:ZPP_Listener):ZPP_Listener{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                o!=null&&!has(o);
+            };
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_Listener"+"] add -> o="+o);
+            #end
+        };
+        var temp={
+            var ret;
+            {
+                if(ZNPNode_ZPP_Listener.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_Listener();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_Listener.POOL_TOT++;
+                    ZNPNode_ZPP_Listener.POOL_ADDNEW++;
+                    #end
+                }
+                else{
+                    ret=ZNPNode_ZPP_Listener.zpp_pool;
+                    ZNPNode_ZPP_Listener.zpp_pool=ret.next;
+                    ret.next=null;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_Listener.POOL_CNT--;
+                    ZNPNode_ZPP_Listener.POOL_ADD++;
+                    #end
+                }
+                ret.alloc();
+            };
+            ret.elt=o;
+            ret;
+        };
+        temp.next=begin();
+        head=temp;
+        modified=true;
+        length++;
+        return o;
+    }
+    public function addAll(x:ZNPList_ZPP_Listener):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                x!=null;
+            };
+            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_Listener"+"] addAll -> "+x);
+            #end
+        };
+        {
+            var cx_ite=x.begin();
+            while(cx_ite!=null){
+                var i=cx_ite.elem();
+                add(i);
+                cx_ite=cx_ite.next;
+            }
+        };
+    }
+    public function insert(cur:ZNPNode_ZPP_Listener,o:ZPP_Listener):ZNPNode_ZPP_Listener{
+        return inlined_insert(cur,o);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_insert(cur:ZNPNode_ZPP_Listener,o:ZPP_Listener):ZNPNode_ZPP_Listener{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                o!=null&&!has(o);
+            };
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_Listener"+"] cur -> "+cur+" -> "+o);
+            #end
+        };
+        var temp={
+            var ret;
+            {
+                if(ZNPNode_ZPP_Listener.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_Listener();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_Listener.POOL_TOT++;
+                    ZNPNode_ZPP_Listener.POOL_ADDNEW++;
+                    #end
+                }
+                else{
+                    ret=ZNPNode_ZPP_Listener.zpp_pool;
+                    ZNPNode_ZPP_Listener.zpp_pool=ret.next;
+                    ret.next=null;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_Listener.POOL_CNT--;
+                    ZNPNode_ZPP_Listener.POOL_ADD++;
+                    #end
+                }
+                ret.alloc();
+            };
+            ret.elt=o;
+            ret;
+        };
+        if(cur==null){
+            temp.next=begin();
+            head=temp;
+        }
+        else{
+            temp.next=cur.next;
+            cur.next=temp;
+        }
+        pushmod=modified=true;
+        length++;
+        return temp;
+    }
+    public function pop():Void{
+        inlined_pop();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_pop():Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Listener"+"] pop");
+            #end
+        };
+        var ret=begin();
+        head=ret.next;
+        {};
+        {
+            var o=ret;
+            {
+                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+                var res={
+                    o!=null;
+                };
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_Listener"+", in obj: "+"ret"+")");
+                #end
+            };
+            o.free();
+            o.next=ZNPNode_ZPP_Listener.zpp_pool;
+            ZNPNode_ZPP_Listener.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_Listener.POOL_CNT++;
+            ZNPNode_ZPP_Listener.POOL_SUB++;
+            #end
+        };
+        if(empty())pushmod=true;
+        modified=true;
+        length--;
+    }
+    public function pop_unsafe():ZPP_Listener{
+        return inlined_pop_unsafe();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_pop_unsafe():ZPP_Listener{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Listener"+"] pop_unsafe");
+            #end
+        };
+        var ret=front();
+        pop();
+        return ret;
+    }
+    public function remove(obj:ZPP_Listener):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                has(obj);
+            };
+            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
+            #end
+        };
+        inlined_try_remove(obj);
+    }
+    public function try_remove(obj:ZPP_Listener):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Listener"+"] remove -> "+obj);
+            #end
+        };
+        var pre=null;
+        var cur=begin();
+        var ret=false;
+        while(cur!=null){
+            if(cur.elem()==obj){
+                erase(pre);
+                ret=true;
+                break;
+            }
+            pre=cur;
+            cur=cur.next;
+        }
+        return ret;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_remove(obj:ZPP_Listener):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                has(obj);
+            };
+            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
+            #end
+        };
+        inlined_try_remove(obj);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_try_remove(obj:ZPP_Listener):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Listener"+"] remove -> "+obj);
+            #end
+        };
+        var pre=null;
+        var cur=begin();
+        var ret=false;
+        while(cur!=null){
+            if(cur.elem()==obj){
+                inlined_erase(pre);
+                ret=true;
+                break;
+            }
+            pre=cur;
+            cur=cur.next;
+        }
+        return ret;
+    }
+    public function erase(pre:ZNPNode_ZPP_Listener):ZNPNode_ZPP_Listener{
+        return inlined_erase(pre);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_erase(pre:ZNPNode_ZPP_Listener):ZNPNode_ZPP_Listener{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Listener"+"] erase -> "+pre);
+            #end
+        };
+        var old:ZNPNode_ZPP_Listener;
+        var ret:ZNPNode_ZPP_Listener;
+        if(pre==null){
+            old=begin();
+            ret=old.next;
+            head=ret;
+            if(empty())pushmod=true;
+        }
+        else{
+            old=pre.next;
+            ret=old.next;
+            pre.next=ret;
+            if(ret==null)pushmod=true;
+        }
+        {};
+        {
+            var o=old;
+            {
+                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+                var res={
+                    o!=null;
+                };
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_Listener"+", in obj: "+"old"+")");
+                #end
+            };
+            o.free();
+            o.next=ZNPNode_ZPP_Listener.zpp_pool;
+            ZNPNode_ZPP_Listener.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_Listener.POOL_CNT++;
+            ZNPNode_ZPP_Listener.POOL_SUB++;
+            #end
+        };
+        modified=true;
+        length--;
+        pushmod=true;
+        return ret;
+    }
+    public function splice(pre:ZNPNode_ZPP_Listener,n:Int):ZNPNode_ZPP_Listener{
+        while(n-->0&&pre.next!=null)erase(pre);
+        return pre.next;
+    }
+    public function clear():Void{
+        inlined_clear();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_clear():Void{
+        if(true){
+            while(!empty())inlined_pop();
+            pushmod=true;
+        }
+    }
+    public function reverse():Void{
+        var cur=begin();
+        var pre=null;
+        while(cur!=null){
+            var nx=cur.next;
+            cur.next=pre;
+            head=cur;
+            pre=cur;
+            cur=nx;
+        }
+        modified=true;
+        pushmod=true;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function empty():Bool{
+        return begin()==null;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function size():Int{
+        return length;
+    }
+    public function has(obj:ZPP_Listener):Bool{
+        return inlined_has(obj);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_has(obj:ZPP_Listener):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Listener"+"] has -> "+obj);
+            #end
+        };
+        var ret;
+        {
+            ret=false;
+            {
+                var cx_ite=this.begin();
+                while(cx_ite!=null){
+                    var npite=cx_ite.elem();
+                    {
+                        if(npite==obj){
+                            ret=true;
+                            break;
+                        }
+                    };
+                    cx_ite=cx_ite.next;
+                }
+            };
+        };
+        return ret;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function front():ZPP_Listener{
+        return begin().elem();
+    }
+    public function back():ZPP_Listener{
+        var ret=begin();
+        var cur=ret;
+        while(cur!=null){
+            ret=cur;
+            cur=cur.next;
+        }
+        return ret.elem();
+    }
+    public function iterator_at(ind:Int):ZNPNode_ZPP_Listener{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                ind>=-1&&ind<size();
+            };
+            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_Listener"+"] iterator_at -> "+ind);
+            #end
+        };
+        var ret=begin();
+        while(ind-->0&&ret!=null)ret=ret.next;
+        return ret;
+    }
+    public function at(ind:Int):ZPP_Listener{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                ind>=0&&ind<size();
+            };
+            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_Listener"+"] at -> "+ind);
+            #end
+        };
+        var it=iterator_at(ind);
+        return if(it!=null)it.elem()else null;
+    }
+}
+#if nape_swc@:keep #end
+class ZNPList_ZPP_ColArbiter{
+    public var head:ZNPNode_ZPP_ColArbiter=null;
+    public function new(){}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function begin():ZNPNode_ZPP_ColArbiter{
+        return head;
+    }
+    public var modified:Bool=false;
+    public var pushmod:Bool=false;
+    public var length:Int=0;
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function setbegin(i:ZNPNode_ZPP_ColArbiter):Void{
+        head=i;
+        modified=true;
+        pushmod=true;
+    }
+    public function add(o:ZPP_ColArbiter):ZPP_ColArbiter{
+        return inlined_add(o);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_add(o:ZPP_ColArbiter):ZPP_ColArbiter{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                o!=null&&!has(o);
+            };
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_ColArbiter"+"] add -> o="+o);
+            #end
+        };
+        var temp={
+            var ret;
+            {
+                if(ZNPNode_ZPP_ColArbiter.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_ColArbiter();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_ColArbiter.POOL_TOT++;
+                    ZNPNode_ZPP_ColArbiter.POOL_ADDNEW++;
+                    #end
+                }
+                else{
+                    ret=ZNPNode_ZPP_ColArbiter.zpp_pool;
+                    ZNPNode_ZPP_ColArbiter.zpp_pool=ret.next;
+                    ret.next=null;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_ColArbiter.POOL_CNT--;
+                    ZNPNode_ZPP_ColArbiter.POOL_ADD++;
+                    #end
+                }
+                ret.alloc();
+            };
+            ret.elt=o;
+            ret;
+        };
+        temp.next=begin();
+        head=temp;
+        modified=true;
+        length++;
+        return o;
+    }
+    public function addAll(x:ZNPList_ZPP_ColArbiter):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                x!=null;
+            };
+            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_ColArbiter"+"] addAll -> "+x);
+            #end
+        };
+        {
+            var cx_ite=x.begin();
+            while(cx_ite!=null){
+                var i=cx_ite.elem();
+                add(i);
+                cx_ite=cx_ite.next;
+            }
+        };
+    }
+    public function insert(cur:ZNPNode_ZPP_ColArbiter,o:ZPP_ColArbiter):ZNPNode_ZPP_ColArbiter{
+        return inlined_insert(cur,o);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_insert(cur:ZNPNode_ZPP_ColArbiter,o:ZPP_ColArbiter):ZNPNode_ZPP_ColArbiter{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                o!=null&&!has(o);
+            };
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_ColArbiter"+"] cur -> "+cur+" -> "+o);
+            #end
+        };
+        var temp={
+            var ret;
+            {
+                if(ZNPNode_ZPP_ColArbiter.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_ColArbiter();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_ColArbiter.POOL_TOT++;
+                    ZNPNode_ZPP_ColArbiter.POOL_ADDNEW++;
+                    #end
+                }
+                else{
+                    ret=ZNPNode_ZPP_ColArbiter.zpp_pool;
+                    ZNPNode_ZPP_ColArbiter.zpp_pool=ret.next;
+                    ret.next=null;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_ColArbiter.POOL_CNT--;
+                    ZNPNode_ZPP_ColArbiter.POOL_ADD++;
+                    #end
+                }
+                ret.alloc();
+            };
+            ret.elt=o;
+            ret;
+        };
+        if(cur==null){
+            temp.next=begin();
+            head=temp;
+        }
+        else{
+            temp.next=cur.next;
+            cur.next=temp;
+        }
+        pushmod=modified=true;
+        length++;
+        return temp;
+    }
+    public function pop():Void{
+        inlined_pop();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_pop():Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_ColArbiter"+"] pop");
+            #end
+        };
+        var ret=begin();
+        head=ret.next;
+        {};
+        {
+            var o=ret;
+            {
+                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+                var res={
+                    o!=null;
+                };
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_ColArbiter"+", in obj: "+"ret"+")");
+                #end
+            };
+            o.free();
+            o.next=ZNPNode_ZPP_ColArbiter.zpp_pool;
+            ZNPNode_ZPP_ColArbiter.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_ColArbiter.POOL_CNT++;
+            ZNPNode_ZPP_ColArbiter.POOL_SUB++;
+            #end
+        };
+        if(empty())pushmod=true;
+        modified=true;
+        length--;
+    }
+    public function pop_unsafe():ZPP_ColArbiter{
+        return inlined_pop_unsafe();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_pop_unsafe():ZPP_ColArbiter{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_ColArbiter"+"] pop_unsafe");
+            #end
+        };
+        var ret=front();
+        pop();
+        return ret;
+    }
+    public function remove(obj:ZPP_ColArbiter):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                has(obj);
+            };
+            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
+            #end
+        };
+        inlined_try_remove(obj);
+    }
+    public function try_remove(obj:ZPP_ColArbiter):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_ColArbiter"+"] remove -> "+obj);
+            #end
+        };
+        var pre=null;
+        var cur=begin();
+        var ret=false;
+        while(cur!=null){
+            if(cur.elem()==obj){
+                erase(pre);
+                ret=true;
+                break;
+            }
+            pre=cur;
+            cur=cur.next;
+        }
+        return ret;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_remove(obj:ZPP_ColArbiter):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                has(obj);
+            };
+            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
+            #end
+        };
+        inlined_try_remove(obj);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_try_remove(obj:ZPP_ColArbiter):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_ColArbiter"+"] remove -> "+obj);
+            #end
+        };
+        var pre=null;
+        var cur=begin();
+        var ret=false;
+        while(cur!=null){
+            if(cur.elem()==obj){
+                inlined_erase(pre);
+                ret=true;
+                break;
+            }
+            pre=cur;
+            cur=cur.next;
+        }
+        return ret;
+    }
+    public function erase(pre:ZNPNode_ZPP_ColArbiter):ZNPNode_ZPP_ColArbiter{
+        return inlined_erase(pre);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_erase(pre:ZNPNode_ZPP_ColArbiter):ZNPNode_ZPP_ColArbiter{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_ColArbiter"+"] erase -> "+pre);
+            #end
+        };
+        var old:ZNPNode_ZPP_ColArbiter;
+        var ret:ZNPNode_ZPP_ColArbiter;
+        if(pre==null){
+            old=begin();
+            ret=old.next;
+            head=ret;
+            if(empty())pushmod=true;
+        }
+        else{
+            old=pre.next;
+            ret=old.next;
+            pre.next=ret;
+            if(ret==null)pushmod=true;
+        }
+        {};
+        {
+            var o=old;
+            {
+                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+                var res={
+                    o!=null;
+                };
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_ColArbiter"+", in obj: "+"old"+")");
+                #end
+            };
+            o.free();
+            o.next=ZNPNode_ZPP_ColArbiter.zpp_pool;
+            ZNPNode_ZPP_ColArbiter.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_ColArbiter.POOL_CNT++;
+            ZNPNode_ZPP_ColArbiter.POOL_SUB++;
+            #end
+        };
+        modified=true;
+        length--;
+        pushmod=true;
+        return ret;
+    }
+    public function splice(pre:ZNPNode_ZPP_ColArbiter,n:Int):ZNPNode_ZPP_ColArbiter{
+        while(n-->0&&pre.next!=null)erase(pre);
+        return pre.next;
+    }
+    public function clear():Void{
+        inlined_clear();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_clear():Void{
+        if(true){
+            while(!empty())inlined_pop();
+            pushmod=true;
+        }
+    }
+    public function reverse():Void{
+        var cur=begin();
+        var pre=null;
+        while(cur!=null){
+            var nx=cur.next;
+            cur.next=pre;
+            head=cur;
+            pre=cur;
+            cur=nx;
+        }
+        modified=true;
+        pushmod=true;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function empty():Bool{
+        return begin()==null;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function size():Int{
+        return length;
+    }
+    public function has(obj:ZPP_ColArbiter):Bool{
+        return inlined_has(obj);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_has(obj:ZPP_ColArbiter):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_ColArbiter"+"] has -> "+obj);
+            #end
+        };
+        var ret;
+        {
+            ret=false;
+            {
+                var cx_ite=this.begin();
+                while(cx_ite!=null){
+                    var npite=cx_ite.elem();
+                    {
+                        if(npite==obj){
+                            ret=true;
+                            break;
+                        }
+                    };
+                    cx_ite=cx_ite.next;
+                }
+            };
+        };
+        return ret;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function front():ZPP_ColArbiter{
+        return begin().elem();
+    }
+    public function back():ZPP_ColArbiter{
+        var ret=begin();
+        var cur=ret;
+        while(cur!=null){
+            ret=cur;
+            cur=cur.next;
+        }
+        return ret.elem();
+    }
+    public function iterator_at(ind:Int):ZNPNode_ZPP_ColArbiter{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                ind>=-1&&ind<size();
+            };
+            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_ColArbiter"+"] iterator_at -> "+ind);
+            #end
+        };
+        var ret=begin();
+        while(ind-->0&&ret!=null)ret=ret.next;
+        return ret;
+    }
+    public function at(ind:Int):ZPP_ColArbiter{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                ind>=0&&ind<size();
+            };
+            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_ColArbiter"+"] at -> "+ind);
+            #end
+        };
+        var it=iterator_at(ind);
+        return if(it!=null)it.elem()else null;
+    }
+}
+#if nape_swc@:keep #end
+class ZNPList_ZPP_ToiEvent{
+    public var head:ZNPNode_ZPP_ToiEvent=null;
+    public function new(){}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function begin():ZNPNode_ZPP_ToiEvent{
+        return head;
+    }
+    public var modified:Bool=false;
+    public var pushmod:Bool=false;
+    public var length:Int=0;
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function setbegin(i:ZNPNode_ZPP_ToiEvent):Void{
+        head=i;
+        modified=true;
+        pushmod=true;
+    }
+    public function add(o:ZPP_ToiEvent):ZPP_ToiEvent{
+        return inlined_add(o);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_add(o:ZPP_ToiEvent):ZPP_ToiEvent{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                o!=null&&!has(o);
+            };
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_ToiEvent"+"] add -> o="+o);
+            #end
+        };
+        var temp={
+            var ret;
+            {
+                if(ZNPNode_ZPP_ToiEvent.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_ToiEvent();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_ToiEvent.POOL_TOT++;
+                    ZNPNode_ZPP_ToiEvent.POOL_ADDNEW++;
+                    #end
+                }
+                else{
+                    ret=ZNPNode_ZPP_ToiEvent.zpp_pool;
+                    ZNPNode_ZPP_ToiEvent.zpp_pool=ret.next;
+                    ret.next=null;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_ToiEvent.POOL_CNT--;
+                    ZNPNode_ZPP_ToiEvent.POOL_ADD++;
+                    #end
+                }
+                ret.alloc();
+            };
+            ret.elt=o;
+            ret;
+        };
+        temp.next=begin();
+        head=temp;
+        modified=true;
+        length++;
+        return o;
+    }
+    public function addAll(x:ZNPList_ZPP_ToiEvent):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                x!=null;
+            };
+            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_ToiEvent"+"] addAll -> "+x);
+            #end
+        };
+        {
+            var cx_ite=x.begin();
+            while(cx_ite!=null){
+                var i=cx_ite.elem();
+                add(i);
+                cx_ite=cx_ite.next;
+            }
+        };
+    }
+    public function insert(cur:ZNPNode_ZPP_ToiEvent,o:ZPP_ToiEvent):ZNPNode_ZPP_ToiEvent{
+        return inlined_insert(cur,o);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_insert(cur:ZNPNode_ZPP_ToiEvent,o:ZPP_ToiEvent):ZNPNode_ZPP_ToiEvent{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                o!=null&&!has(o);
+            };
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_ToiEvent"+"] cur -> "+cur+" -> "+o);
+            #end
+        };
+        var temp={
+            var ret;
+            {
+                if(ZNPNode_ZPP_ToiEvent.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_ToiEvent();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_ToiEvent.POOL_TOT++;
+                    ZNPNode_ZPP_ToiEvent.POOL_ADDNEW++;
+                    #end
+                }
+                else{
+                    ret=ZNPNode_ZPP_ToiEvent.zpp_pool;
+                    ZNPNode_ZPP_ToiEvent.zpp_pool=ret.next;
+                    ret.next=null;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_ToiEvent.POOL_CNT--;
+                    ZNPNode_ZPP_ToiEvent.POOL_ADD++;
+                    #end
+                }
+                ret.alloc();
+            };
+            ret.elt=o;
+            ret;
+        };
+        if(cur==null){
+            temp.next=begin();
+            head=temp;
+        }
+        else{
+            temp.next=cur.next;
+            cur.next=temp;
+        }
+        pushmod=modified=true;
+        length++;
+        return temp;
+    }
+    public function pop():Void{
+        inlined_pop();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_pop():Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_ToiEvent"+"] pop");
+            #end
+        };
+        var ret=begin();
+        head=ret.next;
+        {};
+        {
+            var o=ret;
+            {
+                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+                var res={
+                    o!=null;
+                };
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_ToiEvent"+", in obj: "+"ret"+")");
+                #end
+            };
+            o.free();
+            o.next=ZNPNode_ZPP_ToiEvent.zpp_pool;
+            ZNPNode_ZPP_ToiEvent.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_ToiEvent.POOL_CNT++;
+            ZNPNode_ZPP_ToiEvent.POOL_SUB++;
+            #end
+        };
+        if(empty())pushmod=true;
+        modified=true;
+        length--;
+    }
+    public function pop_unsafe():ZPP_ToiEvent{
+        return inlined_pop_unsafe();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_pop_unsafe():ZPP_ToiEvent{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_ToiEvent"+"] pop_unsafe");
+            #end
+        };
+        var ret=front();
+        pop();
+        return ret;
+    }
+    public function remove(obj:ZPP_ToiEvent):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                has(obj);
+            };
+            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
+            #end
+        };
+        inlined_try_remove(obj);
+    }
+    public function try_remove(obj:ZPP_ToiEvent):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_ToiEvent"+"] remove -> "+obj);
+            #end
+        };
+        var pre=null;
+        var cur=begin();
+        var ret=false;
+        while(cur!=null){
+            if(cur.elem()==obj){
+                erase(pre);
+                ret=true;
+                break;
+            }
+            pre=cur;
+            cur=cur.next;
+        }
+        return ret;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_remove(obj:ZPP_ToiEvent):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                has(obj);
+            };
+            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
+            #end
+        };
+        inlined_try_remove(obj);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_try_remove(obj:ZPP_ToiEvent):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_ToiEvent"+"] remove -> "+obj);
+            #end
+        };
+        var pre=null;
+        var cur=begin();
+        var ret=false;
+        while(cur!=null){
+            if(cur.elem()==obj){
+                inlined_erase(pre);
+                ret=true;
+                break;
+            }
+            pre=cur;
+            cur=cur.next;
+        }
+        return ret;
+    }
+    public function erase(pre:ZNPNode_ZPP_ToiEvent):ZNPNode_ZPP_ToiEvent{
+        return inlined_erase(pre);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_erase(pre:ZNPNode_ZPP_ToiEvent):ZNPNode_ZPP_ToiEvent{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_ToiEvent"+"] erase -> "+pre);
+            #end
+        };
+        var old:ZNPNode_ZPP_ToiEvent;
+        var ret:ZNPNode_ZPP_ToiEvent;
+        if(pre==null){
+            old=begin();
+            ret=old.next;
+            head=ret;
+            if(empty())pushmod=true;
+        }
+        else{
+            old=pre.next;
+            ret=old.next;
+            pre.next=ret;
+            if(ret==null)pushmod=true;
+        }
+        {};
+        {
+            var o=old;
+            {
+                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+                var res={
+                    o!=null;
+                };
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_ToiEvent"+", in obj: "+"old"+")");
+                #end
+            };
+            o.free();
+            o.next=ZNPNode_ZPP_ToiEvent.zpp_pool;
+            ZNPNode_ZPP_ToiEvent.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_ToiEvent.POOL_CNT++;
+            ZNPNode_ZPP_ToiEvent.POOL_SUB++;
+            #end
+        };
+        modified=true;
+        length--;
+        pushmod=true;
+        return ret;
+    }
+    public function splice(pre:ZNPNode_ZPP_ToiEvent,n:Int):ZNPNode_ZPP_ToiEvent{
+        while(n-->0&&pre.next!=null)erase(pre);
+        return pre.next;
+    }
+    public function clear():Void{
+        inlined_clear();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_clear():Void{
+        if(true){
+            while(!empty())inlined_pop();
+            pushmod=true;
+        }
+    }
+    public function reverse():Void{
+        var cur=begin();
+        var pre=null;
+        while(cur!=null){
+            var nx=cur.next;
+            cur.next=pre;
+            head=cur;
+            pre=cur;
+            cur=nx;
+        }
+        modified=true;
+        pushmod=true;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function empty():Bool{
+        return begin()==null;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function size():Int{
+        return length;
+    }
+    public function has(obj:ZPP_ToiEvent):Bool{
+        return inlined_has(obj);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_has(obj:ZPP_ToiEvent):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_ToiEvent"+"] has -> "+obj);
+            #end
+        };
+        var ret;
+        {
+            ret=false;
+            {
+                var cx_ite=this.begin();
+                while(cx_ite!=null){
+                    var npite=cx_ite.elem();
+                    {
+                        if(npite==obj){
+                            ret=true;
+                            break;
+                        }
+                    };
+                    cx_ite=cx_ite.next;
+                }
+            };
+        };
+        return ret;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function front():ZPP_ToiEvent{
+        return begin().elem();
+    }
+    public function back():ZPP_ToiEvent{
+        var ret=begin();
+        var cur=ret;
+        while(cur!=null){
+            ret=cur;
+            cur=cur.next;
+        }
+        return ret.elem();
+    }
+    public function iterator_at(ind:Int):ZNPNode_ZPP_ToiEvent{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                ind>=-1&&ind<size();
+            };
+            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_ToiEvent"+"] iterator_at -> "+ind);
+            #end
+        };
+        var ret=begin();
+        while(ind-->0&&ret!=null)ret=ret.next;
+        return ret;
+    }
+    public function at(ind:Int):ZPP_ToiEvent{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                ind>=0&&ind<size();
+            };
+            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_ToiEvent"+"] at -> "+ind);
+            #end
+        };
+        var it=iterator_at(ind);
+        return if(it!=null)it.elem()else null;
+    }
+}
+#if nape_swc@:keep #end
+class ZNPList_ZPP_Interactor{
+    public var head:ZNPNode_ZPP_Interactor=null;
+    public function new(){}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function begin():ZNPNode_ZPP_Interactor{
+        return head;
+    }
+    public var modified:Bool=false;
+    public var pushmod:Bool=false;
+    public var length:Int=0;
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function setbegin(i:ZNPNode_ZPP_Interactor):Void{
+        head=i;
+        modified=true;
+        pushmod=true;
+    }
+    public function add(o:ZPP_Interactor):ZPP_Interactor{
+        return inlined_add(o);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_add(o:ZPP_Interactor):ZPP_Interactor{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                o!=null&&!has(o);
+            };
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_Interactor"+"] add -> o="+o);
+            #end
+        };
+        var temp={
+            var ret;
+            {
+                if(ZNPNode_ZPP_Interactor.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_Interactor();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_Interactor.POOL_TOT++;
+                    ZNPNode_ZPP_Interactor.POOL_ADDNEW++;
+                    #end
+                }
+                else{
+                    ret=ZNPNode_ZPP_Interactor.zpp_pool;
+                    ZNPNode_ZPP_Interactor.zpp_pool=ret.next;
+                    ret.next=null;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_Interactor.POOL_CNT--;
+                    ZNPNode_ZPP_Interactor.POOL_ADD++;
+                    #end
+                }
+                ret.alloc();
+            };
+            ret.elt=o;
+            ret;
+        };
+        temp.next=begin();
+        head=temp;
+        modified=true;
+        length++;
+        return o;
+    }
+    public function addAll(x:ZNPList_ZPP_Interactor):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                x!=null;
+            };
+            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_Interactor"+"] addAll -> "+x);
+            #end
+        };
+        {
+            var cx_ite=x.begin();
+            while(cx_ite!=null){
+                var i=cx_ite.elem();
+                add(i);
+                cx_ite=cx_ite.next;
+            }
+        };
+    }
+    public function insert(cur:ZNPNode_ZPP_Interactor,o:ZPP_Interactor):ZNPNode_ZPP_Interactor{
+        return inlined_insert(cur,o);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_insert(cur:ZNPNode_ZPP_Interactor,o:ZPP_Interactor):ZNPNode_ZPP_Interactor{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                o!=null&&!has(o);
+            };
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_Interactor"+"] cur -> "+cur+" -> "+o);
+            #end
+        };
+        var temp={
+            var ret;
+            {
+                if(ZNPNode_ZPP_Interactor.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_Interactor();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_Interactor.POOL_TOT++;
+                    ZNPNode_ZPP_Interactor.POOL_ADDNEW++;
+                    #end
+                }
+                else{
+                    ret=ZNPNode_ZPP_Interactor.zpp_pool;
+                    ZNPNode_ZPP_Interactor.zpp_pool=ret.next;
+                    ret.next=null;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_Interactor.POOL_CNT--;
+                    ZNPNode_ZPP_Interactor.POOL_ADD++;
+                    #end
+                }
+                ret.alloc();
+            };
+            ret.elt=o;
+            ret;
+        };
+        if(cur==null){
+            temp.next=begin();
+            head=temp;
+        }
+        else{
+            temp.next=cur.next;
+            cur.next=temp;
+        }
+        pushmod=modified=true;
+        length++;
+        return temp;
+    }
+    public function pop():Void{
+        inlined_pop();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_pop():Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Interactor"+"] pop");
+            #end
+        };
+        var ret=begin();
+        head=ret.next;
+        {};
+        {
+            var o=ret;
+            {
+                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+                var res={
+                    o!=null;
+                };
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_Interactor"+", in obj: "+"ret"+")");
+                #end
+            };
+            o.free();
+            o.next=ZNPNode_ZPP_Interactor.zpp_pool;
+            ZNPNode_ZPP_Interactor.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_Interactor.POOL_CNT++;
+            ZNPNode_ZPP_Interactor.POOL_SUB++;
+            #end
+        };
+        if(empty())pushmod=true;
+        modified=true;
+        length--;
+    }
+    public function pop_unsafe():ZPP_Interactor{
+        return inlined_pop_unsafe();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_pop_unsafe():ZPP_Interactor{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Interactor"+"] pop_unsafe");
+            #end
+        };
+        var ret=front();
+        pop();
+        return ret;
+    }
+    public function remove(obj:ZPP_Interactor):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                has(obj);
+            };
+            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
+            #end
+        };
+        inlined_try_remove(obj);
+    }
+    public function try_remove(obj:ZPP_Interactor):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Interactor"+"] remove -> "+obj);
+            #end
+        };
+        var pre=null;
+        var cur=begin();
+        var ret=false;
+        while(cur!=null){
+            if(cur.elem()==obj){
+                erase(pre);
+                ret=true;
+                break;
+            }
+            pre=cur;
+            cur=cur.next;
+        }
+        return ret;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_remove(obj:ZPP_Interactor):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                has(obj);
+            };
+            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
+            #end
+        };
+        inlined_try_remove(obj);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_try_remove(obj:ZPP_Interactor):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Interactor"+"] remove -> "+obj);
+            #end
+        };
+        var pre=null;
+        var cur=begin();
+        var ret=false;
+        while(cur!=null){
+            if(cur.elem()==obj){
+                inlined_erase(pre);
+                ret=true;
+                break;
+            }
+            pre=cur;
+            cur=cur.next;
+        }
+        return ret;
+    }
+    public function erase(pre:ZNPNode_ZPP_Interactor):ZNPNode_ZPP_Interactor{
+        return inlined_erase(pre);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_erase(pre:ZNPNode_ZPP_Interactor):ZNPNode_ZPP_Interactor{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Interactor"+"] erase -> "+pre);
+            #end
+        };
+        var old:ZNPNode_ZPP_Interactor;
+        var ret:ZNPNode_ZPP_Interactor;
+        if(pre==null){
+            old=begin();
+            ret=old.next;
+            head=ret;
+            if(empty())pushmod=true;
+        }
+        else{
+            old=pre.next;
+            ret=old.next;
+            pre.next=ret;
+            if(ret==null)pushmod=true;
+        }
+        {};
+        {
+            var o=old;
+            {
+                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+                var res={
+                    o!=null;
+                };
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_Interactor"+", in obj: "+"old"+")");
+                #end
+            };
+            o.free();
+            o.next=ZNPNode_ZPP_Interactor.zpp_pool;
+            ZNPNode_ZPP_Interactor.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_Interactor.POOL_CNT++;
+            ZNPNode_ZPP_Interactor.POOL_SUB++;
+            #end
+        };
+        modified=true;
+        length--;
+        pushmod=true;
+        return ret;
+    }
+    public function splice(pre:ZNPNode_ZPP_Interactor,n:Int):ZNPNode_ZPP_Interactor{
+        while(n-->0&&pre.next!=null)erase(pre);
+        return pre.next;
+    }
+    public function clear():Void{
+        inlined_clear();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_clear():Void{
+        if(true){
+            while(!empty())inlined_pop();
+            pushmod=true;
+        }
+    }
+    public function reverse():Void{
+        var cur=begin();
+        var pre=null;
+        while(cur!=null){
+            var nx=cur.next;
+            cur.next=pre;
+            head=cur;
+            pre=cur;
+            cur=nx;
+        }
+        modified=true;
+        pushmod=true;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function empty():Bool{
+        return begin()==null;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function size():Int{
+        return length;
+    }
+    public function has(obj:ZPP_Interactor):Bool{
+        return inlined_has(obj);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_has(obj:ZPP_Interactor):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Interactor"+"] has -> "+obj);
+            #end
+        };
+        var ret;
+        {
+            ret=false;
+            {
+                var cx_ite=this.begin();
+                while(cx_ite!=null){
+                    var npite=cx_ite.elem();
+                    {
+                        if(npite==obj){
+                            ret=true;
+                            break;
+                        }
+                    };
+                    cx_ite=cx_ite.next;
+                }
+            };
+        };
+        return ret;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function front():ZPP_Interactor{
+        return begin().elem();
+    }
+    public function back():ZPP_Interactor{
+        var ret=begin();
+        var cur=ret;
+        while(cur!=null){
+            ret=cur;
+            cur=cur.next;
+        }
+        return ret.elem();
+    }
+    public function iterator_at(ind:Int):ZNPNode_ZPP_Interactor{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                ind>=-1&&ind<size();
+            };
+            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_Interactor"+"] iterator_at -> "+ind);
+            #end
+        };
+        var ret=begin();
+        while(ind-->0&&ret!=null)ret=ret.next;
+        return ret;
+    }
+    public function at(ind:Int):ZPP_Interactor{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                ind>=0&&ind<size();
+            };
+            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_Interactor"+"] at -> "+ind);
+            #end
+        };
+        var it=iterator_at(ind);
+        return if(it!=null)it.elem()else null;
+    }
+}
+#if nape_swc@:keep #end
+class ZNPList_ZPP_InteractionListener{
+    public var head:ZNPNode_ZPP_InteractionListener=null;
+    public function new(){}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function begin():ZNPNode_ZPP_InteractionListener{
+        return head;
+    }
+    public var modified:Bool=false;
+    public var pushmod:Bool=false;
+    public var length:Int=0;
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function setbegin(i:ZNPNode_ZPP_InteractionListener):Void{
+        head=i;
+        modified=true;
+        pushmod=true;
+    }
+    public function add(o:ZPP_InteractionListener):ZPP_InteractionListener{
+        return inlined_add(o);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_add(o:ZPP_InteractionListener):ZPP_InteractionListener{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                o!=null&&!has(o);
+            };
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_InteractionListener"+"] add -> o="+o);
+            #end
+        };
+        var temp={
+            var ret;
+            {
+                if(ZNPNode_ZPP_InteractionListener.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_InteractionListener();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_InteractionListener.POOL_TOT++;
+                    ZNPNode_ZPP_InteractionListener.POOL_ADDNEW++;
+                    #end
+                }
+                else{
+                    ret=ZNPNode_ZPP_InteractionListener.zpp_pool;
+                    ZNPNode_ZPP_InteractionListener.zpp_pool=ret.next;
+                    ret.next=null;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_InteractionListener.POOL_CNT--;
+                    ZNPNode_ZPP_InteractionListener.POOL_ADD++;
+                    #end
+                }
+                ret.alloc();
+            };
+            ret.elt=o;
+            ret;
+        };
+        temp.next=begin();
+        head=temp;
+        modified=true;
+        length++;
+        return o;
+    }
+    public function addAll(x:ZNPList_ZPP_InteractionListener):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                x!=null;
+            };
+            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_InteractionListener"+"] addAll -> "+x);
+            #end
+        };
+        {
+            var cx_ite=x.begin();
+            while(cx_ite!=null){
+                var i=cx_ite.elem();
+                add(i);
+                cx_ite=cx_ite.next;
+            }
+        };
+    }
+    public function insert(cur:ZNPNode_ZPP_InteractionListener,o:ZPP_InteractionListener):ZNPNode_ZPP_InteractionListener{
+        return inlined_insert(cur,o);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_insert(cur:ZNPNode_ZPP_InteractionListener,o:ZPP_InteractionListener):ZNPNode_ZPP_InteractionListener{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                o!=null&&!has(o);
+            };
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_InteractionListener"+"] cur -> "+cur+" -> "+o);
+            #end
+        };
+        var temp={
+            var ret;
+            {
+                if(ZNPNode_ZPP_InteractionListener.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_InteractionListener();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_InteractionListener.POOL_TOT++;
+                    ZNPNode_ZPP_InteractionListener.POOL_ADDNEW++;
+                    #end
+                }
+                else{
+                    ret=ZNPNode_ZPP_InteractionListener.zpp_pool;
+                    ZNPNode_ZPP_InteractionListener.zpp_pool=ret.next;
+                    ret.next=null;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_InteractionListener.POOL_CNT--;
+                    ZNPNode_ZPP_InteractionListener.POOL_ADD++;
+                    #end
+                }
+                ret.alloc();
+            };
+            ret.elt=o;
+            ret;
+        };
+        if(cur==null){
+            temp.next=begin();
+            head=temp;
+        }
+        else{
+            temp.next=cur.next;
+            cur.next=temp;
+        }
+        pushmod=modified=true;
+        length++;
+        return temp;
+    }
+    public function pop():Void{
+        inlined_pop();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_pop():Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_InteractionListener"+"] pop");
+            #end
+        };
+        var ret=begin();
+        head=ret.next;
+        {};
+        {
+            var o=ret;
+            {
+                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+                var res={
+                    o!=null;
+                };
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_InteractionListener"+", in obj: "+"ret"+")");
+                #end
+            };
+            o.free();
+            o.next=ZNPNode_ZPP_InteractionListener.zpp_pool;
+            ZNPNode_ZPP_InteractionListener.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_InteractionListener.POOL_CNT++;
+            ZNPNode_ZPP_InteractionListener.POOL_SUB++;
+            #end
+        };
+        if(empty())pushmod=true;
+        modified=true;
+        length--;
+    }
+    public function pop_unsafe():ZPP_InteractionListener{
+        return inlined_pop_unsafe();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_pop_unsafe():ZPP_InteractionListener{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_InteractionListener"+"] pop_unsafe");
+            #end
+        };
+        var ret=front();
+        pop();
+        return ret;
+    }
+    public function remove(obj:ZPP_InteractionListener):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                has(obj);
+            };
+            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
+            #end
+        };
+        inlined_try_remove(obj);
+    }
+    public function try_remove(obj:ZPP_InteractionListener):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_InteractionListener"+"] remove -> "+obj);
+            #end
+        };
+        var pre=null;
+        var cur=begin();
+        var ret=false;
+        while(cur!=null){
+            if(cur.elem()==obj){
+                erase(pre);
+                ret=true;
+                break;
+            }
+            pre=cur;
+            cur=cur.next;
+        }
+        return ret;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_remove(obj:ZPP_InteractionListener):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                has(obj);
+            };
+            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
+            #end
+        };
+        inlined_try_remove(obj);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_try_remove(obj:ZPP_InteractionListener):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_InteractionListener"+"] remove -> "+obj);
+            #end
+        };
+        var pre=null;
+        var cur=begin();
+        var ret=false;
+        while(cur!=null){
+            if(cur.elem()==obj){
+                inlined_erase(pre);
+                ret=true;
+                break;
+            }
+            pre=cur;
+            cur=cur.next;
+        }
+        return ret;
+    }
+    public function erase(pre:ZNPNode_ZPP_InteractionListener):ZNPNode_ZPP_InteractionListener{
+        return inlined_erase(pre);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_erase(pre:ZNPNode_ZPP_InteractionListener):ZNPNode_ZPP_InteractionListener{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_InteractionListener"+"] erase -> "+pre);
+            #end
+        };
+        var old:ZNPNode_ZPP_InteractionListener;
+        var ret:ZNPNode_ZPP_InteractionListener;
+        if(pre==null){
+            old=begin();
+            ret=old.next;
+            head=ret;
+            if(empty())pushmod=true;
+        }
+        else{
+            old=pre.next;
+            ret=old.next;
+            pre.next=ret;
+            if(ret==null)pushmod=true;
+        }
+        {};
+        {
+            var o=old;
+            {
+                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+                var res={
+                    o!=null;
+                };
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_InteractionListener"+", in obj: "+"old"+")");
+                #end
+            };
+            o.free();
+            o.next=ZNPNode_ZPP_InteractionListener.zpp_pool;
+            ZNPNode_ZPP_InteractionListener.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_InteractionListener.POOL_CNT++;
+            ZNPNode_ZPP_InteractionListener.POOL_SUB++;
+            #end
+        };
+        modified=true;
+        length--;
+        pushmod=true;
+        return ret;
+    }
+    public function splice(pre:ZNPNode_ZPP_InteractionListener,n:Int):ZNPNode_ZPP_InteractionListener{
+        while(n-->0&&pre.next!=null)erase(pre);
+        return pre.next;
+    }
+    public function clear():Void{
+        inlined_clear();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_clear():Void{
+        if(true){
+            while(!empty())inlined_pop();
+            pushmod=true;
+        }
+    }
+    public function reverse():Void{
+        var cur=begin();
+        var pre=null;
+        while(cur!=null){
+            var nx=cur.next;
+            cur.next=pre;
+            head=cur;
+            pre=cur;
+            cur=nx;
+        }
+        modified=true;
+        pushmod=true;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function empty():Bool{
+        return begin()==null;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function size():Int{
+        return length;
+    }
+    public function has(obj:ZPP_InteractionListener):Bool{
+        return inlined_has(obj);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_has(obj:ZPP_InteractionListener):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_InteractionListener"+"] has -> "+obj);
+            #end
+        };
+        var ret;
+        {
+            ret=false;
+            {
+                var cx_ite=this.begin();
+                while(cx_ite!=null){
+                    var npite=cx_ite.elem();
+                    {
+                        if(npite==obj){
+                            ret=true;
+                            break;
+                        }
+                    };
+                    cx_ite=cx_ite.next;
+                }
+            };
+        };
+        return ret;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function front():ZPP_InteractionListener{
+        return begin().elem();
+    }
+    public function back():ZPP_InteractionListener{
+        var ret=begin();
+        var cur=ret;
+        while(cur!=null){
+            ret=cur;
+            cur=cur.next;
+        }
+        return ret.elem();
+    }
+    public function iterator_at(ind:Int):ZNPNode_ZPP_InteractionListener{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                ind>=-1&&ind<size();
+            };
+            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_InteractionListener"+"] iterator_at -> "+ind);
+            #end
+        };
+        var ret=begin();
+        while(ind-->0&&ret!=null)ret=ret.next;
+        return ret;
+    }
+    public function at(ind:Int):ZPP_InteractionListener{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                ind>=0&&ind<size();
+            };
+            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_InteractionListener"+"] at -> "+ind);
             #end
         };
         var it=iterator_at(ind);
@@ -6844,423 +9346,6 @@ class ZNPList_ZPP_PartitionVertex{
     }
 }
 #if nape_swc@:keep #end
-class ZNPList_ZPP_SimplifyP{
-    public var head:ZNPNode_ZPP_SimplifyP=null;
-    public function new(){}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function begin():ZNPNode_ZPP_SimplifyP{
-        return head;
-    }
-    public var modified:Bool=false;
-    public var pushmod:Bool=false;
-    public var length:Int=0;
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function setbegin(i:ZNPNode_ZPP_SimplifyP):Void{
-        head=i;
-        modified=true;
-        pushmod=true;
-    }
-    public function add(o:ZPP_SimplifyP):ZPP_SimplifyP{
-        return inlined_add(o);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_add(o:ZPP_SimplifyP):ZPP_SimplifyP{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                o!=null&&!has(o);
-            };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_SimplifyP"+"] add -> o="+o);
-            #end
-        };
-        var temp={
-            var ret;
-            {
-                if(ZNPNode_ZPP_SimplifyP.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_SimplifyP();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_SimplifyP.POOL_TOT++;
-                    ZNPNode_ZPP_SimplifyP.POOL_ADDNEW++;
-                    #end
-                }
-                else{
-                    ret=ZNPNode_ZPP_SimplifyP.zpp_pool;
-                    ZNPNode_ZPP_SimplifyP.zpp_pool=ret.next;
-                    ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_SimplifyP.POOL_CNT--;
-                    ZNPNode_ZPP_SimplifyP.POOL_ADD++;
-                    #end
-                }
-                ret.alloc();
-            };
-            ret.elt=o;
-            ret;
-        };
-        temp.next=begin();
-        head=temp;
-        modified=true;
-        length++;
-        return o;
-    }
-    public function addAll(x:ZNPList_ZPP_SimplifyP):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                x!=null;
-            };
-            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_SimplifyP"+"] addAll -> "+x);
-            #end
-        };
-        {
-            var cx_ite=x.begin();
-            while(cx_ite!=null){
-                var i=cx_ite.elem();
-                add(i);
-                cx_ite=cx_ite.next;
-            }
-        };
-    }
-    public function insert(cur:ZNPNode_ZPP_SimplifyP,o:ZPP_SimplifyP):ZNPNode_ZPP_SimplifyP{
-        return inlined_insert(cur,o);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_insert(cur:ZNPNode_ZPP_SimplifyP,o:ZPP_SimplifyP):ZNPNode_ZPP_SimplifyP{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                o!=null&&!has(o);
-            };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_SimplifyP"+"] cur -> "+cur+" -> "+o);
-            #end
-        };
-        var temp={
-            var ret;
-            {
-                if(ZNPNode_ZPP_SimplifyP.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_SimplifyP();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_SimplifyP.POOL_TOT++;
-                    ZNPNode_ZPP_SimplifyP.POOL_ADDNEW++;
-                    #end
-                }
-                else{
-                    ret=ZNPNode_ZPP_SimplifyP.zpp_pool;
-                    ZNPNode_ZPP_SimplifyP.zpp_pool=ret.next;
-                    ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_SimplifyP.POOL_CNT--;
-                    ZNPNode_ZPP_SimplifyP.POOL_ADD++;
-                    #end
-                }
-                ret.alloc();
-            };
-            ret.elt=o;
-            ret;
-        };
-        if(cur==null){
-            temp.next=begin();
-            head=temp;
-        }
-        else{
-            temp.next=cur.next;
-            cur.next=temp;
-        }
-        pushmod=modified=true;
-        length++;
-        return temp;
-    }
-    public function pop():Void{
-        inlined_pop();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop():Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_SimplifyP"+"] pop");
-            #end
-        };
-        var ret=begin();
-        head=ret.next;
-        {};
-        {
-            var o=ret;
-            {
-                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-                var res={
-                    o!=null;
-                };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_SimplifyP"+", in obj: "+"ret"+")");
-                #end
-            };
-            o.free();
-            o.next=ZNPNode_ZPP_SimplifyP.zpp_pool;
-            ZNPNode_ZPP_SimplifyP.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_SimplifyP.POOL_CNT++;
-            ZNPNode_ZPP_SimplifyP.POOL_SUB++;
-            #end
-        };
-        if(empty())pushmod=true;
-        modified=true;
-        length--;
-    }
-    public function pop_unsafe():ZPP_SimplifyP{
-        return inlined_pop_unsafe();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop_unsafe():ZPP_SimplifyP{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_SimplifyP"+"] pop_unsafe");
-            #end
-        };
-        var ret=front();
-        pop();
-        return ret;
-    }
-    public function remove(obj:ZPP_SimplifyP):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                has(obj);
-            };
-            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
-            #end
-        };
-        inlined_try_remove(obj);
-    }
-    public function try_remove(obj:ZPP_SimplifyP):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_SimplifyP"+"] remove -> "+obj);
-            #end
-        };
-        var pre=null;
-        var cur=begin();
-        var ret=false;
-        while(cur!=null){
-            if(cur.elem()==obj){
-                erase(pre);
-                ret=true;
-                break;
-            }
-            pre=cur;
-            cur=cur.next;
-        }
-        return ret;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_remove(obj:ZPP_SimplifyP):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                has(obj);
-            };
-            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
-            #end
-        };
-        inlined_try_remove(obj);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_try_remove(obj:ZPP_SimplifyP):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_SimplifyP"+"] remove -> "+obj);
-            #end
-        };
-        var pre=null;
-        var cur=begin();
-        var ret=false;
-        while(cur!=null){
-            if(cur.elem()==obj){
-                inlined_erase(pre);
-                ret=true;
-                break;
-            }
-            pre=cur;
-            cur=cur.next;
-        }
-        return ret;
-    }
-    public function erase(pre:ZNPNode_ZPP_SimplifyP):ZNPNode_ZPP_SimplifyP{
-        return inlined_erase(pre);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_erase(pre:ZNPNode_ZPP_SimplifyP):ZNPNode_ZPP_SimplifyP{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_SimplifyP"+"] erase -> "+pre);
-            #end
-        };
-        var old:ZNPNode_ZPP_SimplifyP;
-        var ret:ZNPNode_ZPP_SimplifyP;
-        if(pre==null){
-            old=begin();
-            ret=old.next;
-            head=ret;
-            if(empty())pushmod=true;
-        }
-        else{
-            old=pre.next;
-            ret=old.next;
-            pre.next=ret;
-            if(ret==null)pushmod=true;
-        }
-        {};
-        {
-            var o=old;
-            {
-                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-                var res={
-                    o!=null;
-                };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_SimplifyP"+", in obj: "+"old"+")");
-                #end
-            };
-            o.free();
-            o.next=ZNPNode_ZPP_SimplifyP.zpp_pool;
-            ZNPNode_ZPP_SimplifyP.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_SimplifyP.POOL_CNT++;
-            ZNPNode_ZPP_SimplifyP.POOL_SUB++;
-            #end
-        };
-        modified=true;
-        length--;
-        pushmod=true;
-        return ret;
-    }
-    public function splice(pre:ZNPNode_ZPP_SimplifyP,n:Int):ZNPNode_ZPP_SimplifyP{
-        while(n-->0&&pre.next!=null)erase(pre);
-        return pre.next;
-    }
-    public function clear():Void{
-        inlined_clear();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_clear():Void{
-        if(true){
-            while(!empty())inlined_pop();
-            pushmod=true;
-        }
-    }
-    public function reverse():Void{
-        var cur=begin();
-        var pre=null;
-        while(cur!=null){
-            var nx=cur.next;
-            cur.next=pre;
-            head=cur;
-            pre=cur;
-            cur=nx;
-        }
-        modified=true;
-        pushmod=true;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function empty():Bool{
-        return begin()==null;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function size():Int{
-        return length;
-    }
-    public function has(obj:ZPP_SimplifyP):Bool{
-        return inlined_has(obj);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_has(obj:ZPP_SimplifyP):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_SimplifyP"+"] has -> "+obj);
-            #end
-        };
-        var ret;
-        {
-            ret=false;
-            {
-                var cx_ite=this.begin();
-                while(cx_ite!=null){
-                    var npite=cx_ite.elem();
-                    {
-                        if(npite==obj){
-                            ret=true;
-                            break;
-                        }
-                    };
-                    cx_ite=cx_ite.next;
-                }
-            };
-        };
-        return ret;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function front():ZPP_SimplifyP{
-        return begin().elem();
-    }
-    public function back():ZPP_SimplifyP{
-        var ret=begin();
-        var cur=ret;
-        while(cur!=null){
-            ret=cur;
-            cur=cur.next;
-        }
-        return ret.elem();
-    }
-    public function iterator_at(ind:Int):ZNPNode_ZPP_SimplifyP{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                ind>=-1&&ind<size();
-            };
-            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_SimplifyP"+"] iterator_at -> "+ind);
-            #end
-        };
-        var ret=begin();
-        while(ind-->0&&ret!=null)ret=ret.next;
-        return ret;
-    }
-    public function at(ind:Int):ZPP_SimplifyP{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                ind>=0&&ind<size();
-            };
-            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_SimplifyP"+"] at -> "+ind);
-            #end
-        };
-        var it=iterator_at(ind);
-        return if(it!=null)it.elem()else null;
-    }
-}
-#if nape_swc@:keep #end
 class ZNPList_ZPP_PartitionedPoly{
     public var head:ZNPNode_ZPP_PartitionedPoly=null;
     public function new(){}
@@ -7671,6 +9756,423 @@ class ZNPList_ZPP_PartitionedPoly{
                 ind>=0&&ind<size();
             };
             if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_PartitionedPoly"+"] at -> "+ind);
+            #end
+        };
+        var it=iterator_at(ind);
+        return if(it!=null)it.elem()else null;
+    }
+}
+#if nape_swc@:keep #end
+class ZNPList_ZPP_SimplifyP{
+    public var head:ZNPNode_ZPP_SimplifyP=null;
+    public function new(){}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function begin():ZNPNode_ZPP_SimplifyP{
+        return head;
+    }
+    public var modified:Bool=false;
+    public var pushmod:Bool=false;
+    public var length:Int=0;
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function setbegin(i:ZNPNode_ZPP_SimplifyP):Void{
+        head=i;
+        modified=true;
+        pushmod=true;
+    }
+    public function add(o:ZPP_SimplifyP):ZPP_SimplifyP{
+        return inlined_add(o);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_add(o:ZPP_SimplifyP):ZPP_SimplifyP{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                o!=null&&!has(o);
+            };
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_SimplifyP"+"] add -> o="+o);
+            #end
+        };
+        var temp={
+            var ret;
+            {
+                if(ZNPNode_ZPP_SimplifyP.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_SimplifyP();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_SimplifyP.POOL_TOT++;
+                    ZNPNode_ZPP_SimplifyP.POOL_ADDNEW++;
+                    #end
+                }
+                else{
+                    ret=ZNPNode_ZPP_SimplifyP.zpp_pool;
+                    ZNPNode_ZPP_SimplifyP.zpp_pool=ret.next;
+                    ret.next=null;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_SimplifyP.POOL_CNT--;
+                    ZNPNode_ZPP_SimplifyP.POOL_ADD++;
+                    #end
+                }
+                ret.alloc();
+            };
+            ret.elt=o;
+            ret;
+        };
+        temp.next=begin();
+        head=temp;
+        modified=true;
+        length++;
+        return o;
+    }
+    public function addAll(x:ZNPList_ZPP_SimplifyP):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                x!=null;
+            };
+            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_SimplifyP"+"] addAll -> "+x);
+            #end
+        };
+        {
+            var cx_ite=x.begin();
+            while(cx_ite!=null){
+                var i=cx_ite.elem();
+                add(i);
+                cx_ite=cx_ite.next;
+            }
+        };
+    }
+    public function insert(cur:ZNPNode_ZPP_SimplifyP,o:ZPP_SimplifyP):ZNPNode_ZPP_SimplifyP{
+        return inlined_insert(cur,o);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_insert(cur:ZNPNode_ZPP_SimplifyP,o:ZPP_SimplifyP):ZNPNode_ZPP_SimplifyP{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                o!=null&&!has(o);
+            };
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_SimplifyP"+"] cur -> "+cur+" -> "+o);
+            #end
+        };
+        var temp={
+            var ret;
+            {
+                if(ZNPNode_ZPP_SimplifyP.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_SimplifyP();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_SimplifyP.POOL_TOT++;
+                    ZNPNode_ZPP_SimplifyP.POOL_ADDNEW++;
+                    #end
+                }
+                else{
+                    ret=ZNPNode_ZPP_SimplifyP.zpp_pool;
+                    ZNPNode_ZPP_SimplifyP.zpp_pool=ret.next;
+                    ret.next=null;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_SimplifyP.POOL_CNT--;
+                    ZNPNode_ZPP_SimplifyP.POOL_ADD++;
+                    #end
+                }
+                ret.alloc();
+            };
+            ret.elt=o;
+            ret;
+        };
+        if(cur==null){
+            temp.next=begin();
+            head=temp;
+        }
+        else{
+            temp.next=cur.next;
+            cur.next=temp;
+        }
+        pushmod=modified=true;
+        length++;
+        return temp;
+    }
+    public function pop():Void{
+        inlined_pop();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_pop():Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_SimplifyP"+"] pop");
+            #end
+        };
+        var ret=begin();
+        head=ret.next;
+        {};
+        {
+            var o=ret;
+            {
+                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+                var res={
+                    o!=null;
+                };
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_SimplifyP"+", in obj: "+"ret"+")");
+                #end
+            };
+            o.free();
+            o.next=ZNPNode_ZPP_SimplifyP.zpp_pool;
+            ZNPNode_ZPP_SimplifyP.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_SimplifyP.POOL_CNT++;
+            ZNPNode_ZPP_SimplifyP.POOL_SUB++;
+            #end
+        };
+        if(empty())pushmod=true;
+        modified=true;
+        length--;
+    }
+    public function pop_unsafe():ZPP_SimplifyP{
+        return inlined_pop_unsafe();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_pop_unsafe():ZPP_SimplifyP{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_SimplifyP"+"] pop_unsafe");
+            #end
+        };
+        var ret=front();
+        pop();
+        return ret;
+    }
+    public function remove(obj:ZPP_SimplifyP):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                has(obj);
+            };
+            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
+            #end
+        };
+        inlined_try_remove(obj);
+    }
+    public function try_remove(obj:ZPP_SimplifyP):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_SimplifyP"+"] remove -> "+obj);
+            #end
+        };
+        var pre=null;
+        var cur=begin();
+        var ret=false;
+        while(cur!=null){
+            if(cur.elem()==obj){
+                erase(pre);
+                ret=true;
+                break;
+            }
+            pre=cur;
+            cur=cur.next;
+        }
+        return ret;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_remove(obj:ZPP_SimplifyP):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                has(obj);
+            };
+            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
+            #end
+        };
+        inlined_try_remove(obj);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_try_remove(obj:ZPP_SimplifyP):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_SimplifyP"+"] remove -> "+obj);
+            #end
+        };
+        var pre=null;
+        var cur=begin();
+        var ret=false;
+        while(cur!=null){
+            if(cur.elem()==obj){
+                inlined_erase(pre);
+                ret=true;
+                break;
+            }
+            pre=cur;
+            cur=cur.next;
+        }
+        return ret;
+    }
+    public function erase(pre:ZNPNode_ZPP_SimplifyP):ZNPNode_ZPP_SimplifyP{
+        return inlined_erase(pre);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_erase(pre:ZNPNode_ZPP_SimplifyP):ZNPNode_ZPP_SimplifyP{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_SimplifyP"+"] erase -> "+pre);
+            #end
+        };
+        var old:ZNPNode_ZPP_SimplifyP;
+        var ret:ZNPNode_ZPP_SimplifyP;
+        if(pre==null){
+            old=begin();
+            ret=old.next;
+            head=ret;
+            if(empty())pushmod=true;
+        }
+        else{
+            old=pre.next;
+            ret=old.next;
+            pre.next=ret;
+            if(ret==null)pushmod=true;
+        }
+        {};
+        {
+            var o=old;
+            {
+                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+                var res={
+                    o!=null;
+                };
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_SimplifyP"+", in obj: "+"old"+")");
+                #end
+            };
+            o.free();
+            o.next=ZNPNode_ZPP_SimplifyP.zpp_pool;
+            ZNPNode_ZPP_SimplifyP.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_SimplifyP.POOL_CNT++;
+            ZNPNode_ZPP_SimplifyP.POOL_SUB++;
+            #end
+        };
+        modified=true;
+        length--;
+        pushmod=true;
+        return ret;
+    }
+    public function splice(pre:ZNPNode_ZPP_SimplifyP,n:Int):ZNPNode_ZPP_SimplifyP{
+        while(n-->0&&pre.next!=null)erase(pre);
+        return pre.next;
+    }
+    public function clear():Void{
+        inlined_clear();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_clear():Void{
+        if(true){
+            while(!empty())inlined_pop();
+            pushmod=true;
+        }
+    }
+    public function reverse():Void{
+        var cur=begin();
+        var pre=null;
+        while(cur!=null){
+            var nx=cur.next;
+            cur.next=pre;
+            head=cur;
+            pre=cur;
+            cur=nx;
+        }
+        modified=true;
+        pushmod=true;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function empty():Bool{
+        return begin()==null;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function size():Int{
+        return length;
+    }
+    public function has(obj:ZPP_SimplifyP):Bool{
+        return inlined_has(obj);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_has(obj:ZPP_SimplifyP):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_SimplifyP"+"] has -> "+obj);
+            #end
+        };
+        var ret;
+        {
+            ret=false;
+            {
+                var cx_ite=this.begin();
+                while(cx_ite!=null){
+                    var npite=cx_ite.elem();
+                    {
+                        if(npite==obj){
+                            ret=true;
+                            break;
+                        }
+                    };
+                    cx_ite=cx_ite.next;
+                }
+            };
+        };
+        return ret;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function front():ZPP_SimplifyP{
+        return begin().elem();
+    }
+    public function back():ZPP_SimplifyP{
+        var ret=begin();
+        var cur=ret;
+        while(cur!=null){
+            ret=cur;
+            cur=cur.next;
+        }
+        return ret.elem();
+    }
+    public function iterator_at(ind:Int):ZNPNode_ZPP_SimplifyP{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                ind>=-1&&ind<size();
+            };
+            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_SimplifyP"+"] iterator_at -> "+ind);
+            #end
+        };
+        var ret=begin();
+        while(ind-->0&&ret!=null)ret=ret.next;
+        return ret;
+    }
+    public function at(ind:Int):ZPP_SimplifyP{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                ind>=0&&ind<size();
+            };
+            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_SimplifyP"+"] at -> "+ind);
             #end
         };
         var it=iterator_at(ind);
@@ -8929,3759 +11431,6 @@ class ZNPList_ZPP_SimpleEvent{
     }
 }
 #if nape_swc@:keep #end
-class ZNPList_ZPP_Vec2{
-    public var head:ZNPNode_ZPP_Vec2=null;
-    public function new(){}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function begin():ZNPNode_ZPP_Vec2{
-        return head;
-    }
-    public var modified:Bool=false;
-    public var pushmod:Bool=false;
-    public var length:Int=0;
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function setbegin(i:ZNPNode_ZPP_Vec2):Void{
-        head=i;
-        modified=true;
-        pushmod=true;
-    }
-    public function add(o:ZPP_Vec2):ZPP_Vec2{
-        return inlined_add(o);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_add(o:ZPP_Vec2):ZPP_Vec2{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                o!=null&&!has(o);
-            };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_Vec2"+"] add -> o="+o);
-            #end
-        };
-        var temp={
-            var ret;
-            {
-                if(ZNPNode_ZPP_Vec2.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_Vec2();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_Vec2.POOL_TOT++;
-                    ZNPNode_ZPP_Vec2.POOL_ADDNEW++;
-                    #end
-                }
-                else{
-                    ret=ZNPNode_ZPP_Vec2.zpp_pool;
-                    ZNPNode_ZPP_Vec2.zpp_pool=ret.next;
-                    ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_Vec2.POOL_CNT--;
-                    ZNPNode_ZPP_Vec2.POOL_ADD++;
-                    #end
-                }
-                ret.alloc();
-            };
-            ret.elt=o;
-            ret;
-        };
-        temp.next=begin();
-        head=temp;
-        modified=true;
-        length++;
-        return o;
-    }
-    public function addAll(x:ZNPList_ZPP_Vec2):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                x!=null;
-            };
-            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_Vec2"+"] addAll -> "+x);
-            #end
-        };
-        {
-            var cx_ite=x.begin();
-            while(cx_ite!=null){
-                var i=cx_ite.elem();
-                add(i);
-                cx_ite=cx_ite.next;
-            }
-        };
-    }
-    public function insert(cur:ZNPNode_ZPP_Vec2,o:ZPP_Vec2):ZNPNode_ZPP_Vec2{
-        return inlined_insert(cur,o);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_insert(cur:ZNPNode_ZPP_Vec2,o:ZPP_Vec2):ZNPNode_ZPP_Vec2{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                o!=null&&!has(o);
-            };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_Vec2"+"] cur -> "+cur+" -> "+o);
-            #end
-        };
-        var temp={
-            var ret;
-            {
-                if(ZNPNode_ZPP_Vec2.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_Vec2();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_Vec2.POOL_TOT++;
-                    ZNPNode_ZPP_Vec2.POOL_ADDNEW++;
-                    #end
-                }
-                else{
-                    ret=ZNPNode_ZPP_Vec2.zpp_pool;
-                    ZNPNode_ZPP_Vec2.zpp_pool=ret.next;
-                    ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_Vec2.POOL_CNT--;
-                    ZNPNode_ZPP_Vec2.POOL_ADD++;
-                    #end
-                }
-                ret.alloc();
-            };
-            ret.elt=o;
-            ret;
-        };
-        if(cur==null){
-            temp.next=begin();
-            head=temp;
-        }
-        else{
-            temp.next=cur.next;
-            cur.next=temp;
-        }
-        pushmod=modified=true;
-        length++;
-        return temp;
-    }
-    public function pop():Void{
-        inlined_pop();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop():Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Vec2"+"] pop");
-            #end
-        };
-        var ret=begin();
-        head=ret.next;
-        {};
-        {
-            var o=ret;
-            {
-                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-                var res={
-                    o!=null;
-                };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_Vec2"+", in obj: "+"ret"+")");
-                #end
-            };
-            o.free();
-            o.next=ZNPNode_ZPP_Vec2.zpp_pool;
-            ZNPNode_ZPP_Vec2.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_Vec2.POOL_CNT++;
-            ZNPNode_ZPP_Vec2.POOL_SUB++;
-            #end
-        };
-        if(empty())pushmod=true;
-        modified=true;
-        length--;
-    }
-    public function pop_unsafe():ZPP_Vec2{
-        return inlined_pop_unsafe();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop_unsafe():ZPP_Vec2{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Vec2"+"] pop_unsafe");
-            #end
-        };
-        var ret=front();
-        pop();
-        return ret;
-    }
-    public function remove(obj:ZPP_Vec2):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                has(obj);
-            };
-            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
-            #end
-        };
-        inlined_try_remove(obj);
-    }
-    public function try_remove(obj:ZPP_Vec2):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Vec2"+"] remove -> "+obj);
-            #end
-        };
-        var pre=null;
-        var cur=begin();
-        var ret=false;
-        while(cur!=null){
-            if(cur.elem()==obj){
-                erase(pre);
-                ret=true;
-                break;
-            }
-            pre=cur;
-            cur=cur.next;
-        }
-        return ret;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_remove(obj:ZPP_Vec2):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                has(obj);
-            };
-            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
-            #end
-        };
-        inlined_try_remove(obj);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_try_remove(obj:ZPP_Vec2):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Vec2"+"] remove -> "+obj);
-            #end
-        };
-        var pre=null;
-        var cur=begin();
-        var ret=false;
-        while(cur!=null){
-            if(cur.elem()==obj){
-                inlined_erase(pre);
-                ret=true;
-                break;
-            }
-            pre=cur;
-            cur=cur.next;
-        }
-        return ret;
-    }
-    public function erase(pre:ZNPNode_ZPP_Vec2):ZNPNode_ZPP_Vec2{
-        return inlined_erase(pre);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_erase(pre:ZNPNode_ZPP_Vec2):ZNPNode_ZPP_Vec2{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Vec2"+"] erase -> "+pre);
-            #end
-        };
-        var old:ZNPNode_ZPP_Vec2;
-        var ret:ZNPNode_ZPP_Vec2;
-        if(pre==null){
-            old=begin();
-            ret=old.next;
-            head=ret;
-            if(empty())pushmod=true;
-        }
-        else{
-            old=pre.next;
-            ret=old.next;
-            pre.next=ret;
-            if(ret==null)pushmod=true;
-        }
-        {};
-        {
-            var o=old;
-            {
-                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-                var res={
-                    o!=null;
-                };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_Vec2"+", in obj: "+"old"+")");
-                #end
-            };
-            o.free();
-            o.next=ZNPNode_ZPP_Vec2.zpp_pool;
-            ZNPNode_ZPP_Vec2.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_Vec2.POOL_CNT++;
-            ZNPNode_ZPP_Vec2.POOL_SUB++;
-            #end
-        };
-        modified=true;
-        length--;
-        pushmod=true;
-        return ret;
-    }
-    public function splice(pre:ZNPNode_ZPP_Vec2,n:Int):ZNPNode_ZPP_Vec2{
-        while(n-->0&&pre.next!=null)erase(pre);
-        return pre.next;
-    }
-    public function clear():Void{
-        inlined_clear();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_clear():Void{
-        if(true){
-            while(!empty())inlined_pop();
-            pushmod=true;
-        }
-    }
-    public function reverse():Void{
-        var cur=begin();
-        var pre=null;
-        while(cur!=null){
-            var nx=cur.next;
-            cur.next=pre;
-            head=cur;
-            pre=cur;
-            cur=nx;
-        }
-        modified=true;
-        pushmod=true;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function empty():Bool{
-        return begin()==null;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function size():Int{
-        return length;
-    }
-    public function has(obj:ZPP_Vec2):Bool{
-        return inlined_has(obj);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_has(obj:ZPP_Vec2):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Vec2"+"] has -> "+obj);
-            #end
-        };
-        var ret;
-        {
-            ret=false;
-            {
-                var cx_ite=this.begin();
-                while(cx_ite!=null){
-                    var npite=cx_ite.elem();
-                    {
-                        if(npite==obj){
-                            ret=true;
-                            break;
-                        }
-                    };
-                    cx_ite=cx_ite.next;
-                }
-            };
-        };
-        return ret;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function front():ZPP_Vec2{
-        return begin().elem();
-    }
-    public function back():ZPP_Vec2{
-        var ret=begin();
-        var cur=ret;
-        while(cur!=null){
-            ret=cur;
-            cur=cur.next;
-        }
-        return ret.elem();
-    }
-    public function iterator_at(ind:Int):ZNPNode_ZPP_Vec2{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                ind>=-1&&ind<size();
-            };
-            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_Vec2"+"] iterator_at -> "+ind);
-            #end
-        };
-        var ret=begin();
-        while(ind-->0&&ret!=null)ret=ret.next;
-        return ret;
-    }
-    public function at(ind:Int):ZPP_Vec2{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                ind>=0&&ind<size();
-            };
-            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_Vec2"+"] at -> "+ind);
-            #end
-        };
-        var it=iterator_at(ind);
-        return if(it!=null)it.elem()else null;
-    }
-}
-#if nape_swc@:keep #end
-class ZNPList_ZPP_AABBPair{
-    public var head:ZNPNode_ZPP_AABBPair=null;
-    public function new(){}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function begin():ZNPNode_ZPP_AABBPair{
-        return head;
-    }
-    public var modified:Bool=false;
-    public var pushmod:Bool=false;
-    public var length:Int=0;
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function setbegin(i:ZNPNode_ZPP_AABBPair):Void{
-        head=i;
-        modified=true;
-        pushmod=true;
-    }
-    public function add(o:ZPP_AABBPair):ZPP_AABBPair{
-        return inlined_add(o);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_add(o:ZPP_AABBPair):ZPP_AABBPair{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                o!=null&&!has(o);
-            };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_AABBPair"+"] add -> o="+o);
-            #end
-        };
-        var temp={
-            var ret;
-            {
-                if(ZNPNode_ZPP_AABBPair.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_AABBPair();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_AABBPair.POOL_TOT++;
-                    ZNPNode_ZPP_AABBPair.POOL_ADDNEW++;
-                    #end
-                }
-                else{
-                    ret=ZNPNode_ZPP_AABBPair.zpp_pool;
-                    ZNPNode_ZPP_AABBPair.zpp_pool=ret.next;
-                    ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_AABBPair.POOL_CNT--;
-                    ZNPNode_ZPP_AABBPair.POOL_ADD++;
-                    #end
-                }
-                ret.alloc();
-            };
-            ret.elt=o;
-            ret;
-        };
-        temp.next=begin();
-        head=temp;
-        modified=true;
-        length++;
-        return o;
-    }
-    public function addAll(x:ZNPList_ZPP_AABBPair):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                x!=null;
-            };
-            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_AABBPair"+"] addAll -> "+x);
-            #end
-        };
-        {
-            var cx_ite=x.begin();
-            while(cx_ite!=null){
-                var i=cx_ite.elem();
-                add(i);
-                cx_ite=cx_ite.next;
-            }
-        };
-    }
-    public function insert(cur:ZNPNode_ZPP_AABBPair,o:ZPP_AABBPair):ZNPNode_ZPP_AABBPair{
-        return inlined_insert(cur,o);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_insert(cur:ZNPNode_ZPP_AABBPair,o:ZPP_AABBPair):ZNPNode_ZPP_AABBPair{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                o!=null&&!has(o);
-            };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_AABBPair"+"] cur -> "+cur+" -> "+o);
-            #end
-        };
-        var temp={
-            var ret;
-            {
-                if(ZNPNode_ZPP_AABBPair.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_AABBPair();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_AABBPair.POOL_TOT++;
-                    ZNPNode_ZPP_AABBPair.POOL_ADDNEW++;
-                    #end
-                }
-                else{
-                    ret=ZNPNode_ZPP_AABBPair.zpp_pool;
-                    ZNPNode_ZPP_AABBPair.zpp_pool=ret.next;
-                    ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_AABBPair.POOL_CNT--;
-                    ZNPNode_ZPP_AABBPair.POOL_ADD++;
-                    #end
-                }
-                ret.alloc();
-            };
-            ret.elt=o;
-            ret;
-        };
-        if(cur==null){
-            temp.next=begin();
-            head=temp;
-        }
-        else{
-            temp.next=cur.next;
-            cur.next=temp;
-        }
-        pushmod=modified=true;
-        length++;
-        return temp;
-    }
-    public function pop():Void{
-        inlined_pop();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop():Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_AABBPair"+"] pop");
-            #end
-        };
-        var ret=begin();
-        head=ret.next;
-        {};
-        {
-            var o=ret;
-            {
-                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-                var res={
-                    o!=null;
-                };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_AABBPair"+", in obj: "+"ret"+")");
-                #end
-            };
-            o.free();
-            o.next=ZNPNode_ZPP_AABBPair.zpp_pool;
-            ZNPNode_ZPP_AABBPair.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_AABBPair.POOL_CNT++;
-            ZNPNode_ZPP_AABBPair.POOL_SUB++;
-            #end
-        };
-        if(empty())pushmod=true;
-        modified=true;
-        length--;
-    }
-    public function pop_unsafe():ZPP_AABBPair{
-        return inlined_pop_unsafe();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop_unsafe():ZPP_AABBPair{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_AABBPair"+"] pop_unsafe");
-            #end
-        };
-        var ret=front();
-        pop();
-        return ret;
-    }
-    public function remove(obj:ZPP_AABBPair):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                has(obj);
-            };
-            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
-            #end
-        };
-        inlined_try_remove(obj);
-    }
-    public function try_remove(obj:ZPP_AABBPair):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_AABBPair"+"] remove -> "+obj);
-            #end
-        };
-        var pre=null;
-        var cur=begin();
-        var ret=false;
-        while(cur!=null){
-            if(cur.elem()==obj){
-                erase(pre);
-                ret=true;
-                break;
-            }
-            pre=cur;
-            cur=cur.next;
-        }
-        return ret;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_remove(obj:ZPP_AABBPair):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                has(obj);
-            };
-            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
-            #end
-        };
-        inlined_try_remove(obj);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_try_remove(obj:ZPP_AABBPair):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_AABBPair"+"] remove -> "+obj);
-            #end
-        };
-        var pre=null;
-        var cur=begin();
-        var ret=false;
-        while(cur!=null){
-            if(cur.elem()==obj){
-                inlined_erase(pre);
-                ret=true;
-                break;
-            }
-            pre=cur;
-            cur=cur.next;
-        }
-        return ret;
-    }
-    public function erase(pre:ZNPNode_ZPP_AABBPair):ZNPNode_ZPP_AABBPair{
-        return inlined_erase(pre);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_erase(pre:ZNPNode_ZPP_AABBPair):ZNPNode_ZPP_AABBPair{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_AABBPair"+"] erase -> "+pre);
-            #end
-        };
-        var old:ZNPNode_ZPP_AABBPair;
-        var ret:ZNPNode_ZPP_AABBPair;
-        if(pre==null){
-            old=begin();
-            ret=old.next;
-            head=ret;
-            if(empty())pushmod=true;
-        }
-        else{
-            old=pre.next;
-            ret=old.next;
-            pre.next=ret;
-            if(ret==null)pushmod=true;
-        }
-        {};
-        {
-            var o=old;
-            {
-                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-                var res={
-                    o!=null;
-                };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_AABBPair"+", in obj: "+"old"+")");
-                #end
-            };
-            o.free();
-            o.next=ZNPNode_ZPP_AABBPair.zpp_pool;
-            ZNPNode_ZPP_AABBPair.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_AABBPair.POOL_CNT++;
-            ZNPNode_ZPP_AABBPair.POOL_SUB++;
-            #end
-        };
-        modified=true;
-        length--;
-        pushmod=true;
-        return ret;
-    }
-    public function splice(pre:ZNPNode_ZPP_AABBPair,n:Int):ZNPNode_ZPP_AABBPair{
-        while(n-->0&&pre.next!=null)erase(pre);
-        return pre.next;
-    }
-    public function clear():Void{
-        inlined_clear();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_clear():Void{
-        if(true){
-            while(!empty())inlined_pop();
-            pushmod=true;
-        }
-    }
-    public function reverse():Void{
-        var cur=begin();
-        var pre=null;
-        while(cur!=null){
-            var nx=cur.next;
-            cur.next=pre;
-            head=cur;
-            pre=cur;
-            cur=nx;
-        }
-        modified=true;
-        pushmod=true;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function empty():Bool{
-        return begin()==null;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function size():Int{
-        return length;
-    }
-    public function has(obj:ZPP_AABBPair):Bool{
-        return inlined_has(obj);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_has(obj:ZPP_AABBPair):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_AABBPair"+"] has -> "+obj);
-            #end
-        };
-        var ret;
-        {
-            ret=false;
-            {
-                var cx_ite=this.begin();
-                while(cx_ite!=null){
-                    var npite=cx_ite.elem();
-                    {
-                        if(npite==obj){
-                            ret=true;
-                            break;
-                        }
-                    };
-                    cx_ite=cx_ite.next;
-                }
-            };
-        };
-        return ret;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function front():ZPP_AABBPair{
-        return begin().elem();
-    }
-    public function back():ZPP_AABBPair{
-        var ret=begin();
-        var cur=ret;
-        while(cur!=null){
-            ret=cur;
-            cur=cur.next;
-        }
-        return ret.elem();
-    }
-    public function iterator_at(ind:Int):ZNPNode_ZPP_AABBPair{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                ind>=-1&&ind<size();
-            };
-            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_AABBPair"+"] iterator_at -> "+ind);
-            #end
-        };
-        var ret=begin();
-        while(ind-->0&&ret!=null)ret=ret.next;
-        return ret;
-    }
-    public function at(ind:Int):ZPP_AABBPair{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                ind>=0&&ind<size();
-            };
-            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_AABBPair"+"] at -> "+ind);
-            #end
-        };
-        var it=iterator_at(ind);
-        return if(it!=null)it.elem()else null;
-    }
-}
-#if nape_swc@:keep #end
-class ZNPList_ZPP_Edge{
-    public var head:ZNPNode_ZPP_Edge=null;
-    public function new(){}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function begin():ZNPNode_ZPP_Edge{
-        return head;
-    }
-    public var modified:Bool=false;
-    public var pushmod:Bool=false;
-    public var length:Int=0;
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function setbegin(i:ZNPNode_ZPP_Edge):Void{
-        head=i;
-        modified=true;
-        pushmod=true;
-    }
-    public function add(o:ZPP_Edge):ZPP_Edge{
-        return inlined_add(o);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_add(o:ZPP_Edge):ZPP_Edge{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                o!=null&&!has(o);
-            };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_Edge"+"] add -> o="+o);
-            #end
-        };
-        var temp={
-            var ret;
-            {
-                if(ZNPNode_ZPP_Edge.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_Edge();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_Edge.POOL_TOT++;
-                    ZNPNode_ZPP_Edge.POOL_ADDNEW++;
-                    #end
-                }
-                else{
-                    ret=ZNPNode_ZPP_Edge.zpp_pool;
-                    ZNPNode_ZPP_Edge.zpp_pool=ret.next;
-                    ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_Edge.POOL_CNT--;
-                    ZNPNode_ZPP_Edge.POOL_ADD++;
-                    #end
-                }
-                ret.alloc();
-            };
-            ret.elt=o;
-            ret;
-        };
-        temp.next=begin();
-        head=temp;
-        modified=true;
-        length++;
-        return o;
-    }
-    public function addAll(x:ZNPList_ZPP_Edge):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                x!=null;
-            };
-            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_Edge"+"] addAll -> "+x);
-            #end
-        };
-        {
-            var cx_ite=x.begin();
-            while(cx_ite!=null){
-                var i=cx_ite.elem();
-                add(i);
-                cx_ite=cx_ite.next;
-            }
-        };
-    }
-    public function insert(cur:ZNPNode_ZPP_Edge,o:ZPP_Edge):ZNPNode_ZPP_Edge{
-        return inlined_insert(cur,o);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_insert(cur:ZNPNode_ZPP_Edge,o:ZPP_Edge):ZNPNode_ZPP_Edge{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                o!=null&&!has(o);
-            };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_Edge"+"] cur -> "+cur+" -> "+o);
-            #end
-        };
-        var temp={
-            var ret;
-            {
-                if(ZNPNode_ZPP_Edge.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_Edge();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_Edge.POOL_TOT++;
-                    ZNPNode_ZPP_Edge.POOL_ADDNEW++;
-                    #end
-                }
-                else{
-                    ret=ZNPNode_ZPP_Edge.zpp_pool;
-                    ZNPNode_ZPP_Edge.zpp_pool=ret.next;
-                    ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_Edge.POOL_CNT--;
-                    ZNPNode_ZPP_Edge.POOL_ADD++;
-                    #end
-                }
-                ret.alloc();
-            };
-            ret.elt=o;
-            ret;
-        };
-        if(cur==null){
-            temp.next=begin();
-            head=temp;
-        }
-        else{
-            temp.next=cur.next;
-            cur.next=temp;
-        }
-        pushmod=modified=true;
-        length++;
-        return temp;
-    }
-    public function pop():Void{
-        inlined_pop();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop():Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Edge"+"] pop");
-            #end
-        };
-        var ret=begin();
-        head=ret.next;
-        {};
-        {
-            var o=ret;
-            {
-                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-                var res={
-                    o!=null;
-                };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_Edge"+", in obj: "+"ret"+")");
-                #end
-            };
-            o.free();
-            o.next=ZNPNode_ZPP_Edge.zpp_pool;
-            ZNPNode_ZPP_Edge.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_Edge.POOL_CNT++;
-            ZNPNode_ZPP_Edge.POOL_SUB++;
-            #end
-        };
-        if(empty())pushmod=true;
-        modified=true;
-        length--;
-    }
-    public function pop_unsafe():ZPP_Edge{
-        return inlined_pop_unsafe();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop_unsafe():ZPP_Edge{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Edge"+"] pop_unsafe");
-            #end
-        };
-        var ret=front();
-        pop();
-        return ret;
-    }
-    public function remove(obj:ZPP_Edge):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                has(obj);
-            };
-            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
-            #end
-        };
-        inlined_try_remove(obj);
-    }
-    public function try_remove(obj:ZPP_Edge):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Edge"+"] remove -> "+obj);
-            #end
-        };
-        var pre=null;
-        var cur=begin();
-        var ret=false;
-        while(cur!=null){
-            if(cur.elem()==obj){
-                erase(pre);
-                ret=true;
-                break;
-            }
-            pre=cur;
-            cur=cur.next;
-        }
-        return ret;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_remove(obj:ZPP_Edge):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                has(obj);
-            };
-            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
-            #end
-        };
-        inlined_try_remove(obj);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_try_remove(obj:ZPP_Edge):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Edge"+"] remove -> "+obj);
-            #end
-        };
-        var pre=null;
-        var cur=begin();
-        var ret=false;
-        while(cur!=null){
-            if(cur.elem()==obj){
-                inlined_erase(pre);
-                ret=true;
-                break;
-            }
-            pre=cur;
-            cur=cur.next;
-        }
-        return ret;
-    }
-    public function erase(pre:ZNPNode_ZPP_Edge):ZNPNode_ZPP_Edge{
-        return inlined_erase(pre);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_erase(pre:ZNPNode_ZPP_Edge):ZNPNode_ZPP_Edge{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Edge"+"] erase -> "+pre);
-            #end
-        };
-        var old:ZNPNode_ZPP_Edge;
-        var ret:ZNPNode_ZPP_Edge;
-        if(pre==null){
-            old=begin();
-            ret=old.next;
-            head=ret;
-            if(empty())pushmod=true;
-        }
-        else{
-            old=pre.next;
-            ret=old.next;
-            pre.next=ret;
-            if(ret==null)pushmod=true;
-        }
-        {};
-        {
-            var o=old;
-            {
-                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-                var res={
-                    o!=null;
-                };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_Edge"+", in obj: "+"old"+")");
-                #end
-            };
-            o.free();
-            o.next=ZNPNode_ZPP_Edge.zpp_pool;
-            ZNPNode_ZPP_Edge.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_Edge.POOL_CNT++;
-            ZNPNode_ZPP_Edge.POOL_SUB++;
-            #end
-        };
-        modified=true;
-        length--;
-        pushmod=true;
-        return ret;
-    }
-    public function splice(pre:ZNPNode_ZPP_Edge,n:Int):ZNPNode_ZPP_Edge{
-        while(n-->0&&pre.next!=null)erase(pre);
-        return pre.next;
-    }
-    public function clear():Void{
-        inlined_clear();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_clear():Void{
-        if(true){
-            while(!empty())inlined_pop();
-            pushmod=true;
-        }
-    }
-    public function reverse():Void{
-        var cur=begin();
-        var pre=null;
-        while(cur!=null){
-            var nx=cur.next;
-            cur.next=pre;
-            head=cur;
-            pre=cur;
-            cur=nx;
-        }
-        modified=true;
-        pushmod=true;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function empty():Bool{
-        return begin()==null;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function size():Int{
-        return length;
-    }
-    public function has(obj:ZPP_Edge):Bool{
-        return inlined_has(obj);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_has(obj:ZPP_Edge):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Edge"+"] has -> "+obj);
-            #end
-        };
-        var ret;
-        {
-            ret=false;
-            {
-                var cx_ite=this.begin();
-                while(cx_ite!=null){
-                    var npite=cx_ite.elem();
-                    {
-                        if(npite==obj){
-                            ret=true;
-                            break;
-                        }
-                    };
-                    cx_ite=cx_ite.next;
-                }
-            };
-        };
-        return ret;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function front():ZPP_Edge{
-        return begin().elem();
-    }
-    public function back():ZPP_Edge{
-        var ret=begin();
-        var cur=ret;
-        while(cur!=null){
-            ret=cur;
-            cur=cur.next;
-        }
-        return ret.elem();
-    }
-    public function iterator_at(ind:Int):ZNPNode_ZPP_Edge{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                ind>=-1&&ind<size();
-            };
-            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_Edge"+"] iterator_at -> "+ind);
-            #end
-        };
-        var ret=begin();
-        while(ind-->0&&ret!=null)ret=ret.next;
-        return ret;
-    }
-    public function at(ind:Int):ZPP_Edge{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                ind>=0&&ind<size();
-            };
-            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_Edge"+"] at -> "+ind);
-            #end
-        };
-        var it=iterator_at(ind);
-        return if(it!=null)it.elem()else null;
-    }
-}
-#if nape_swc@:keep #end
-class ZNPList_ZPP_AABBNode{
-    public var head:ZNPNode_ZPP_AABBNode=null;
-    public function new(){}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function begin():ZNPNode_ZPP_AABBNode{
-        return head;
-    }
-    public var modified:Bool=false;
-    public var pushmod:Bool=false;
-    public var length:Int=0;
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function setbegin(i:ZNPNode_ZPP_AABBNode):Void{
-        head=i;
-        modified=true;
-        pushmod=true;
-    }
-    public function add(o:ZPP_AABBNode):ZPP_AABBNode{
-        return inlined_add(o);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_add(o:ZPP_AABBNode):ZPP_AABBNode{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                o!=null&&!has(o);
-            };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_AABBNode"+"] add -> o="+o);
-            #end
-        };
-        var temp={
-            var ret;
-            {
-                if(ZNPNode_ZPP_AABBNode.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_AABBNode();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_AABBNode.POOL_TOT++;
-                    ZNPNode_ZPP_AABBNode.POOL_ADDNEW++;
-                    #end
-                }
-                else{
-                    ret=ZNPNode_ZPP_AABBNode.zpp_pool;
-                    ZNPNode_ZPP_AABBNode.zpp_pool=ret.next;
-                    ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_AABBNode.POOL_CNT--;
-                    ZNPNode_ZPP_AABBNode.POOL_ADD++;
-                    #end
-                }
-                ret.alloc();
-            };
-            ret.elt=o;
-            ret;
-        };
-        temp.next=begin();
-        head=temp;
-        modified=true;
-        length++;
-        return o;
-    }
-    public function addAll(x:ZNPList_ZPP_AABBNode):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                x!=null;
-            };
-            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_AABBNode"+"] addAll -> "+x);
-            #end
-        };
-        {
-            var cx_ite=x.begin();
-            while(cx_ite!=null){
-                var i=cx_ite.elem();
-                add(i);
-                cx_ite=cx_ite.next;
-            }
-        };
-    }
-    public function insert(cur:ZNPNode_ZPP_AABBNode,o:ZPP_AABBNode):ZNPNode_ZPP_AABBNode{
-        return inlined_insert(cur,o);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_insert(cur:ZNPNode_ZPP_AABBNode,o:ZPP_AABBNode):ZNPNode_ZPP_AABBNode{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                o!=null&&!has(o);
-            };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_AABBNode"+"] cur -> "+cur+" -> "+o);
-            #end
-        };
-        var temp={
-            var ret;
-            {
-                if(ZNPNode_ZPP_AABBNode.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_AABBNode();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_AABBNode.POOL_TOT++;
-                    ZNPNode_ZPP_AABBNode.POOL_ADDNEW++;
-                    #end
-                }
-                else{
-                    ret=ZNPNode_ZPP_AABBNode.zpp_pool;
-                    ZNPNode_ZPP_AABBNode.zpp_pool=ret.next;
-                    ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_AABBNode.POOL_CNT--;
-                    ZNPNode_ZPP_AABBNode.POOL_ADD++;
-                    #end
-                }
-                ret.alloc();
-            };
-            ret.elt=o;
-            ret;
-        };
-        if(cur==null){
-            temp.next=begin();
-            head=temp;
-        }
-        else{
-            temp.next=cur.next;
-            cur.next=temp;
-        }
-        pushmod=modified=true;
-        length++;
-        return temp;
-    }
-    public function pop():Void{
-        inlined_pop();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop():Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_AABBNode"+"] pop");
-            #end
-        };
-        var ret=begin();
-        head=ret.next;
-        {};
-        {
-            var o=ret;
-            {
-                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-                var res={
-                    o!=null;
-                };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_AABBNode"+", in obj: "+"ret"+")");
-                #end
-            };
-            o.free();
-            o.next=ZNPNode_ZPP_AABBNode.zpp_pool;
-            ZNPNode_ZPP_AABBNode.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_AABBNode.POOL_CNT++;
-            ZNPNode_ZPP_AABBNode.POOL_SUB++;
-            #end
-        };
-        if(empty())pushmod=true;
-        modified=true;
-        length--;
-    }
-    public function pop_unsafe():ZPP_AABBNode{
-        return inlined_pop_unsafe();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop_unsafe():ZPP_AABBNode{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_AABBNode"+"] pop_unsafe");
-            #end
-        };
-        var ret=front();
-        pop();
-        return ret;
-    }
-    public function remove(obj:ZPP_AABBNode):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                has(obj);
-            };
-            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
-            #end
-        };
-        inlined_try_remove(obj);
-    }
-    public function try_remove(obj:ZPP_AABBNode):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_AABBNode"+"] remove -> "+obj);
-            #end
-        };
-        var pre=null;
-        var cur=begin();
-        var ret=false;
-        while(cur!=null){
-            if(cur.elem()==obj){
-                erase(pre);
-                ret=true;
-                break;
-            }
-            pre=cur;
-            cur=cur.next;
-        }
-        return ret;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_remove(obj:ZPP_AABBNode):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                has(obj);
-            };
-            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
-            #end
-        };
-        inlined_try_remove(obj);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_try_remove(obj:ZPP_AABBNode):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_AABBNode"+"] remove -> "+obj);
-            #end
-        };
-        var pre=null;
-        var cur=begin();
-        var ret=false;
-        while(cur!=null){
-            if(cur.elem()==obj){
-                inlined_erase(pre);
-                ret=true;
-                break;
-            }
-            pre=cur;
-            cur=cur.next;
-        }
-        return ret;
-    }
-    public function erase(pre:ZNPNode_ZPP_AABBNode):ZNPNode_ZPP_AABBNode{
-        return inlined_erase(pre);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_erase(pre:ZNPNode_ZPP_AABBNode):ZNPNode_ZPP_AABBNode{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_AABBNode"+"] erase -> "+pre);
-            #end
-        };
-        var old:ZNPNode_ZPP_AABBNode;
-        var ret:ZNPNode_ZPP_AABBNode;
-        if(pre==null){
-            old=begin();
-            ret=old.next;
-            head=ret;
-            if(empty())pushmod=true;
-        }
-        else{
-            old=pre.next;
-            ret=old.next;
-            pre.next=ret;
-            if(ret==null)pushmod=true;
-        }
-        {};
-        {
-            var o=old;
-            {
-                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-                var res={
-                    o!=null;
-                };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_AABBNode"+", in obj: "+"old"+")");
-                #end
-            };
-            o.free();
-            o.next=ZNPNode_ZPP_AABBNode.zpp_pool;
-            ZNPNode_ZPP_AABBNode.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_AABBNode.POOL_CNT++;
-            ZNPNode_ZPP_AABBNode.POOL_SUB++;
-            #end
-        };
-        modified=true;
-        length--;
-        pushmod=true;
-        return ret;
-    }
-    public function splice(pre:ZNPNode_ZPP_AABBNode,n:Int):ZNPNode_ZPP_AABBNode{
-        while(n-->0&&pre.next!=null)erase(pre);
-        return pre.next;
-    }
-    public function clear():Void{
-        inlined_clear();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_clear():Void{
-        if(true){
-            while(!empty())inlined_pop();
-            pushmod=true;
-        }
-    }
-    public function reverse():Void{
-        var cur=begin();
-        var pre=null;
-        while(cur!=null){
-            var nx=cur.next;
-            cur.next=pre;
-            head=cur;
-            pre=cur;
-            cur=nx;
-        }
-        modified=true;
-        pushmod=true;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function empty():Bool{
-        return begin()==null;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function size():Int{
-        return length;
-    }
-    public function has(obj:ZPP_AABBNode):Bool{
-        return inlined_has(obj);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_has(obj:ZPP_AABBNode):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_AABBNode"+"] has -> "+obj);
-            #end
-        };
-        var ret;
-        {
-            ret=false;
-            {
-                var cx_ite=this.begin();
-                while(cx_ite!=null){
-                    var npite=cx_ite.elem();
-                    {
-                        if(npite==obj){
-                            ret=true;
-                            break;
-                        }
-                    };
-                    cx_ite=cx_ite.next;
-                }
-            };
-        };
-        return ret;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function front():ZPP_AABBNode{
-        return begin().elem();
-    }
-    public function back():ZPP_AABBNode{
-        var ret=begin();
-        var cur=ret;
-        while(cur!=null){
-            ret=cur;
-            cur=cur.next;
-        }
-        return ret.elem();
-    }
-    public function iterator_at(ind:Int):ZNPNode_ZPP_AABBNode{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                ind>=-1&&ind<size();
-            };
-            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_AABBNode"+"] iterator_at -> "+ind);
-            #end
-        };
-        var ret=begin();
-        while(ind-->0&&ret!=null)ret=ret.next;
-        return ret;
-    }
-    public function at(ind:Int):ZPP_AABBNode{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                ind>=0&&ind<size();
-            };
-            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_AABBNode"+"] at -> "+ind);
-            #end
-        };
-        var it=iterator_at(ind);
-        return if(it!=null)it.elem()else null;
-    }
-}
-#if nape_swc@:keep #end
-class ZNPList_ZPP_Component{
-    public var head:ZNPNode_ZPP_Component=null;
-    public function new(){}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function begin():ZNPNode_ZPP_Component{
-        return head;
-    }
-    public var modified:Bool=false;
-    public var pushmod:Bool=false;
-    public var length:Int=0;
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function setbegin(i:ZNPNode_ZPP_Component):Void{
-        head=i;
-        modified=true;
-        pushmod=true;
-    }
-    public function add(o:ZPP_Component):ZPP_Component{
-        return inlined_add(o);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_add(o:ZPP_Component):ZPP_Component{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                o!=null&&!has(o);
-            };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_Component"+"] add -> o="+o);
-            #end
-        };
-        var temp={
-            var ret;
-            {
-                if(ZNPNode_ZPP_Component.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_Component();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_Component.POOL_TOT++;
-                    ZNPNode_ZPP_Component.POOL_ADDNEW++;
-                    #end
-                }
-                else{
-                    ret=ZNPNode_ZPP_Component.zpp_pool;
-                    ZNPNode_ZPP_Component.zpp_pool=ret.next;
-                    ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_Component.POOL_CNT--;
-                    ZNPNode_ZPP_Component.POOL_ADD++;
-                    #end
-                }
-                ret.alloc();
-            };
-            ret.elt=o;
-            ret;
-        };
-        temp.next=begin();
-        head=temp;
-        modified=true;
-        length++;
-        return o;
-    }
-    public function addAll(x:ZNPList_ZPP_Component):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                x!=null;
-            };
-            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_Component"+"] addAll -> "+x);
-            #end
-        };
-        {
-            var cx_ite=x.begin();
-            while(cx_ite!=null){
-                var i=cx_ite.elem();
-                add(i);
-                cx_ite=cx_ite.next;
-            }
-        };
-    }
-    public function insert(cur:ZNPNode_ZPP_Component,o:ZPP_Component):ZNPNode_ZPP_Component{
-        return inlined_insert(cur,o);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_insert(cur:ZNPNode_ZPP_Component,o:ZPP_Component):ZNPNode_ZPP_Component{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                o!=null&&!has(o);
-            };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_Component"+"] cur -> "+cur+" -> "+o);
-            #end
-        };
-        var temp={
-            var ret;
-            {
-                if(ZNPNode_ZPP_Component.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_Component();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_Component.POOL_TOT++;
-                    ZNPNode_ZPP_Component.POOL_ADDNEW++;
-                    #end
-                }
-                else{
-                    ret=ZNPNode_ZPP_Component.zpp_pool;
-                    ZNPNode_ZPP_Component.zpp_pool=ret.next;
-                    ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_Component.POOL_CNT--;
-                    ZNPNode_ZPP_Component.POOL_ADD++;
-                    #end
-                }
-                ret.alloc();
-            };
-            ret.elt=o;
-            ret;
-        };
-        if(cur==null){
-            temp.next=begin();
-            head=temp;
-        }
-        else{
-            temp.next=cur.next;
-            cur.next=temp;
-        }
-        pushmod=modified=true;
-        length++;
-        return temp;
-    }
-    public function pop():Void{
-        inlined_pop();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop():Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Component"+"] pop");
-            #end
-        };
-        var ret=begin();
-        head=ret.next;
-        {};
-        {
-            var o=ret;
-            {
-                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-                var res={
-                    o!=null;
-                };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_Component"+", in obj: "+"ret"+")");
-                #end
-            };
-            o.free();
-            o.next=ZNPNode_ZPP_Component.zpp_pool;
-            ZNPNode_ZPP_Component.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_Component.POOL_CNT++;
-            ZNPNode_ZPP_Component.POOL_SUB++;
-            #end
-        };
-        if(empty())pushmod=true;
-        modified=true;
-        length--;
-    }
-    public function pop_unsafe():ZPP_Component{
-        return inlined_pop_unsafe();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop_unsafe():ZPP_Component{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Component"+"] pop_unsafe");
-            #end
-        };
-        var ret=front();
-        pop();
-        return ret;
-    }
-    public function remove(obj:ZPP_Component):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                has(obj);
-            };
-            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
-            #end
-        };
-        inlined_try_remove(obj);
-    }
-    public function try_remove(obj:ZPP_Component):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Component"+"] remove -> "+obj);
-            #end
-        };
-        var pre=null;
-        var cur=begin();
-        var ret=false;
-        while(cur!=null){
-            if(cur.elem()==obj){
-                erase(pre);
-                ret=true;
-                break;
-            }
-            pre=cur;
-            cur=cur.next;
-        }
-        return ret;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_remove(obj:ZPP_Component):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                has(obj);
-            };
-            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
-            #end
-        };
-        inlined_try_remove(obj);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_try_remove(obj:ZPP_Component):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Component"+"] remove -> "+obj);
-            #end
-        };
-        var pre=null;
-        var cur=begin();
-        var ret=false;
-        while(cur!=null){
-            if(cur.elem()==obj){
-                inlined_erase(pre);
-                ret=true;
-                break;
-            }
-            pre=cur;
-            cur=cur.next;
-        }
-        return ret;
-    }
-    public function erase(pre:ZNPNode_ZPP_Component):ZNPNode_ZPP_Component{
-        return inlined_erase(pre);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_erase(pre:ZNPNode_ZPP_Component):ZNPNode_ZPP_Component{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Component"+"] erase -> "+pre);
-            #end
-        };
-        var old:ZNPNode_ZPP_Component;
-        var ret:ZNPNode_ZPP_Component;
-        if(pre==null){
-            old=begin();
-            ret=old.next;
-            head=ret;
-            if(empty())pushmod=true;
-        }
-        else{
-            old=pre.next;
-            ret=old.next;
-            pre.next=ret;
-            if(ret==null)pushmod=true;
-        }
-        {};
-        {
-            var o=old;
-            {
-                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-                var res={
-                    o!=null;
-                };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_Component"+", in obj: "+"old"+")");
-                #end
-            };
-            o.free();
-            o.next=ZNPNode_ZPP_Component.zpp_pool;
-            ZNPNode_ZPP_Component.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_Component.POOL_CNT++;
-            ZNPNode_ZPP_Component.POOL_SUB++;
-            #end
-        };
-        modified=true;
-        length--;
-        pushmod=true;
-        return ret;
-    }
-    public function splice(pre:ZNPNode_ZPP_Component,n:Int):ZNPNode_ZPP_Component{
-        while(n-->0&&pre.next!=null)erase(pre);
-        return pre.next;
-    }
-    public function clear():Void{
-        inlined_clear();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_clear():Void{
-        if(true){
-            while(!empty())inlined_pop();
-            pushmod=true;
-        }
-    }
-    public function reverse():Void{
-        var cur=begin();
-        var pre=null;
-        while(cur!=null){
-            var nx=cur.next;
-            cur.next=pre;
-            head=cur;
-            pre=cur;
-            cur=nx;
-        }
-        modified=true;
-        pushmod=true;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function empty():Bool{
-        return begin()==null;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function size():Int{
-        return length;
-    }
-    public function has(obj:ZPP_Component):Bool{
-        return inlined_has(obj);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_has(obj:ZPP_Component):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Component"+"] has -> "+obj);
-            #end
-        };
-        var ret;
-        {
-            ret=false;
-            {
-                var cx_ite=this.begin();
-                while(cx_ite!=null){
-                    var npite=cx_ite.elem();
-                    {
-                        if(npite==obj){
-                            ret=true;
-                            break;
-                        }
-                    };
-                    cx_ite=cx_ite.next;
-                }
-            };
-        };
-        return ret;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function front():ZPP_Component{
-        return begin().elem();
-    }
-    public function back():ZPP_Component{
-        var ret=begin();
-        var cur=ret;
-        while(cur!=null){
-            ret=cur;
-            cur=cur.next;
-        }
-        return ret.elem();
-    }
-    public function iterator_at(ind:Int):ZNPNode_ZPP_Component{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                ind>=-1&&ind<size();
-            };
-            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_Component"+"] iterator_at -> "+ind);
-            #end
-        };
-        var ret=begin();
-        while(ind-->0&&ret!=null)ret=ret.next;
-        return ret;
-    }
-    public function at(ind:Int):ZPP_Component{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                ind>=0&&ind<size();
-            };
-            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_Component"+"] at -> "+ind);
-            #end
-        };
-        var it=iterator_at(ind);
-        return if(it!=null)it.elem()else null;
-    }
-}
-#if nape_swc@:keep #end
-class ZNPList_ZPP_FluidArbiter{
-    public var head:ZNPNode_ZPP_FluidArbiter=null;
-    public function new(){}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function begin():ZNPNode_ZPP_FluidArbiter{
-        return head;
-    }
-    public var modified:Bool=false;
-    public var pushmod:Bool=false;
-    public var length:Int=0;
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function setbegin(i:ZNPNode_ZPP_FluidArbiter):Void{
-        head=i;
-        modified=true;
-        pushmod=true;
-    }
-    public function add(o:ZPP_FluidArbiter):ZPP_FluidArbiter{
-        return inlined_add(o);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_add(o:ZPP_FluidArbiter):ZPP_FluidArbiter{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                o!=null&&!has(o);
-            };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_FluidArbiter"+"] add -> o="+o);
-            #end
-        };
-        var temp={
-            var ret;
-            {
-                if(ZNPNode_ZPP_FluidArbiter.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_FluidArbiter();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_FluidArbiter.POOL_TOT++;
-                    ZNPNode_ZPP_FluidArbiter.POOL_ADDNEW++;
-                    #end
-                }
-                else{
-                    ret=ZNPNode_ZPP_FluidArbiter.zpp_pool;
-                    ZNPNode_ZPP_FluidArbiter.zpp_pool=ret.next;
-                    ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_FluidArbiter.POOL_CNT--;
-                    ZNPNode_ZPP_FluidArbiter.POOL_ADD++;
-                    #end
-                }
-                ret.alloc();
-            };
-            ret.elt=o;
-            ret;
-        };
-        temp.next=begin();
-        head=temp;
-        modified=true;
-        length++;
-        return o;
-    }
-    public function addAll(x:ZNPList_ZPP_FluidArbiter):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                x!=null;
-            };
-            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_FluidArbiter"+"] addAll -> "+x);
-            #end
-        };
-        {
-            var cx_ite=x.begin();
-            while(cx_ite!=null){
-                var i=cx_ite.elem();
-                add(i);
-                cx_ite=cx_ite.next;
-            }
-        };
-    }
-    public function insert(cur:ZNPNode_ZPP_FluidArbiter,o:ZPP_FluidArbiter):ZNPNode_ZPP_FluidArbiter{
-        return inlined_insert(cur,o);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_insert(cur:ZNPNode_ZPP_FluidArbiter,o:ZPP_FluidArbiter):ZNPNode_ZPP_FluidArbiter{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                o!=null&&!has(o);
-            };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_FluidArbiter"+"] cur -> "+cur+" -> "+o);
-            #end
-        };
-        var temp={
-            var ret;
-            {
-                if(ZNPNode_ZPP_FluidArbiter.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_FluidArbiter();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_FluidArbiter.POOL_TOT++;
-                    ZNPNode_ZPP_FluidArbiter.POOL_ADDNEW++;
-                    #end
-                }
-                else{
-                    ret=ZNPNode_ZPP_FluidArbiter.zpp_pool;
-                    ZNPNode_ZPP_FluidArbiter.zpp_pool=ret.next;
-                    ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_FluidArbiter.POOL_CNT--;
-                    ZNPNode_ZPP_FluidArbiter.POOL_ADD++;
-                    #end
-                }
-                ret.alloc();
-            };
-            ret.elt=o;
-            ret;
-        };
-        if(cur==null){
-            temp.next=begin();
-            head=temp;
-        }
-        else{
-            temp.next=cur.next;
-            cur.next=temp;
-        }
-        pushmod=modified=true;
-        length++;
-        return temp;
-    }
-    public function pop():Void{
-        inlined_pop();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop():Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_FluidArbiter"+"] pop");
-            #end
-        };
-        var ret=begin();
-        head=ret.next;
-        {};
-        {
-            var o=ret;
-            {
-                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-                var res={
-                    o!=null;
-                };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_FluidArbiter"+", in obj: "+"ret"+")");
-                #end
-            };
-            o.free();
-            o.next=ZNPNode_ZPP_FluidArbiter.zpp_pool;
-            ZNPNode_ZPP_FluidArbiter.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_FluidArbiter.POOL_CNT++;
-            ZNPNode_ZPP_FluidArbiter.POOL_SUB++;
-            #end
-        };
-        if(empty())pushmod=true;
-        modified=true;
-        length--;
-    }
-    public function pop_unsafe():ZPP_FluidArbiter{
-        return inlined_pop_unsafe();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop_unsafe():ZPP_FluidArbiter{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_FluidArbiter"+"] pop_unsafe");
-            #end
-        };
-        var ret=front();
-        pop();
-        return ret;
-    }
-    public function remove(obj:ZPP_FluidArbiter):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                has(obj);
-            };
-            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
-            #end
-        };
-        inlined_try_remove(obj);
-    }
-    public function try_remove(obj:ZPP_FluidArbiter):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_FluidArbiter"+"] remove -> "+obj);
-            #end
-        };
-        var pre=null;
-        var cur=begin();
-        var ret=false;
-        while(cur!=null){
-            if(cur.elem()==obj){
-                erase(pre);
-                ret=true;
-                break;
-            }
-            pre=cur;
-            cur=cur.next;
-        }
-        return ret;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_remove(obj:ZPP_FluidArbiter):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                has(obj);
-            };
-            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
-            #end
-        };
-        inlined_try_remove(obj);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_try_remove(obj:ZPP_FluidArbiter):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_FluidArbiter"+"] remove -> "+obj);
-            #end
-        };
-        var pre=null;
-        var cur=begin();
-        var ret=false;
-        while(cur!=null){
-            if(cur.elem()==obj){
-                inlined_erase(pre);
-                ret=true;
-                break;
-            }
-            pre=cur;
-            cur=cur.next;
-        }
-        return ret;
-    }
-    public function erase(pre:ZNPNode_ZPP_FluidArbiter):ZNPNode_ZPP_FluidArbiter{
-        return inlined_erase(pre);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_erase(pre:ZNPNode_ZPP_FluidArbiter):ZNPNode_ZPP_FluidArbiter{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_FluidArbiter"+"] erase -> "+pre);
-            #end
-        };
-        var old:ZNPNode_ZPP_FluidArbiter;
-        var ret:ZNPNode_ZPP_FluidArbiter;
-        if(pre==null){
-            old=begin();
-            ret=old.next;
-            head=ret;
-            if(empty())pushmod=true;
-        }
-        else{
-            old=pre.next;
-            ret=old.next;
-            pre.next=ret;
-            if(ret==null)pushmod=true;
-        }
-        {};
-        {
-            var o=old;
-            {
-                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-                var res={
-                    o!=null;
-                };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_FluidArbiter"+", in obj: "+"old"+")");
-                #end
-            };
-            o.free();
-            o.next=ZNPNode_ZPP_FluidArbiter.zpp_pool;
-            ZNPNode_ZPP_FluidArbiter.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_FluidArbiter.POOL_CNT++;
-            ZNPNode_ZPP_FluidArbiter.POOL_SUB++;
-            #end
-        };
-        modified=true;
-        length--;
-        pushmod=true;
-        return ret;
-    }
-    public function splice(pre:ZNPNode_ZPP_FluidArbiter,n:Int):ZNPNode_ZPP_FluidArbiter{
-        while(n-->0&&pre.next!=null)erase(pre);
-        return pre.next;
-    }
-    public function clear():Void{
-        inlined_clear();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_clear():Void{
-        if(true){
-            while(!empty())inlined_pop();
-            pushmod=true;
-        }
-    }
-    public function reverse():Void{
-        var cur=begin();
-        var pre=null;
-        while(cur!=null){
-            var nx=cur.next;
-            cur.next=pre;
-            head=cur;
-            pre=cur;
-            cur=nx;
-        }
-        modified=true;
-        pushmod=true;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function empty():Bool{
-        return begin()==null;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function size():Int{
-        return length;
-    }
-    public function has(obj:ZPP_FluidArbiter):Bool{
-        return inlined_has(obj);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_has(obj:ZPP_FluidArbiter):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_FluidArbiter"+"] has -> "+obj);
-            #end
-        };
-        var ret;
-        {
-            ret=false;
-            {
-                var cx_ite=this.begin();
-                while(cx_ite!=null){
-                    var npite=cx_ite.elem();
-                    {
-                        if(npite==obj){
-                            ret=true;
-                            break;
-                        }
-                    };
-                    cx_ite=cx_ite.next;
-                }
-            };
-        };
-        return ret;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function front():ZPP_FluidArbiter{
-        return begin().elem();
-    }
-    public function back():ZPP_FluidArbiter{
-        var ret=begin();
-        var cur=ret;
-        while(cur!=null){
-            ret=cur;
-            cur=cur.next;
-        }
-        return ret.elem();
-    }
-    public function iterator_at(ind:Int):ZNPNode_ZPP_FluidArbiter{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                ind>=-1&&ind<size();
-            };
-            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_FluidArbiter"+"] iterator_at -> "+ind);
-            #end
-        };
-        var ret=begin();
-        while(ind-->0&&ret!=null)ret=ret.next;
-        return ret;
-    }
-    public function at(ind:Int):ZPP_FluidArbiter{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                ind>=0&&ind<size();
-            };
-            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_FluidArbiter"+"] at -> "+ind);
-            #end
-        };
-        var it=iterator_at(ind);
-        return if(it!=null)it.elem()else null;
-    }
-}
-#if nape_swc@:keep #end
-class ZNPList_ZPP_SensorArbiter{
-    public var head:ZNPNode_ZPP_SensorArbiter=null;
-    public function new(){}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function begin():ZNPNode_ZPP_SensorArbiter{
-        return head;
-    }
-    public var modified:Bool=false;
-    public var pushmod:Bool=false;
-    public var length:Int=0;
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function setbegin(i:ZNPNode_ZPP_SensorArbiter):Void{
-        head=i;
-        modified=true;
-        pushmod=true;
-    }
-    public function add(o:ZPP_SensorArbiter):ZPP_SensorArbiter{
-        return inlined_add(o);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_add(o:ZPP_SensorArbiter):ZPP_SensorArbiter{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                o!=null&&!has(o);
-            };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_SensorArbiter"+"] add -> o="+o);
-            #end
-        };
-        var temp={
-            var ret;
-            {
-                if(ZNPNode_ZPP_SensorArbiter.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_SensorArbiter();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_SensorArbiter.POOL_TOT++;
-                    ZNPNode_ZPP_SensorArbiter.POOL_ADDNEW++;
-                    #end
-                }
-                else{
-                    ret=ZNPNode_ZPP_SensorArbiter.zpp_pool;
-                    ZNPNode_ZPP_SensorArbiter.zpp_pool=ret.next;
-                    ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_SensorArbiter.POOL_CNT--;
-                    ZNPNode_ZPP_SensorArbiter.POOL_ADD++;
-                    #end
-                }
-                ret.alloc();
-            };
-            ret.elt=o;
-            ret;
-        };
-        temp.next=begin();
-        head=temp;
-        modified=true;
-        length++;
-        return o;
-    }
-    public function addAll(x:ZNPList_ZPP_SensorArbiter):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                x!=null;
-            };
-            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_SensorArbiter"+"] addAll -> "+x);
-            #end
-        };
-        {
-            var cx_ite=x.begin();
-            while(cx_ite!=null){
-                var i=cx_ite.elem();
-                add(i);
-                cx_ite=cx_ite.next;
-            }
-        };
-    }
-    public function insert(cur:ZNPNode_ZPP_SensorArbiter,o:ZPP_SensorArbiter):ZNPNode_ZPP_SensorArbiter{
-        return inlined_insert(cur,o);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_insert(cur:ZNPNode_ZPP_SensorArbiter,o:ZPP_SensorArbiter):ZNPNode_ZPP_SensorArbiter{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                o!=null&&!has(o);
-            };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_SensorArbiter"+"] cur -> "+cur+" -> "+o);
-            #end
-        };
-        var temp={
-            var ret;
-            {
-                if(ZNPNode_ZPP_SensorArbiter.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_SensorArbiter();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_SensorArbiter.POOL_TOT++;
-                    ZNPNode_ZPP_SensorArbiter.POOL_ADDNEW++;
-                    #end
-                }
-                else{
-                    ret=ZNPNode_ZPP_SensorArbiter.zpp_pool;
-                    ZNPNode_ZPP_SensorArbiter.zpp_pool=ret.next;
-                    ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_SensorArbiter.POOL_CNT--;
-                    ZNPNode_ZPP_SensorArbiter.POOL_ADD++;
-                    #end
-                }
-                ret.alloc();
-            };
-            ret.elt=o;
-            ret;
-        };
-        if(cur==null){
-            temp.next=begin();
-            head=temp;
-        }
-        else{
-            temp.next=cur.next;
-            cur.next=temp;
-        }
-        pushmod=modified=true;
-        length++;
-        return temp;
-    }
-    public function pop():Void{
-        inlined_pop();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop():Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_SensorArbiter"+"] pop");
-            #end
-        };
-        var ret=begin();
-        head=ret.next;
-        {};
-        {
-            var o=ret;
-            {
-                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-                var res={
-                    o!=null;
-                };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_SensorArbiter"+", in obj: "+"ret"+")");
-                #end
-            };
-            o.free();
-            o.next=ZNPNode_ZPP_SensorArbiter.zpp_pool;
-            ZNPNode_ZPP_SensorArbiter.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_SensorArbiter.POOL_CNT++;
-            ZNPNode_ZPP_SensorArbiter.POOL_SUB++;
-            #end
-        };
-        if(empty())pushmod=true;
-        modified=true;
-        length--;
-    }
-    public function pop_unsafe():ZPP_SensorArbiter{
-        return inlined_pop_unsafe();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop_unsafe():ZPP_SensorArbiter{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_SensorArbiter"+"] pop_unsafe");
-            #end
-        };
-        var ret=front();
-        pop();
-        return ret;
-    }
-    public function remove(obj:ZPP_SensorArbiter):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                has(obj);
-            };
-            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
-            #end
-        };
-        inlined_try_remove(obj);
-    }
-    public function try_remove(obj:ZPP_SensorArbiter):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_SensorArbiter"+"] remove -> "+obj);
-            #end
-        };
-        var pre=null;
-        var cur=begin();
-        var ret=false;
-        while(cur!=null){
-            if(cur.elem()==obj){
-                erase(pre);
-                ret=true;
-                break;
-            }
-            pre=cur;
-            cur=cur.next;
-        }
-        return ret;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_remove(obj:ZPP_SensorArbiter):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                has(obj);
-            };
-            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
-            #end
-        };
-        inlined_try_remove(obj);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_try_remove(obj:ZPP_SensorArbiter):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_SensorArbiter"+"] remove -> "+obj);
-            #end
-        };
-        var pre=null;
-        var cur=begin();
-        var ret=false;
-        while(cur!=null){
-            if(cur.elem()==obj){
-                inlined_erase(pre);
-                ret=true;
-                break;
-            }
-            pre=cur;
-            cur=cur.next;
-        }
-        return ret;
-    }
-    public function erase(pre:ZNPNode_ZPP_SensorArbiter):ZNPNode_ZPP_SensorArbiter{
-        return inlined_erase(pre);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_erase(pre:ZNPNode_ZPP_SensorArbiter):ZNPNode_ZPP_SensorArbiter{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_SensorArbiter"+"] erase -> "+pre);
-            #end
-        };
-        var old:ZNPNode_ZPP_SensorArbiter;
-        var ret:ZNPNode_ZPP_SensorArbiter;
-        if(pre==null){
-            old=begin();
-            ret=old.next;
-            head=ret;
-            if(empty())pushmod=true;
-        }
-        else{
-            old=pre.next;
-            ret=old.next;
-            pre.next=ret;
-            if(ret==null)pushmod=true;
-        }
-        {};
-        {
-            var o=old;
-            {
-                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-                var res={
-                    o!=null;
-                };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_SensorArbiter"+", in obj: "+"old"+")");
-                #end
-            };
-            o.free();
-            o.next=ZNPNode_ZPP_SensorArbiter.zpp_pool;
-            ZNPNode_ZPP_SensorArbiter.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_SensorArbiter.POOL_CNT++;
-            ZNPNode_ZPP_SensorArbiter.POOL_SUB++;
-            #end
-        };
-        modified=true;
-        length--;
-        pushmod=true;
-        return ret;
-    }
-    public function splice(pre:ZNPNode_ZPP_SensorArbiter,n:Int):ZNPNode_ZPP_SensorArbiter{
-        while(n-->0&&pre.next!=null)erase(pre);
-        return pre.next;
-    }
-    public function clear():Void{
-        inlined_clear();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_clear():Void{
-        if(true){
-            while(!empty())inlined_pop();
-            pushmod=true;
-        }
-    }
-    public function reverse():Void{
-        var cur=begin();
-        var pre=null;
-        while(cur!=null){
-            var nx=cur.next;
-            cur.next=pre;
-            head=cur;
-            pre=cur;
-            cur=nx;
-        }
-        modified=true;
-        pushmod=true;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function empty():Bool{
-        return begin()==null;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function size():Int{
-        return length;
-    }
-    public function has(obj:ZPP_SensorArbiter):Bool{
-        return inlined_has(obj);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_has(obj:ZPP_SensorArbiter):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_SensorArbiter"+"] has -> "+obj);
-            #end
-        };
-        var ret;
-        {
-            ret=false;
-            {
-                var cx_ite=this.begin();
-                while(cx_ite!=null){
-                    var npite=cx_ite.elem();
-                    {
-                        if(npite==obj){
-                            ret=true;
-                            break;
-                        }
-                    };
-                    cx_ite=cx_ite.next;
-                }
-            };
-        };
-        return ret;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function front():ZPP_SensorArbiter{
-        return begin().elem();
-    }
-    public function back():ZPP_SensorArbiter{
-        var ret=begin();
-        var cur=ret;
-        while(cur!=null){
-            ret=cur;
-            cur=cur.next;
-        }
-        return ret.elem();
-    }
-    public function iterator_at(ind:Int):ZNPNode_ZPP_SensorArbiter{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                ind>=-1&&ind<size();
-            };
-            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_SensorArbiter"+"] iterator_at -> "+ind);
-            #end
-        };
-        var ret=begin();
-        while(ind-->0&&ret!=null)ret=ret.next;
-        return ret;
-    }
-    public function at(ind:Int):ZPP_SensorArbiter{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                ind>=0&&ind<size();
-            };
-            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_SensorArbiter"+"] at -> "+ind);
-            #end
-        };
-        var it=iterator_at(ind);
-        return if(it!=null)it.elem()else null;
-    }
-}
-#if nape_swc@:keep #end
-class ZNPList_ZPP_Listener{
-    public var head:ZNPNode_ZPP_Listener=null;
-    public function new(){}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function begin():ZNPNode_ZPP_Listener{
-        return head;
-    }
-    public var modified:Bool=false;
-    public var pushmod:Bool=false;
-    public var length:Int=0;
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function setbegin(i:ZNPNode_ZPP_Listener):Void{
-        head=i;
-        modified=true;
-        pushmod=true;
-    }
-    public function add(o:ZPP_Listener):ZPP_Listener{
-        return inlined_add(o);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_add(o:ZPP_Listener):ZPP_Listener{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                o!=null&&!has(o);
-            };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_Listener"+"] add -> o="+o);
-            #end
-        };
-        var temp={
-            var ret;
-            {
-                if(ZNPNode_ZPP_Listener.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_Listener();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_Listener.POOL_TOT++;
-                    ZNPNode_ZPP_Listener.POOL_ADDNEW++;
-                    #end
-                }
-                else{
-                    ret=ZNPNode_ZPP_Listener.zpp_pool;
-                    ZNPNode_ZPP_Listener.zpp_pool=ret.next;
-                    ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_Listener.POOL_CNT--;
-                    ZNPNode_ZPP_Listener.POOL_ADD++;
-                    #end
-                }
-                ret.alloc();
-            };
-            ret.elt=o;
-            ret;
-        };
-        temp.next=begin();
-        head=temp;
-        modified=true;
-        length++;
-        return o;
-    }
-    public function addAll(x:ZNPList_ZPP_Listener):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                x!=null;
-            };
-            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_Listener"+"] addAll -> "+x);
-            #end
-        };
-        {
-            var cx_ite=x.begin();
-            while(cx_ite!=null){
-                var i=cx_ite.elem();
-                add(i);
-                cx_ite=cx_ite.next;
-            }
-        };
-    }
-    public function insert(cur:ZNPNode_ZPP_Listener,o:ZPP_Listener):ZNPNode_ZPP_Listener{
-        return inlined_insert(cur,o);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_insert(cur:ZNPNode_ZPP_Listener,o:ZPP_Listener):ZNPNode_ZPP_Listener{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                o!=null&&!has(o);
-            };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_Listener"+"] cur -> "+cur+" -> "+o);
-            #end
-        };
-        var temp={
-            var ret;
-            {
-                if(ZNPNode_ZPP_Listener.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_Listener();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_Listener.POOL_TOT++;
-                    ZNPNode_ZPP_Listener.POOL_ADDNEW++;
-                    #end
-                }
-                else{
-                    ret=ZNPNode_ZPP_Listener.zpp_pool;
-                    ZNPNode_ZPP_Listener.zpp_pool=ret.next;
-                    ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_Listener.POOL_CNT--;
-                    ZNPNode_ZPP_Listener.POOL_ADD++;
-                    #end
-                }
-                ret.alloc();
-            };
-            ret.elt=o;
-            ret;
-        };
-        if(cur==null){
-            temp.next=begin();
-            head=temp;
-        }
-        else{
-            temp.next=cur.next;
-            cur.next=temp;
-        }
-        pushmod=modified=true;
-        length++;
-        return temp;
-    }
-    public function pop():Void{
-        inlined_pop();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop():Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Listener"+"] pop");
-            #end
-        };
-        var ret=begin();
-        head=ret.next;
-        {};
-        {
-            var o=ret;
-            {
-                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-                var res={
-                    o!=null;
-                };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_Listener"+", in obj: "+"ret"+")");
-                #end
-            };
-            o.free();
-            o.next=ZNPNode_ZPP_Listener.zpp_pool;
-            ZNPNode_ZPP_Listener.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_Listener.POOL_CNT++;
-            ZNPNode_ZPP_Listener.POOL_SUB++;
-            #end
-        };
-        if(empty())pushmod=true;
-        modified=true;
-        length--;
-    }
-    public function pop_unsafe():ZPP_Listener{
-        return inlined_pop_unsafe();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop_unsafe():ZPP_Listener{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Listener"+"] pop_unsafe");
-            #end
-        };
-        var ret=front();
-        pop();
-        return ret;
-    }
-    public function remove(obj:ZPP_Listener):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                has(obj);
-            };
-            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
-            #end
-        };
-        inlined_try_remove(obj);
-    }
-    public function try_remove(obj:ZPP_Listener):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Listener"+"] remove -> "+obj);
-            #end
-        };
-        var pre=null;
-        var cur=begin();
-        var ret=false;
-        while(cur!=null){
-            if(cur.elem()==obj){
-                erase(pre);
-                ret=true;
-                break;
-            }
-            pre=cur;
-            cur=cur.next;
-        }
-        return ret;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_remove(obj:ZPP_Listener):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                has(obj);
-            };
-            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
-            #end
-        };
-        inlined_try_remove(obj);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_try_remove(obj:ZPP_Listener):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Listener"+"] remove -> "+obj);
-            #end
-        };
-        var pre=null;
-        var cur=begin();
-        var ret=false;
-        while(cur!=null){
-            if(cur.elem()==obj){
-                inlined_erase(pre);
-                ret=true;
-                break;
-            }
-            pre=cur;
-            cur=cur.next;
-        }
-        return ret;
-    }
-    public function erase(pre:ZNPNode_ZPP_Listener):ZNPNode_ZPP_Listener{
-        return inlined_erase(pre);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_erase(pre:ZNPNode_ZPP_Listener):ZNPNode_ZPP_Listener{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_Listener"+"] erase -> "+pre);
-            #end
-        };
-        var old:ZNPNode_ZPP_Listener;
-        var ret:ZNPNode_ZPP_Listener;
-        if(pre==null){
-            old=begin();
-            ret=old.next;
-            head=ret;
-            if(empty())pushmod=true;
-        }
-        else{
-            old=pre.next;
-            ret=old.next;
-            pre.next=ret;
-            if(ret==null)pushmod=true;
-        }
-        {};
-        {
-            var o=old;
-            {
-                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-                var res={
-                    o!=null;
-                };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_Listener"+", in obj: "+"old"+")");
-                #end
-            };
-            o.free();
-            o.next=ZNPNode_ZPP_Listener.zpp_pool;
-            ZNPNode_ZPP_Listener.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_Listener.POOL_CNT++;
-            ZNPNode_ZPP_Listener.POOL_SUB++;
-            #end
-        };
-        modified=true;
-        length--;
-        pushmod=true;
-        return ret;
-    }
-    public function splice(pre:ZNPNode_ZPP_Listener,n:Int):ZNPNode_ZPP_Listener{
-        while(n-->0&&pre.next!=null)erase(pre);
-        return pre.next;
-    }
-    public function clear():Void{
-        inlined_clear();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_clear():Void{
-        if(true){
-            while(!empty())inlined_pop();
-            pushmod=true;
-        }
-    }
-    public function reverse():Void{
-        var cur=begin();
-        var pre=null;
-        while(cur!=null){
-            var nx=cur.next;
-            cur.next=pre;
-            head=cur;
-            pre=cur;
-            cur=nx;
-        }
-        modified=true;
-        pushmod=true;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function empty():Bool{
-        return begin()==null;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function size():Int{
-        return length;
-    }
-    public function has(obj:ZPP_Listener):Bool{
-        return inlined_has(obj);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_has(obj:ZPP_Listener):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_Listener"+"] has -> "+obj);
-            #end
-        };
-        var ret;
-        {
-            ret=false;
-            {
-                var cx_ite=this.begin();
-                while(cx_ite!=null){
-                    var npite=cx_ite.elem();
-                    {
-                        if(npite==obj){
-                            ret=true;
-                            break;
-                        }
-                    };
-                    cx_ite=cx_ite.next;
-                }
-            };
-        };
-        return ret;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function front():ZPP_Listener{
-        return begin().elem();
-    }
-    public function back():ZPP_Listener{
-        var ret=begin();
-        var cur=ret;
-        while(cur!=null){
-            ret=cur;
-            cur=cur.next;
-        }
-        return ret.elem();
-    }
-    public function iterator_at(ind:Int):ZNPNode_ZPP_Listener{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                ind>=-1&&ind<size();
-            };
-            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_Listener"+"] iterator_at -> "+ind);
-            #end
-        };
-        var ret=begin();
-        while(ind-->0&&ret!=null)ret=ret.next;
-        return ret;
-    }
-    public function at(ind:Int):ZPP_Listener{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                ind>=0&&ind<size();
-            };
-            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_Listener"+"] at -> "+ind);
-            #end
-        };
-        var it=iterator_at(ind);
-        return if(it!=null)it.elem()else null;
-    }
-}
-#if nape_swc@:keep #end
-class ZNPList_ZPP_ColArbiter{
-    public var head:ZNPNode_ZPP_ColArbiter=null;
-    public function new(){}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function begin():ZNPNode_ZPP_ColArbiter{
-        return head;
-    }
-    public var modified:Bool=false;
-    public var pushmod:Bool=false;
-    public var length:Int=0;
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function setbegin(i:ZNPNode_ZPP_ColArbiter):Void{
-        head=i;
-        modified=true;
-        pushmod=true;
-    }
-    public function add(o:ZPP_ColArbiter):ZPP_ColArbiter{
-        return inlined_add(o);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_add(o:ZPP_ColArbiter):ZPP_ColArbiter{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                o!=null&&!has(o);
-            };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_ColArbiter"+"] add -> o="+o);
-            #end
-        };
-        var temp={
-            var ret;
-            {
-                if(ZNPNode_ZPP_ColArbiter.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_ColArbiter();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_ColArbiter.POOL_TOT++;
-                    ZNPNode_ZPP_ColArbiter.POOL_ADDNEW++;
-                    #end
-                }
-                else{
-                    ret=ZNPNode_ZPP_ColArbiter.zpp_pool;
-                    ZNPNode_ZPP_ColArbiter.zpp_pool=ret.next;
-                    ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_ColArbiter.POOL_CNT--;
-                    ZNPNode_ZPP_ColArbiter.POOL_ADD++;
-                    #end
-                }
-                ret.alloc();
-            };
-            ret.elt=o;
-            ret;
-        };
-        temp.next=begin();
-        head=temp;
-        modified=true;
-        length++;
-        return o;
-    }
-    public function addAll(x:ZNPList_ZPP_ColArbiter):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                x!=null;
-            };
-            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_ColArbiter"+"] addAll -> "+x);
-            #end
-        };
-        {
-            var cx_ite=x.begin();
-            while(cx_ite!=null){
-                var i=cx_ite.elem();
-                add(i);
-                cx_ite=cx_ite.next;
-            }
-        };
-    }
-    public function insert(cur:ZNPNode_ZPP_ColArbiter,o:ZPP_ColArbiter):ZNPNode_ZPP_ColArbiter{
-        return inlined_insert(cur,o);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_insert(cur:ZNPNode_ZPP_ColArbiter,o:ZPP_ColArbiter):ZNPNode_ZPP_ColArbiter{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                o!=null&&!has(o);
-            };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_ColArbiter"+"] cur -> "+cur+" -> "+o);
-            #end
-        };
-        var temp={
-            var ret;
-            {
-                if(ZNPNode_ZPP_ColArbiter.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_ColArbiter();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_ColArbiter.POOL_TOT++;
-                    ZNPNode_ZPP_ColArbiter.POOL_ADDNEW++;
-                    #end
-                }
-                else{
-                    ret=ZNPNode_ZPP_ColArbiter.zpp_pool;
-                    ZNPNode_ZPP_ColArbiter.zpp_pool=ret.next;
-                    ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_ColArbiter.POOL_CNT--;
-                    ZNPNode_ZPP_ColArbiter.POOL_ADD++;
-                    #end
-                }
-                ret.alloc();
-            };
-            ret.elt=o;
-            ret;
-        };
-        if(cur==null){
-            temp.next=begin();
-            head=temp;
-        }
-        else{
-            temp.next=cur.next;
-            cur.next=temp;
-        }
-        pushmod=modified=true;
-        length++;
-        return temp;
-    }
-    public function pop():Void{
-        inlined_pop();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop():Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_ColArbiter"+"] pop");
-            #end
-        };
-        var ret=begin();
-        head=ret.next;
-        {};
-        {
-            var o=ret;
-            {
-                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-                var res={
-                    o!=null;
-                };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_ColArbiter"+", in obj: "+"ret"+")");
-                #end
-            };
-            o.free();
-            o.next=ZNPNode_ZPP_ColArbiter.zpp_pool;
-            ZNPNode_ZPP_ColArbiter.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_ColArbiter.POOL_CNT++;
-            ZNPNode_ZPP_ColArbiter.POOL_SUB++;
-            #end
-        };
-        if(empty())pushmod=true;
-        modified=true;
-        length--;
-    }
-    public function pop_unsafe():ZPP_ColArbiter{
-        return inlined_pop_unsafe();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop_unsafe():ZPP_ColArbiter{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_ColArbiter"+"] pop_unsafe");
-            #end
-        };
-        var ret=front();
-        pop();
-        return ret;
-    }
-    public function remove(obj:ZPP_ColArbiter):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                has(obj);
-            };
-            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
-            #end
-        };
-        inlined_try_remove(obj);
-    }
-    public function try_remove(obj:ZPP_ColArbiter):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_ColArbiter"+"] remove -> "+obj);
-            #end
-        };
-        var pre=null;
-        var cur=begin();
-        var ret=false;
-        while(cur!=null){
-            if(cur.elem()==obj){
-                erase(pre);
-                ret=true;
-                break;
-            }
-            pre=cur;
-            cur=cur.next;
-        }
-        return ret;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_remove(obj:ZPP_ColArbiter):Void{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                has(obj);
-            };
-            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
-            #end
-        };
-        inlined_try_remove(obj);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_try_remove(obj:ZPP_ColArbiter):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_ColArbiter"+"] remove -> "+obj);
-            #end
-        };
-        var pre=null;
-        var cur=begin();
-        var ret=false;
-        while(cur!=null){
-            if(cur.elem()==obj){
-                inlined_erase(pre);
-                ret=true;
-                break;
-            }
-            pre=cur;
-            cur=cur.next;
-        }
-        return ret;
-    }
-    public function erase(pre:ZNPNode_ZPP_ColArbiter):ZNPNode_ZPP_ColArbiter{
-        return inlined_erase(pre);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_erase(pre:ZNPNode_ZPP_ColArbiter):ZNPNode_ZPP_ColArbiter{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                !empty();
-            };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_ColArbiter"+"] erase -> "+pre);
-            #end
-        };
-        var old:ZNPNode_ZPP_ColArbiter;
-        var ret:ZNPNode_ZPP_ColArbiter;
-        if(pre==null){
-            old=begin();
-            ret=old.next;
-            head=ret;
-            if(empty())pushmod=true;
-        }
-        else{
-            old=pre.next;
-            ret=old.next;
-            pre.next=ret;
-            if(ret==null)pushmod=true;
-        }
-        {};
-        {
-            var o=old;
-            {
-                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-                var res={
-                    o!=null;
-                };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_ColArbiter"+", in obj: "+"old"+")");
-                #end
-            };
-            o.free();
-            o.next=ZNPNode_ZPP_ColArbiter.zpp_pool;
-            ZNPNode_ZPP_ColArbiter.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_ColArbiter.POOL_CNT++;
-            ZNPNode_ZPP_ColArbiter.POOL_SUB++;
-            #end
-        };
-        modified=true;
-        length--;
-        pushmod=true;
-        return ret;
-    }
-    public function splice(pre:ZNPNode_ZPP_ColArbiter,n:Int):ZNPNode_ZPP_ColArbiter{
-        while(n-->0&&pre.next!=null)erase(pre);
-        return pre.next;
-    }
-    public function clear():Void{
-        inlined_clear();
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_clear():Void{
-        if(true){
-            while(!empty())inlined_pop();
-            pushmod=true;
-        }
-    }
-    public function reverse():Void{
-        var cur=begin();
-        var pre=null;
-        while(cur!=null){
-            var nx=cur.next;
-            cur.next=pre;
-            head=cur;
-            pre=cur;
-            cur=nx;
-        }
-        modified=true;
-        pushmod=true;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function empty():Bool{
-        return begin()==null;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function size():Int{
-        return length;
-    }
-    public function has(obj:ZPP_ColArbiter):Bool{
-        return inlined_has(obj);
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function inlined_has(obj:ZPP_ColArbiter):Bool{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                obj!=null;
-            };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_ColArbiter"+"] has -> "+obj);
-            #end
-        };
-        var ret;
-        {
-            ret=false;
-            {
-                var cx_ite=this.begin();
-                while(cx_ite!=null){
-                    var npite=cx_ite.elem();
-                    {
-                        if(npite==obj){
-                            ret=true;
-                            break;
-                        }
-                    };
-                    cx_ite=cx_ite.next;
-                }
-            };
-        };
-        return ret;
-    }
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function front():ZPP_ColArbiter{
-        return begin().elem();
-    }
-    public function back():ZPP_ColArbiter{
-        var ret=begin();
-        var cur=ret;
-        while(cur!=null){
-            ret=cur;
-            cur=cur.next;
-        }
-        return ret.elem();
-    }
-    public function iterator_at(ind:Int):ZNPNode_ZPP_ColArbiter{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                ind>=-1&&ind<size();
-            };
-            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_ColArbiter"+"] iterator_at -> "+ind);
-            #end
-        };
-        var ret=begin();
-        while(ind-->0&&ret!=null)ret=ret.next;
-        return ret;
-    }
-    public function at(ind:Int):ZPP_ColArbiter{
-        {
-            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
-            var res={
-                ind>=0&&ind<size();
-            };
-            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_ColArbiter"+"] at -> "+ind);
-            #end
-        };
-        var it=iterator_at(ind);
-        return if(it!=null)it.elem()else null;
-    }
-}
-#if nape_swc@:keep #end
 class ZNPList_ZPP_InteractionGroup{
     public var head:ZNPNode_ZPP_InteractionGroup=null;
     public function new(){}
@@ -13099,12 +11848,12 @@ class ZNPList_ZPP_InteractionGroup{
     }
 }
 #if nape_swc@:keep #end
-class ZNPList_ZPP_ToiEvent{
-    public var head:ZNPNode_ZPP_ToiEvent=null;
+class ZNPList_ZPP_CbSet{
+    public var head:ZNPNode_ZPP_CbSet=null;
     public function new(){}
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function begin():ZNPNode_ZPP_ToiEvent{
+    function begin():ZNPNode_ZPP_CbSet{
         return head;
     }
     public var modified:Bool=false;
@@ -13112,40 +11861,40 @@ class ZNPList_ZPP_ToiEvent{
     public var length:Int=0;
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function setbegin(i:ZNPNode_ZPP_ToiEvent):Void{
+    function setbegin(i:ZNPNode_ZPP_CbSet):Void{
         head=i;
         modified=true;
         pushmod=true;
     }
-    public function add(o:ZPP_ToiEvent):ZPP_ToiEvent{
+    public function add(o:ZPP_CbSet):ZPP_CbSet{
         return inlined_add(o);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_add(o:ZPP_ToiEvent):ZPP_ToiEvent{
+    function inlined_add(o:ZPP_CbSet):ZPP_CbSet{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 o!=null&&!has(o);
             };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_ToiEvent"+"] add -> o="+o);
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_CbSet"+"] add -> o="+o);
             #end
         };
         var temp={
             var ret;
             {
-                if(ZNPNode_ZPP_ToiEvent.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_ToiEvent();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_ToiEvent.POOL_TOT++;
-                    ZNPNode_ZPP_ToiEvent.POOL_ADDNEW++;
+                if(ZNPNode_ZPP_CbSet.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_CbSet();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_CbSet.POOL_TOT++;
+                    ZNPNode_ZPP_CbSet.POOL_ADDNEW++;
                     #end
                 }
                 else{
-                    ret=ZNPNode_ZPP_ToiEvent.zpp_pool;
-                    ZNPNode_ZPP_ToiEvent.zpp_pool=ret.next;
+                    ret=ZNPNode_ZPP_CbSet.zpp_pool;
+                    ZNPNode_ZPP_CbSet.zpp_pool=ret.next;
                     ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_ToiEvent.POOL_CNT--;
-                    ZNPNode_ZPP_ToiEvent.POOL_ADD++;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_CbSet.POOL_CNT--;
+                    ZNPNode_ZPP_CbSet.POOL_ADD++;
                     #end
                 }
                 ret.alloc();
@@ -13159,13 +11908,13 @@ class ZNPList_ZPP_ToiEvent{
         length++;
         return o;
     }
-    public function addAll(x:ZNPList_ZPP_ToiEvent):Void{
+    public function addAll(x:ZNPList_ZPP_CbSet):Void{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 x!=null;
             };
-            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_ToiEvent"+"] addAll -> "+x);
+            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_CbSet"+"] addAll -> "+x);
             #end
         };
         {
@@ -13177,35 +11926,35 @@ class ZNPList_ZPP_ToiEvent{
             }
         };
     }
-    public function insert(cur:ZNPNode_ZPP_ToiEvent,o:ZPP_ToiEvent):ZNPNode_ZPP_ToiEvent{
+    public function insert(cur:ZNPNode_ZPP_CbSet,o:ZPP_CbSet):ZNPNode_ZPP_CbSet{
         return inlined_insert(cur,o);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_insert(cur:ZNPNode_ZPP_ToiEvent,o:ZPP_ToiEvent):ZNPNode_ZPP_ToiEvent{
+    function inlined_insert(cur:ZNPNode_ZPP_CbSet,o:ZPP_CbSet):ZNPNode_ZPP_CbSet{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 o!=null&&!has(o);
             };
-            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_ToiEvent"+"] cur -> "+cur+" -> "+o);
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_CbSet"+"] cur -> "+cur+" -> "+o);
             #end
         };
         var temp={
             var ret;
             {
-                if(ZNPNode_ZPP_ToiEvent.zpp_pool==null){
-                    ret=new ZNPNode_ZPP_ToiEvent();
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_ToiEvent.POOL_TOT++;
-                    ZNPNode_ZPP_ToiEvent.POOL_ADDNEW++;
+                if(ZNPNode_ZPP_CbSet.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_CbSet();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_CbSet.POOL_TOT++;
+                    ZNPNode_ZPP_CbSet.POOL_ADDNEW++;
                     #end
                 }
                 else{
-                    ret=ZNPNode_ZPP_ToiEvent.zpp_pool;
-                    ZNPNode_ZPP_ToiEvent.zpp_pool=ret.next;
+                    ret=ZNPNode_ZPP_CbSet.zpp_pool;
+                    ZNPNode_ZPP_CbSet.zpp_pool=ret.next;
                     ret.next=null;
-                    #if NAPE_POOL_STATS ZNPNode_ZPP_ToiEvent.POOL_CNT--;
-                    ZNPNode_ZPP_ToiEvent.POOL_ADD++;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_CbSet.POOL_CNT--;
+                    ZNPNode_ZPP_CbSet.POOL_ADD++;
                     #end
                 }
                 ret.alloc();
@@ -13236,7 +11985,7 @@ class ZNPList_ZPP_ToiEvent{
             var res={
                 !empty();
             };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_ToiEvent"+"] pop");
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_CbSet"+"] pop");
             #end
         };
         var ret=begin();
@@ -13249,39 +11998,39 @@ class ZNPList_ZPP_ToiEvent{
                 var res={
                     o!=null;
                 };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_ToiEvent"+", in obj: "+"ret"+")");
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_CbSet"+", in obj: "+"ret"+")");
                 #end
             };
             o.free();
-            o.next=ZNPNode_ZPP_ToiEvent.zpp_pool;
-            ZNPNode_ZPP_ToiEvent.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_ToiEvent.POOL_CNT++;
-            ZNPNode_ZPP_ToiEvent.POOL_SUB++;
+            o.next=ZNPNode_ZPP_CbSet.zpp_pool;
+            ZNPNode_ZPP_CbSet.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_CbSet.POOL_CNT++;
+            ZNPNode_ZPP_CbSet.POOL_SUB++;
             #end
         };
         if(empty())pushmod=true;
         modified=true;
         length--;
     }
-    public function pop_unsafe():ZPP_ToiEvent{
+    public function pop_unsafe():ZPP_CbSet{
         return inlined_pop_unsafe();
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_pop_unsafe():ZPP_ToiEvent{
+    function inlined_pop_unsafe():ZPP_CbSet{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 !empty();
             };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_ToiEvent"+"] pop_unsafe");
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_CbSet"+"] pop_unsafe");
             #end
         };
         var ret=front();
         pop();
         return ret;
     }
-    public function remove(obj:ZPP_ToiEvent):Void{
+    public function remove(obj:ZPP_CbSet):Void{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
@@ -13292,13 +12041,13 @@ class ZNPList_ZPP_ToiEvent{
         };
         inlined_try_remove(obj);
     }
-    public function try_remove(obj:ZPP_ToiEvent):Bool{
+    public function try_remove(obj:ZPP_CbSet):Bool{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 obj!=null;
             };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_ToiEvent"+"] remove -> "+obj);
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_CbSet"+"] remove -> "+obj);
             #end
         };
         var pre=null;
@@ -13317,7 +12066,7 @@ class ZNPList_ZPP_ToiEvent{
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_remove(obj:ZPP_ToiEvent):Void{
+    function inlined_remove(obj:ZPP_CbSet):Void{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
@@ -13330,13 +12079,13 @@ class ZNPList_ZPP_ToiEvent{
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_try_remove(obj:ZPP_ToiEvent):Bool{
+    function inlined_try_remove(obj:ZPP_CbSet):Bool{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 obj!=null;
             };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_ToiEvent"+"] remove -> "+obj);
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_CbSet"+"] remove -> "+obj);
             #end
         };
         var pre=null;
@@ -13353,22 +12102,22 @@ class ZNPList_ZPP_ToiEvent{
         }
         return ret;
     }
-    public function erase(pre:ZNPNode_ZPP_ToiEvent):ZNPNode_ZPP_ToiEvent{
+    public function erase(pre:ZNPNode_ZPP_CbSet):ZNPNode_ZPP_CbSet{
         return inlined_erase(pre);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_erase(pre:ZNPNode_ZPP_ToiEvent):ZNPNode_ZPP_ToiEvent{
+    function inlined_erase(pre:ZNPNode_ZPP_CbSet):ZNPNode_ZPP_CbSet{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 !empty();
             };
-            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_ToiEvent"+"] erase -> "+pre);
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_CbSet"+"] erase -> "+pre);
             #end
         };
-        var old:ZNPNode_ZPP_ToiEvent;
-        var ret:ZNPNode_ZPP_ToiEvent;
+        var old:ZNPNode_ZPP_CbSet;
+        var ret:ZNPNode_ZPP_CbSet;
         if(pre==null){
             old=begin();
             ret=old.next;
@@ -13389,14 +12138,14 @@ class ZNPList_ZPP_ToiEvent{
                 var res={
                     o!=null;
                 };
-                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_ToiEvent"+", in obj: "+"old"+")");
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_CbSet"+", in obj: "+"old"+")");
                 #end
             };
             o.free();
-            o.next=ZNPNode_ZPP_ToiEvent.zpp_pool;
-            ZNPNode_ZPP_ToiEvent.zpp_pool=o;
-            #if NAPE_POOL_STATS ZNPNode_ZPP_ToiEvent.POOL_CNT++;
-            ZNPNode_ZPP_ToiEvent.POOL_SUB++;
+            o.next=ZNPNode_ZPP_CbSet.zpp_pool;
+            ZNPNode_ZPP_CbSet.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_CbSet.POOL_CNT++;
+            ZNPNode_ZPP_CbSet.POOL_SUB++;
             #end
         };
         modified=true;
@@ -13404,7 +12153,7 @@ class ZNPList_ZPP_ToiEvent{
         pushmod=true;
         return ret;
     }
-    public function splice(pre:ZNPNode_ZPP_ToiEvent,n:Int):ZNPNode_ZPP_ToiEvent{
+    public function splice(pre:ZNPNode_ZPP_CbSet,n:Int):ZNPNode_ZPP_CbSet{
         while(n-->0&&pre.next!=null)erase(pre);
         return pre.next;
     }
@@ -13442,18 +12191,18 @@ class ZNPList_ZPP_ToiEvent{
     function size():Int{
         return length;
     }
-    public function has(obj:ZPP_ToiEvent):Bool{
+    public function has(obj:ZPP_CbSet):Bool{
         return inlined_has(obj);
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function inlined_has(obj:ZPP_ToiEvent):Bool{
+    function inlined_has(obj:ZPP_CbSet):Bool{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 obj!=null;
             };
-            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_ToiEvent"+"] has -> "+obj);
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_CbSet"+"] has -> "+obj);
             #end
         };
         var ret;
@@ -13477,10 +12226,10 @@ class ZNPList_ZPP_ToiEvent{
     }
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function front():ZPP_ToiEvent{
+    function front():ZPP_CbSet{
         return begin().elem();
     }
-    public function back():ZPP_ToiEvent{
+    public function back():ZPP_CbSet{
         var ret=begin();
         var cur=ret;
         while(cur!=null){
@@ -13489,26 +12238,1277 @@ class ZNPList_ZPP_ToiEvent{
         }
         return ret.elem();
     }
-    public function iterator_at(ind:Int):ZNPNode_ZPP_ToiEvent{
+    public function iterator_at(ind:Int):ZNPNode_ZPP_CbSet{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 ind>=-1&&ind<size();
             };
-            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_ToiEvent"+"] iterator_at -> "+ind);
+            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_CbSet"+"] iterator_at -> "+ind);
             #end
         };
         var ret=begin();
         while(ind-->0&&ret!=null)ret=ret.next;
         return ret;
     }
-    public function at(ind:Int):ZPP_ToiEvent{
+    public function at(ind:Int):ZPP_CbSet{
         {
             #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
             var res={
                 ind>=0&&ind<size();
             };
-            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_ToiEvent"+"] at -> "+ind);
+            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_CbSet"+"] at -> "+ind);
+            #end
+        };
+        var it=iterator_at(ind);
+        return if(it!=null)it.elem()else null;
+    }
+}
+#if nape_swc@:keep #end
+class ZNPList_ZPP_BodyListener{
+    public var head:ZNPNode_ZPP_BodyListener=null;
+    public function new(){}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function begin():ZNPNode_ZPP_BodyListener{
+        return head;
+    }
+    public var modified:Bool=false;
+    public var pushmod:Bool=false;
+    public var length:Int=0;
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function setbegin(i:ZNPNode_ZPP_BodyListener):Void{
+        head=i;
+        modified=true;
+        pushmod=true;
+    }
+    public function add(o:ZPP_BodyListener):ZPP_BodyListener{
+        return inlined_add(o);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_add(o:ZPP_BodyListener):ZPP_BodyListener{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                o!=null&&!has(o);
+            };
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_BodyListener"+"] add -> o="+o);
+            #end
+        };
+        var temp={
+            var ret;
+            {
+                if(ZNPNode_ZPP_BodyListener.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_BodyListener();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_BodyListener.POOL_TOT++;
+                    ZNPNode_ZPP_BodyListener.POOL_ADDNEW++;
+                    #end
+                }
+                else{
+                    ret=ZNPNode_ZPP_BodyListener.zpp_pool;
+                    ZNPNode_ZPP_BodyListener.zpp_pool=ret.next;
+                    ret.next=null;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_BodyListener.POOL_CNT--;
+                    ZNPNode_ZPP_BodyListener.POOL_ADD++;
+                    #end
+                }
+                ret.alloc();
+            };
+            ret.elt=o;
+            ret;
+        };
+        temp.next=begin();
+        head=temp;
+        modified=true;
+        length++;
+        return o;
+    }
+    public function addAll(x:ZNPList_ZPP_BodyListener):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                x!=null;
+            };
+            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_BodyListener"+"] addAll -> "+x);
+            #end
+        };
+        {
+            var cx_ite=x.begin();
+            while(cx_ite!=null){
+                var i=cx_ite.elem();
+                add(i);
+                cx_ite=cx_ite.next;
+            }
+        };
+    }
+    public function insert(cur:ZNPNode_ZPP_BodyListener,o:ZPP_BodyListener):ZNPNode_ZPP_BodyListener{
+        return inlined_insert(cur,o);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_insert(cur:ZNPNode_ZPP_BodyListener,o:ZPP_BodyListener):ZNPNode_ZPP_BodyListener{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                o!=null&&!has(o);
+            };
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_BodyListener"+"] cur -> "+cur+" -> "+o);
+            #end
+        };
+        var temp={
+            var ret;
+            {
+                if(ZNPNode_ZPP_BodyListener.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_BodyListener();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_BodyListener.POOL_TOT++;
+                    ZNPNode_ZPP_BodyListener.POOL_ADDNEW++;
+                    #end
+                }
+                else{
+                    ret=ZNPNode_ZPP_BodyListener.zpp_pool;
+                    ZNPNode_ZPP_BodyListener.zpp_pool=ret.next;
+                    ret.next=null;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_BodyListener.POOL_CNT--;
+                    ZNPNode_ZPP_BodyListener.POOL_ADD++;
+                    #end
+                }
+                ret.alloc();
+            };
+            ret.elt=o;
+            ret;
+        };
+        if(cur==null){
+            temp.next=begin();
+            head=temp;
+        }
+        else{
+            temp.next=cur.next;
+            cur.next=temp;
+        }
+        pushmod=modified=true;
+        length++;
+        return temp;
+    }
+    public function pop():Void{
+        inlined_pop();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_pop():Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_BodyListener"+"] pop");
+            #end
+        };
+        var ret=begin();
+        head=ret.next;
+        {};
+        {
+            var o=ret;
+            {
+                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+                var res={
+                    o!=null;
+                };
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_BodyListener"+", in obj: "+"ret"+")");
+                #end
+            };
+            o.free();
+            o.next=ZNPNode_ZPP_BodyListener.zpp_pool;
+            ZNPNode_ZPP_BodyListener.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_BodyListener.POOL_CNT++;
+            ZNPNode_ZPP_BodyListener.POOL_SUB++;
+            #end
+        };
+        if(empty())pushmod=true;
+        modified=true;
+        length--;
+    }
+    public function pop_unsafe():ZPP_BodyListener{
+        return inlined_pop_unsafe();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_pop_unsafe():ZPP_BodyListener{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_BodyListener"+"] pop_unsafe");
+            #end
+        };
+        var ret=front();
+        pop();
+        return ret;
+    }
+    public function remove(obj:ZPP_BodyListener):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                has(obj);
+            };
+            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
+            #end
+        };
+        inlined_try_remove(obj);
+    }
+    public function try_remove(obj:ZPP_BodyListener):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_BodyListener"+"] remove -> "+obj);
+            #end
+        };
+        var pre=null;
+        var cur=begin();
+        var ret=false;
+        while(cur!=null){
+            if(cur.elem()==obj){
+                erase(pre);
+                ret=true;
+                break;
+            }
+            pre=cur;
+            cur=cur.next;
+        }
+        return ret;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_remove(obj:ZPP_BodyListener):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                has(obj);
+            };
+            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
+            #end
+        };
+        inlined_try_remove(obj);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_try_remove(obj:ZPP_BodyListener):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_BodyListener"+"] remove -> "+obj);
+            #end
+        };
+        var pre=null;
+        var cur=begin();
+        var ret=false;
+        while(cur!=null){
+            if(cur.elem()==obj){
+                inlined_erase(pre);
+                ret=true;
+                break;
+            }
+            pre=cur;
+            cur=cur.next;
+        }
+        return ret;
+    }
+    public function erase(pre:ZNPNode_ZPP_BodyListener):ZNPNode_ZPP_BodyListener{
+        return inlined_erase(pre);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_erase(pre:ZNPNode_ZPP_BodyListener):ZNPNode_ZPP_BodyListener{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_BodyListener"+"] erase -> "+pre);
+            #end
+        };
+        var old:ZNPNode_ZPP_BodyListener;
+        var ret:ZNPNode_ZPP_BodyListener;
+        if(pre==null){
+            old=begin();
+            ret=old.next;
+            head=ret;
+            if(empty())pushmod=true;
+        }
+        else{
+            old=pre.next;
+            ret=old.next;
+            pre.next=ret;
+            if(ret==null)pushmod=true;
+        }
+        {};
+        {
+            var o=old;
+            {
+                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+                var res={
+                    o!=null;
+                };
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_BodyListener"+", in obj: "+"old"+")");
+                #end
+            };
+            o.free();
+            o.next=ZNPNode_ZPP_BodyListener.zpp_pool;
+            ZNPNode_ZPP_BodyListener.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_BodyListener.POOL_CNT++;
+            ZNPNode_ZPP_BodyListener.POOL_SUB++;
+            #end
+        };
+        modified=true;
+        length--;
+        pushmod=true;
+        return ret;
+    }
+    public function splice(pre:ZNPNode_ZPP_BodyListener,n:Int):ZNPNode_ZPP_BodyListener{
+        while(n-->0&&pre.next!=null)erase(pre);
+        return pre.next;
+    }
+    public function clear():Void{
+        inlined_clear();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_clear():Void{
+        if(true){
+            while(!empty())inlined_pop();
+            pushmod=true;
+        }
+    }
+    public function reverse():Void{
+        var cur=begin();
+        var pre=null;
+        while(cur!=null){
+            var nx=cur.next;
+            cur.next=pre;
+            head=cur;
+            pre=cur;
+            cur=nx;
+        }
+        modified=true;
+        pushmod=true;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function empty():Bool{
+        return begin()==null;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function size():Int{
+        return length;
+    }
+    public function has(obj:ZPP_BodyListener):Bool{
+        return inlined_has(obj);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_has(obj:ZPP_BodyListener):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_BodyListener"+"] has -> "+obj);
+            #end
+        };
+        var ret;
+        {
+            ret=false;
+            {
+                var cx_ite=this.begin();
+                while(cx_ite!=null){
+                    var npite=cx_ite.elem();
+                    {
+                        if(npite==obj){
+                            ret=true;
+                            break;
+                        }
+                    };
+                    cx_ite=cx_ite.next;
+                }
+            };
+        };
+        return ret;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function front():ZPP_BodyListener{
+        return begin().elem();
+    }
+    public function back():ZPP_BodyListener{
+        var ret=begin();
+        var cur=ret;
+        while(cur!=null){
+            ret=cur;
+            cur=cur.next;
+        }
+        return ret.elem();
+    }
+    public function iterator_at(ind:Int):ZNPNode_ZPP_BodyListener{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                ind>=-1&&ind<size();
+            };
+            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_BodyListener"+"] iterator_at -> "+ind);
+            #end
+        };
+        var ret=begin();
+        while(ind-->0&&ret!=null)ret=ret.next;
+        return ret;
+    }
+    public function at(ind:Int):ZPP_BodyListener{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                ind>=0&&ind<size();
+            };
+            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_BodyListener"+"] at -> "+ind);
+            #end
+        };
+        var it=iterator_at(ind);
+        return if(it!=null)it.elem()else null;
+    }
+}
+#if nape_swc@:keep #end
+class ZNPList_ZPP_ConstraintListener{
+    public var head:ZNPNode_ZPP_ConstraintListener=null;
+    public function new(){}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function begin():ZNPNode_ZPP_ConstraintListener{
+        return head;
+    }
+    public var modified:Bool=false;
+    public var pushmod:Bool=false;
+    public var length:Int=0;
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function setbegin(i:ZNPNode_ZPP_ConstraintListener):Void{
+        head=i;
+        modified=true;
+        pushmod=true;
+    }
+    public function add(o:ZPP_ConstraintListener):ZPP_ConstraintListener{
+        return inlined_add(o);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_add(o:ZPP_ConstraintListener):ZPP_ConstraintListener{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                o!=null&&!has(o);
+            };
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_ConstraintListener"+"] add -> o="+o);
+            #end
+        };
+        var temp={
+            var ret;
+            {
+                if(ZNPNode_ZPP_ConstraintListener.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_ConstraintListener();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_ConstraintListener.POOL_TOT++;
+                    ZNPNode_ZPP_ConstraintListener.POOL_ADDNEW++;
+                    #end
+                }
+                else{
+                    ret=ZNPNode_ZPP_ConstraintListener.zpp_pool;
+                    ZNPNode_ZPP_ConstraintListener.zpp_pool=ret.next;
+                    ret.next=null;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_ConstraintListener.POOL_CNT--;
+                    ZNPNode_ZPP_ConstraintListener.POOL_ADD++;
+                    #end
+                }
+                ret.alloc();
+            };
+            ret.elt=o;
+            ret;
+        };
+        temp.next=begin();
+        head=temp;
+        modified=true;
+        length++;
+        return o;
+    }
+    public function addAll(x:ZNPList_ZPP_ConstraintListener):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                x!=null;
+            };
+            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_ConstraintListener"+"] addAll -> "+x);
+            #end
+        };
+        {
+            var cx_ite=x.begin();
+            while(cx_ite!=null){
+                var i=cx_ite.elem();
+                add(i);
+                cx_ite=cx_ite.next;
+            }
+        };
+    }
+    public function insert(cur:ZNPNode_ZPP_ConstraintListener,o:ZPP_ConstraintListener):ZNPNode_ZPP_ConstraintListener{
+        return inlined_insert(cur,o);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_insert(cur:ZNPNode_ZPP_ConstraintListener,o:ZPP_ConstraintListener):ZNPNode_ZPP_ConstraintListener{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                o!=null&&!has(o);
+            };
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_ConstraintListener"+"] cur -> "+cur+" -> "+o);
+            #end
+        };
+        var temp={
+            var ret;
+            {
+                if(ZNPNode_ZPP_ConstraintListener.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_ConstraintListener();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_ConstraintListener.POOL_TOT++;
+                    ZNPNode_ZPP_ConstraintListener.POOL_ADDNEW++;
+                    #end
+                }
+                else{
+                    ret=ZNPNode_ZPP_ConstraintListener.zpp_pool;
+                    ZNPNode_ZPP_ConstraintListener.zpp_pool=ret.next;
+                    ret.next=null;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_ConstraintListener.POOL_CNT--;
+                    ZNPNode_ZPP_ConstraintListener.POOL_ADD++;
+                    #end
+                }
+                ret.alloc();
+            };
+            ret.elt=o;
+            ret;
+        };
+        if(cur==null){
+            temp.next=begin();
+            head=temp;
+        }
+        else{
+            temp.next=cur.next;
+            cur.next=temp;
+        }
+        pushmod=modified=true;
+        length++;
+        return temp;
+    }
+    public function pop():Void{
+        inlined_pop();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_pop():Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_ConstraintListener"+"] pop");
+            #end
+        };
+        var ret=begin();
+        head=ret.next;
+        {};
+        {
+            var o=ret;
+            {
+                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+                var res={
+                    o!=null;
+                };
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_ConstraintListener"+", in obj: "+"ret"+")");
+                #end
+            };
+            o.free();
+            o.next=ZNPNode_ZPP_ConstraintListener.zpp_pool;
+            ZNPNode_ZPP_ConstraintListener.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_ConstraintListener.POOL_CNT++;
+            ZNPNode_ZPP_ConstraintListener.POOL_SUB++;
+            #end
+        };
+        if(empty())pushmod=true;
+        modified=true;
+        length--;
+    }
+    public function pop_unsafe():ZPP_ConstraintListener{
+        return inlined_pop_unsafe();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_pop_unsafe():ZPP_ConstraintListener{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_ConstraintListener"+"] pop_unsafe");
+            #end
+        };
+        var ret=front();
+        pop();
+        return ret;
+    }
+    public function remove(obj:ZPP_ConstraintListener):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                has(obj);
+            };
+            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
+            #end
+        };
+        inlined_try_remove(obj);
+    }
+    public function try_remove(obj:ZPP_ConstraintListener):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_ConstraintListener"+"] remove -> "+obj);
+            #end
+        };
+        var pre=null;
+        var cur=begin();
+        var ret=false;
+        while(cur!=null){
+            if(cur.elem()==obj){
+                erase(pre);
+                ret=true;
+                break;
+            }
+            pre=cur;
+            cur=cur.next;
+        }
+        return ret;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_remove(obj:ZPP_ConstraintListener):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                has(obj);
+            };
+            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
+            #end
+        };
+        inlined_try_remove(obj);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_try_remove(obj:ZPP_ConstraintListener):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_ConstraintListener"+"] remove -> "+obj);
+            #end
+        };
+        var pre=null;
+        var cur=begin();
+        var ret=false;
+        while(cur!=null){
+            if(cur.elem()==obj){
+                inlined_erase(pre);
+                ret=true;
+                break;
+            }
+            pre=cur;
+            cur=cur.next;
+        }
+        return ret;
+    }
+    public function erase(pre:ZNPNode_ZPP_ConstraintListener):ZNPNode_ZPP_ConstraintListener{
+        return inlined_erase(pre);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_erase(pre:ZNPNode_ZPP_ConstraintListener):ZNPNode_ZPP_ConstraintListener{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_ConstraintListener"+"] erase -> "+pre);
+            #end
+        };
+        var old:ZNPNode_ZPP_ConstraintListener;
+        var ret:ZNPNode_ZPP_ConstraintListener;
+        if(pre==null){
+            old=begin();
+            ret=old.next;
+            head=ret;
+            if(empty())pushmod=true;
+        }
+        else{
+            old=pre.next;
+            ret=old.next;
+            pre.next=ret;
+            if(ret==null)pushmod=true;
+        }
+        {};
+        {
+            var o=old;
+            {
+                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+                var res={
+                    o!=null;
+                };
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_ConstraintListener"+", in obj: "+"old"+")");
+                #end
+            };
+            o.free();
+            o.next=ZNPNode_ZPP_ConstraintListener.zpp_pool;
+            ZNPNode_ZPP_ConstraintListener.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_ConstraintListener.POOL_CNT++;
+            ZNPNode_ZPP_ConstraintListener.POOL_SUB++;
+            #end
+        };
+        modified=true;
+        length--;
+        pushmod=true;
+        return ret;
+    }
+    public function splice(pre:ZNPNode_ZPP_ConstraintListener,n:Int):ZNPNode_ZPP_ConstraintListener{
+        while(n-->0&&pre.next!=null)erase(pre);
+        return pre.next;
+    }
+    public function clear():Void{
+        inlined_clear();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_clear():Void{
+        if(true){
+            while(!empty())inlined_pop();
+            pushmod=true;
+        }
+    }
+    public function reverse():Void{
+        var cur=begin();
+        var pre=null;
+        while(cur!=null){
+            var nx=cur.next;
+            cur.next=pre;
+            head=cur;
+            pre=cur;
+            cur=nx;
+        }
+        modified=true;
+        pushmod=true;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function empty():Bool{
+        return begin()==null;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function size():Int{
+        return length;
+    }
+    public function has(obj:ZPP_ConstraintListener):Bool{
+        return inlined_has(obj);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_has(obj:ZPP_ConstraintListener):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_ConstraintListener"+"] has -> "+obj);
+            #end
+        };
+        var ret;
+        {
+            ret=false;
+            {
+                var cx_ite=this.begin();
+                while(cx_ite!=null){
+                    var npite=cx_ite.elem();
+                    {
+                        if(npite==obj){
+                            ret=true;
+                            break;
+                        }
+                    };
+                    cx_ite=cx_ite.next;
+                }
+            };
+        };
+        return ret;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function front():ZPP_ConstraintListener{
+        return begin().elem();
+    }
+    public function back():ZPP_ConstraintListener{
+        var ret=begin();
+        var cur=ret;
+        while(cur!=null){
+            ret=cur;
+            cur=cur.next;
+        }
+        return ret.elem();
+    }
+    public function iterator_at(ind:Int):ZNPNode_ZPP_ConstraintListener{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                ind>=-1&&ind<size();
+            };
+            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_ConstraintListener"+"] iterator_at -> "+ind);
+            #end
+        };
+        var ret=begin();
+        while(ind-->0&&ret!=null)ret=ret.next;
+        return ret;
+    }
+    public function at(ind:Int):ZPP_ConstraintListener{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                ind>=0&&ind<size();
+            };
+            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_ConstraintListener"+"] at -> "+ind);
+            #end
+        };
+        var it=iterator_at(ind);
+        return if(it!=null)it.elem()else null;
+    }
+}
+#if nape_swc@:keep #end
+class ZNPList_ZPP_CbSetPair{
+    public var head:ZNPNode_ZPP_CbSetPair=null;
+    public function new(){}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function begin():ZNPNode_ZPP_CbSetPair{
+        return head;
+    }
+    public var modified:Bool=false;
+    public var pushmod:Bool=false;
+    public var length:Int=0;
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function setbegin(i:ZNPNode_ZPP_CbSetPair):Void{
+        head=i;
+        modified=true;
+        pushmod=true;
+    }
+    public function add(o:ZPP_CbSetPair):ZPP_CbSetPair{
+        return inlined_add(o);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_add(o:ZPP_CbSetPair):ZPP_CbSetPair{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                o!=null&&!has(o);
+            };
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_CbSetPair"+"] add -> o="+o);
+            #end
+        };
+        var temp={
+            var ret;
+            {
+                if(ZNPNode_ZPP_CbSetPair.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_CbSetPair();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_CbSetPair.POOL_TOT++;
+                    ZNPNode_ZPP_CbSetPair.POOL_ADDNEW++;
+                    #end
+                }
+                else{
+                    ret=ZNPNode_ZPP_CbSetPair.zpp_pool;
+                    ZNPNode_ZPP_CbSetPair.zpp_pool=ret.next;
+                    ret.next=null;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_CbSetPair.POOL_CNT--;
+                    ZNPNode_ZPP_CbSetPair.POOL_ADD++;
+                    #end
+                }
+                ret.alloc();
+            };
+            ret.elt=o;
+            ret;
+        };
+        temp.next=begin();
+        head=temp;
+        modified=true;
+        length++;
+        return o;
+    }
+    public function addAll(x:ZNPList_ZPP_CbSetPair):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                x!=null;
+            };
+            if(!res)throw "assert("+"x!=null"+") :: "+("[ListMixin("+"ZPP_CbSetPair"+"] addAll -> "+x);
+            #end
+        };
+        {
+            var cx_ite=x.begin();
+            while(cx_ite!=null){
+                var i=cx_ite.elem();
+                add(i);
+                cx_ite=cx_ite.next;
+            }
+        };
+    }
+    public function insert(cur:ZNPNode_ZPP_CbSetPair,o:ZPP_CbSetPair):ZNPNode_ZPP_CbSetPair{
+        return inlined_insert(cur,o);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_insert(cur:ZNPNode_ZPP_CbSetPair,o:ZPP_CbSetPair):ZNPNode_ZPP_CbSetPair{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                o!=null&&!has(o);
+            };
+            if(!res)throw "assert("+"o!=null&&!has(o)"+") :: "+("[ListMixin("+"ZPP_CbSetPair"+"] cur -> "+cur+" -> "+o);
+            #end
+        };
+        var temp={
+            var ret;
+            {
+                if(ZNPNode_ZPP_CbSetPair.zpp_pool==null){
+                    ret=new ZNPNode_ZPP_CbSetPair();
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_CbSetPair.POOL_TOT++;
+                    ZNPNode_ZPP_CbSetPair.POOL_ADDNEW++;
+                    #end
+                }
+                else{
+                    ret=ZNPNode_ZPP_CbSetPair.zpp_pool;
+                    ZNPNode_ZPP_CbSetPair.zpp_pool=ret.next;
+                    ret.next=null;
+                    #if NAPE_POOL_STATS ZNPNode_ZPP_CbSetPair.POOL_CNT--;
+                    ZNPNode_ZPP_CbSetPair.POOL_ADD++;
+                    #end
+                }
+                ret.alloc();
+            };
+            ret.elt=o;
+            ret;
+        };
+        if(cur==null){
+            temp.next=begin();
+            head=temp;
+        }
+        else{
+            temp.next=cur.next;
+            cur.next=temp;
+        }
+        pushmod=modified=true;
+        length++;
+        return temp;
+    }
+    public function pop():Void{
+        inlined_pop();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_pop():Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_CbSetPair"+"] pop");
+            #end
+        };
+        var ret=begin();
+        head=ret.next;
+        {};
+        {
+            var o=ret;
+            {
+                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+                var res={
+                    o!=null;
+                };
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_CbSetPair"+", in obj: "+"ret"+")");
+                #end
+            };
+            o.free();
+            o.next=ZNPNode_ZPP_CbSetPair.zpp_pool;
+            ZNPNode_ZPP_CbSetPair.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_CbSetPair.POOL_CNT++;
+            ZNPNode_ZPP_CbSetPair.POOL_SUB++;
+            #end
+        };
+        if(empty())pushmod=true;
+        modified=true;
+        length--;
+    }
+    public function pop_unsafe():ZPP_CbSetPair{
+        return inlined_pop_unsafe();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_pop_unsafe():ZPP_CbSetPair{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_CbSetPair"+"] pop_unsafe");
+            #end
+        };
+        var ret=front();
+        pop();
+        return ret;
+    }
+    public function remove(obj:ZPP_CbSetPair):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                has(obj);
+            };
+            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
+            #end
+        };
+        inlined_try_remove(obj);
+    }
+    public function try_remove(obj:ZPP_CbSetPair):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_CbSetPair"+"] remove -> "+obj);
+            #end
+        };
+        var pre=null;
+        var cur=begin();
+        var ret=false;
+        while(cur!=null){
+            if(cur.elem()==obj){
+                erase(pre);
+                ret=true;
+                break;
+            }
+            pre=cur;
+            cur=cur.next;
+        }
+        return ret;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_remove(obj:ZPP_CbSetPair):Void{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                has(obj);
+            };
+            if(!res)throw "assert("+"has(obj)"+") :: "+("removed but didn't exist");
+            #end
+        };
+        inlined_try_remove(obj);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_try_remove(obj:ZPP_CbSetPair):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_CbSetPair"+"] remove -> "+obj);
+            #end
+        };
+        var pre=null;
+        var cur=begin();
+        var ret=false;
+        while(cur!=null){
+            if(cur.elem()==obj){
+                inlined_erase(pre);
+                ret=true;
+                break;
+            }
+            pre=cur;
+            cur=cur.next;
+        }
+        return ret;
+    }
+    public function erase(pre:ZNPNode_ZPP_CbSetPair):ZNPNode_ZPP_CbSetPair{
+        return inlined_erase(pre);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_erase(pre:ZNPNode_ZPP_CbSetPair):ZNPNode_ZPP_CbSetPair{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                !empty();
+            };
+            if(!res)throw "assert("+"!empty()"+") :: "+("[ListMixin("+"ZPP_CbSetPair"+"] erase -> "+pre);
+            #end
+        };
+        var old:ZNPNode_ZPP_CbSetPair;
+        var ret:ZNPNode_ZPP_CbSetPair;
+        if(pre==null){
+            old=begin();
+            ret=old.next;
+            head=ret;
+            if(empty())pushmod=true;
+        }
+        else{
+            old=pre.next;
+            ret=old.next;
+            pre.next=ret;
+            if(ret==null)pushmod=true;
+        }
+        {};
+        {
+            var o=old;
+            {
+                #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+                var res={
+                    o!=null;
+                };
+                if(!res)throw "assert("+"o!=null"+") :: "+("Free(in T: "+"ZNPNode_ZPP_CbSetPair"+", in obj: "+"old"+")");
+                #end
+            };
+            o.free();
+            o.next=ZNPNode_ZPP_CbSetPair.zpp_pool;
+            ZNPNode_ZPP_CbSetPair.zpp_pool=o;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_CbSetPair.POOL_CNT++;
+            ZNPNode_ZPP_CbSetPair.POOL_SUB++;
+            #end
+        };
+        modified=true;
+        length--;
+        pushmod=true;
+        return ret;
+    }
+    public function splice(pre:ZNPNode_ZPP_CbSetPair,n:Int):ZNPNode_ZPP_CbSetPair{
+        while(n-->0&&pre.next!=null)erase(pre);
+        return pre.next;
+    }
+    public function clear():Void{
+        inlined_clear();
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_clear():Void{
+        if(true){
+            while(!empty())inlined_pop();
+            pushmod=true;
+        }
+    }
+    public function reverse():Void{
+        var cur=begin();
+        var pre=null;
+        while(cur!=null){
+            var nx=cur.next;
+            cur.next=pre;
+            head=cur;
+            pre=cur;
+            cur=nx;
+        }
+        modified=true;
+        pushmod=true;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function empty():Bool{
+        return begin()==null;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function size():Int{
+        return length;
+    }
+    public function has(obj:ZPP_CbSetPair):Bool{
+        return inlined_has(obj);
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function inlined_has(obj:ZPP_CbSetPair):Bool{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                obj!=null;
+            };
+            if(!res)throw "assert("+"obj!=null"+") :: "+("[ListMixin("+"ZPP_CbSetPair"+"] has -> "+obj);
+            #end
+        };
+        var ret;
+        {
+            ret=false;
+            {
+                var cx_ite=this.begin();
+                while(cx_ite!=null){
+                    var npite=cx_ite.elem();
+                    {
+                        if(npite==obj){
+                            ret=true;
+                            break;
+                        }
+                    };
+                    cx_ite=cx_ite.next;
+                }
+            };
+        };
+        return ret;
+    }
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function front():ZPP_CbSetPair{
+        return begin().elem();
+    }
+    public function back():ZPP_CbSetPair{
+        var ret=begin();
+        var cur=ret;
+        while(cur!=null){
+            ret=cur;
+            cur=cur.next;
+        }
+        return ret.elem();
+    }
+    public function iterator_at(ind:Int):ZNPNode_ZPP_CbSetPair{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                ind>=-1&&ind<size();
+            };
+            if(!res)throw "assert("+"ind>=-1&&ind<size()"+") :: "+("[ListMixin("+"ZPP_CbSetPair"+"] iterator_at -> "+ind);
+            #end
+        };
+        var ret=begin();
+        while(ind-->0&&ret!=null)ret=ret.next;
+        return ret;
+    }
+    public function at(ind:Int):ZPP_CbSetPair{
+        {
+            #if(NAPE_ASSERT&&!NAPE_RELEASE_BUILD)
+            var res={
+                ind>=0&&ind<size();
+            };
+            if(!res)throw "assert("+"ind>=0&&ind<size()"+") :: "+("[ListMixin("+"ZPP_CbSetPair"+"] at -> "+ind);
             #end
         };
         var it=iterator_at(ind);
@@ -14768,8 +14768,8 @@ class ZNPList_RayResult{
 }
 
 #if nape_swc@:keep #end
-class ZNPNode_ZPP_CbType{
-    static public var zpp_pool:ZNPNode_ZPP_CbType=null;
+class ZNPNode_ZPP_Compound{
+    static public var zpp_pool:ZNPNode_ZPP_Compound=null;
     #if NAPE_POOL_STATS 
     /**
      * @private
@@ -14793,7 +14793,7 @@ class ZNPNode_ZPP_CbType{
     static public var POOL_SUB:Int=0;
     #end
     
-    public var next:ZNPNode_ZPP_CbType=null;
+    public var next:ZNPNode_ZPP_Compound=null;
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
     function alloc():Void{}
@@ -14802,17 +14802,17 @@ class ZNPNode_ZPP_CbType{
     function free():Void{
         elt=null;
     }
-    public var elt:ZPP_CbType=null;
+    public var elt:ZPP_Compound=null;
     public function new(){}
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function elem():ZPP_CbType{
+    function elem():ZPP_Compound{
         return elt;
     }
 }
 #if nape_swc@:keep #end
-class ZNPNode_ZPP_CallbackSet{
-    static public var zpp_pool:ZNPNode_ZPP_CallbackSet=null;
+class ZNPNode_ZPP_AABBNode{
+    static public var zpp_pool:ZNPNode_ZPP_AABBNode=null;
     #if NAPE_POOL_STATS 
     /**
      * @private
@@ -14836,7 +14836,7 @@ class ZNPNode_ZPP_CallbackSet{
     static public var POOL_SUB:Int=0;
     #end
     
-    public var next:ZNPNode_ZPP_CallbackSet=null;
+    public var next:ZNPNode_ZPP_AABBNode=null;
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
     function alloc():Void{}
@@ -14845,11 +14845,97 @@ class ZNPNode_ZPP_CallbackSet{
     function free():Void{
         elt=null;
     }
-    public var elt:ZPP_CallbackSet=null;
+    public var elt:ZPP_AABBNode=null;
     public function new(){}
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function elem():ZPP_CallbackSet{
+    function elem():ZPP_AABBNode{
+        return elt;
+    }
+}
+#if nape_swc@:keep #end
+class ZNPNode_ZPP_Edge{
+    static public var zpp_pool:ZNPNode_ZPP_Edge=null;
+    #if NAPE_POOL_STATS 
+    /**
+     * @private
+     */
+    static public var POOL_CNT:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_TOT:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_ADD:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_ADDNEW:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_SUB:Int=0;
+    #end
+    
+    public var next:ZNPNode_ZPP_Edge=null;
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function alloc():Void{}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function free():Void{
+        elt=null;
+    }
+    public var elt:ZPP_Edge=null;
+    public function new(){}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function elem():ZPP_Edge{
+        return elt;
+    }
+}
+#if nape_swc@:keep #end
+class ZNPNode_ZPP_AABBPair{
+    static public var zpp_pool:ZNPNode_ZPP_AABBPair=null;
+    #if NAPE_POOL_STATS 
+    /**
+     * @private
+     */
+    static public var POOL_CNT:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_TOT:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_ADD:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_ADDNEW:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_SUB:Int=0;
+    #end
+    
+    public var next:ZNPNode_ZPP_AABBPair=null;
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function alloc():Void{}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function free():Void{
+        elt=null;
+    }
+    public var elt:ZPP_AABBPair=null;
+    public function new(){}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function elem():ZPP_AABBPair{
         return elt;
     }
 }
@@ -14897,8 +14983,8 @@ class ZNPNode_ZPP_Shape{
     }
 }
 #if nape_swc@:keep #end
-class ZNPNode_ZPP_Body{
-    static public var zpp_pool:ZNPNode_ZPP_Body=null;
+class ZNPNode_ZPP_Arbiter{
+    static public var zpp_pool:ZNPNode_ZPP_Arbiter=null;
     #if NAPE_POOL_STATS 
     /**
      * @private
@@ -14922,7 +15008,7 @@ class ZNPNode_ZPP_Body{
     static public var POOL_SUB:Int=0;
     #end
     
-    public var next:ZNPNode_ZPP_Body=null;
+    public var next:ZNPNode_ZPP_Arbiter=null;
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
     function alloc():Void{}
@@ -14931,11 +15017,11 @@ class ZNPNode_ZPP_Body{
     function free():Void{
         elt=null;
     }
-    public var elt:ZPP_Body=null;
+    public var elt:ZPP_Arbiter=null;
     public function new(){}
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function elem():ZPP_Body{
+    function elem():ZPP_Arbiter{
         return elt;
     }
 }
@@ -14983,8 +15069,8 @@ class ZNPNode_ZPP_Constraint{
     }
 }
 #if nape_swc@:keep #end
-class ZNPNode_ZPP_Compound{
-    static public var zpp_pool:ZNPNode_ZPP_Compound=null;
+class ZNPNode_ZPP_Body{
+    static public var zpp_pool:ZNPNode_ZPP_Body=null;
     #if NAPE_POOL_STATS 
     /**
      * @private
@@ -15008,7 +15094,7 @@ class ZNPNode_ZPP_Compound{
     static public var POOL_SUB:Int=0;
     #end
     
-    public var next:ZNPNode_ZPP_Compound=null;
+    public var next:ZNPNode_ZPP_Body=null;
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
     function alloc():Void{}
@@ -15017,17 +15103,17 @@ class ZNPNode_ZPP_Compound{
     function free():Void{
         elt=null;
     }
-    public var elt:ZPP_Compound=null;
+    public var elt:ZPP_Body=null;
     public function new(){}
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function elem():ZPP_Compound{
+    function elem():ZPP_Body{
         return elt;
     }
 }
 #if nape_swc@:keep #end
-class ZNPNode_ZPP_Arbiter{
-    static public var zpp_pool:ZNPNode_ZPP_Arbiter=null;
+class ZNPNode_ZPP_CallbackSet{
+    static public var zpp_pool:ZNPNode_ZPP_CallbackSet=null;
     #if NAPE_POOL_STATS 
     /**
      * @private
@@ -15051,7 +15137,7 @@ class ZNPNode_ZPP_Arbiter{
     static public var POOL_SUB:Int=0;
     #end
     
-    public var next:ZNPNode_ZPP_Arbiter=null;
+    public var next:ZNPNode_ZPP_CallbackSet=null;
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
     function alloc():Void{}
@@ -15060,17 +15146,17 @@ class ZNPNode_ZPP_Arbiter{
     function free():Void{
         elt=null;
     }
-    public var elt:ZPP_Arbiter=null;
+    public var elt:ZPP_CallbackSet=null;
     public function new(){}
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function elem():ZPP_Arbiter{
+    function elem():ZPP_CallbackSet{
         return elt;
     }
 }
 #if nape_swc@:keep #end
-class ZNPNode_ZPP_InteractionListener{
-    static public var zpp_pool:ZNPNode_ZPP_InteractionListener=null;
+class ZNPNode_ZPP_CbType{
+    static public var zpp_pool:ZNPNode_ZPP_CbType=null;
     #if NAPE_POOL_STATS 
     /**
      * @private
@@ -15094,7 +15180,7 @@ class ZNPNode_ZPP_InteractionListener{
     static public var POOL_SUB:Int=0;
     #end
     
-    public var next:ZNPNode_ZPP_InteractionListener=null;
+    public var next:ZNPNode_ZPP_CbType=null;
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
     function alloc():Void{}
@@ -15103,17 +15189,17 @@ class ZNPNode_ZPP_InteractionListener{
     function free():Void{
         elt=null;
     }
-    public var elt:ZPP_InteractionListener=null;
+    public var elt:ZPP_CbType=null;
     public function new(){}
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function elem():ZPP_InteractionListener{
+    function elem():ZPP_CbType{
         return elt;
     }
 }
 #if nape_swc@:keep #end
-class ZNPNode_ZPP_CbSet{
-    static public var zpp_pool:ZNPNode_ZPP_CbSet=null;
+class ZNPNode_ZPP_Component{
+    static public var zpp_pool:ZNPNode_ZPP_Component=null;
     #if NAPE_POOL_STATS 
     /**
      * @private
@@ -15137,7 +15223,7 @@ class ZNPNode_ZPP_CbSet{
     static public var POOL_SUB:Int=0;
     #end
     
-    public var next:ZNPNode_ZPP_CbSet=null;
+    public var next:ZNPNode_ZPP_Component=null;
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
     function alloc():Void{}
@@ -15146,17 +15232,17 @@ class ZNPNode_ZPP_CbSet{
     function free():Void{
         elt=null;
     }
-    public var elt:ZPP_CbSet=null;
+    public var elt:ZPP_Component=null;
     public function new(){}
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function elem():ZPP_CbSet{
+    function elem():ZPP_Component{
         return elt;
     }
 }
 #if nape_swc@:keep #end
-class ZNPNode_ZPP_Interactor{
-    static public var zpp_pool:ZNPNode_ZPP_Interactor=null;
+class ZNPNode_ZPP_Vec2{
+    static public var zpp_pool:ZNPNode_ZPP_Vec2=null;
     #if NAPE_POOL_STATS 
     /**
      * @private
@@ -15180,7 +15266,7 @@ class ZNPNode_ZPP_Interactor{
     static public var POOL_SUB:Int=0;
     #end
     
-    public var next:ZNPNode_ZPP_Interactor=null;
+    public var next:ZNPNode_ZPP_Vec2=null;
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
     function alloc():Void{}
@@ -15189,17 +15275,17 @@ class ZNPNode_ZPP_Interactor{
     function free():Void{
         elt=null;
     }
-    public var elt:ZPP_Interactor=null;
+    public var elt:ZPP_Vec2=null;
     public function new(){}
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function elem():ZPP_Interactor{
+    function elem():ZPP_Vec2{
         return elt;
     }
 }
 #if nape_swc@:keep #end
-class ZNPNode_ZPP_BodyListener{
-    static public var zpp_pool:ZNPNode_ZPP_BodyListener=null;
+class ZNPNode_ZPP_FluidArbiter{
+    static public var zpp_pool:ZNPNode_ZPP_FluidArbiter=null;
     #if NAPE_POOL_STATS 
     /**
      * @private
@@ -15223,7 +15309,7 @@ class ZNPNode_ZPP_BodyListener{
     static public var POOL_SUB:Int=0;
     #end
     
-    public var next:ZNPNode_ZPP_BodyListener=null;
+    public var next:ZNPNode_ZPP_FluidArbiter=null;
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
     function alloc():Void{}
@@ -15232,97 +15318,11 @@ class ZNPNode_ZPP_BodyListener{
     function free():Void{
         elt=null;
     }
-    public var elt:ZPP_BodyListener=null;
+    public var elt:ZPP_FluidArbiter=null;
     public function new(){}
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function elem():ZPP_BodyListener{
-        return elt;
-    }
-}
-#if nape_swc@:keep #end
-class ZNPNode_ZPP_CbSetPair{
-    static public var zpp_pool:ZNPNode_ZPP_CbSetPair=null;
-    #if NAPE_POOL_STATS 
-    /**
-     * @private
-     */
-    static public var POOL_CNT:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_TOT:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_ADD:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_ADDNEW:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_SUB:Int=0;
-    #end
-    
-    public var next:ZNPNode_ZPP_CbSetPair=null;
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function alloc():Void{}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function free():Void{
-        elt=null;
-    }
-    public var elt:ZPP_CbSetPair=null;
-    public function new(){}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function elem():ZPP_CbSetPair{
-        return elt;
-    }
-}
-#if nape_swc@:keep #end
-class ZNPNode_ZPP_ConstraintListener{
-    static public var zpp_pool:ZNPNode_ZPP_ConstraintListener=null;
-    #if NAPE_POOL_STATS 
-    /**
-     * @private
-     */
-    static public var POOL_CNT:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_TOT:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_ADD:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_ADDNEW:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_SUB:Int=0;
-    #end
-    
-    public var next:ZNPNode_ZPP_ConstraintListener=null;
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function alloc():Void{}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function free():Void{
-        elt=null;
-    }
-    public var elt:ZPP_ConstraintListener=null;
-    public function new(){}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function elem():ZPP_ConstraintListener{
+    function elem():ZPP_FluidArbiter{
         return elt;
     }
 }
@@ -15370,6 +15370,49 @@ class ZNPNode_ZPP_CutInt{
     }
 }
 #if nape_swc@:keep #end
+class ZNPNode_ZPP_SensorArbiter{
+    static public var zpp_pool:ZNPNode_ZPP_SensorArbiter=null;
+    #if NAPE_POOL_STATS 
+    /**
+     * @private
+     */
+    static public var POOL_CNT:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_TOT:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_ADD:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_ADDNEW:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_SUB:Int=0;
+    #end
+    
+    public var next:ZNPNode_ZPP_SensorArbiter=null;
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function alloc():Void{}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function free():Void{
+        elt=null;
+    }
+    public var elt:ZPP_SensorArbiter=null;
+    public function new(){}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function elem():ZPP_SensorArbiter{
+        return elt;
+    }
+}
+#if nape_swc@:keep #end
 class ZNPNode_ZPP_CutVert{
     static public var zpp_pool:ZNPNode_ZPP_CutVert=null;
     #if NAPE_POOL_STATS 
@@ -15409,6 +15452,221 @@ class ZNPNode_ZPP_CutVert{
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
     function elem():ZPP_CutVert{
+        return elt;
+    }
+}
+#if nape_swc@:keep #end
+class ZNPNode_ZPP_Listener{
+    static public var zpp_pool:ZNPNode_ZPP_Listener=null;
+    #if NAPE_POOL_STATS 
+    /**
+     * @private
+     */
+    static public var POOL_CNT:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_TOT:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_ADD:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_ADDNEW:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_SUB:Int=0;
+    #end
+    
+    public var next:ZNPNode_ZPP_Listener=null;
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function alloc():Void{}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function free():Void{
+        elt=null;
+    }
+    public var elt:ZPP_Listener=null;
+    public function new(){}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function elem():ZPP_Listener{
+        return elt;
+    }
+}
+#if nape_swc@:keep #end
+class ZNPNode_ZPP_ColArbiter{
+    static public var zpp_pool:ZNPNode_ZPP_ColArbiter=null;
+    #if NAPE_POOL_STATS 
+    /**
+     * @private
+     */
+    static public var POOL_CNT:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_TOT:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_ADD:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_ADDNEW:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_SUB:Int=0;
+    #end
+    
+    public var next:ZNPNode_ZPP_ColArbiter=null;
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function alloc():Void{}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function free():Void{
+        elt=null;
+    }
+    public var elt:ZPP_ColArbiter=null;
+    public function new(){}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function elem():ZPP_ColArbiter{
+        return elt;
+    }
+}
+#if nape_swc@:keep #end
+class ZNPNode_ZPP_ToiEvent{
+    static public var zpp_pool:ZNPNode_ZPP_ToiEvent=null;
+    #if NAPE_POOL_STATS 
+    /**
+     * @private
+     */
+    static public var POOL_CNT:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_TOT:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_ADD:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_ADDNEW:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_SUB:Int=0;
+    #end
+    
+    public var next:ZNPNode_ZPP_ToiEvent=null;
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function alloc():Void{}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function free():Void{
+        elt=null;
+    }
+    public var elt:ZPP_ToiEvent=null;
+    public function new(){}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function elem():ZPP_ToiEvent{
+        return elt;
+    }
+}
+#if nape_swc@:keep #end
+class ZNPNode_ZPP_Interactor{
+    static public var zpp_pool:ZNPNode_ZPP_Interactor=null;
+    #if NAPE_POOL_STATS 
+    /**
+     * @private
+     */
+    static public var POOL_CNT:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_TOT:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_ADD:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_ADDNEW:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_SUB:Int=0;
+    #end
+    
+    public var next:ZNPNode_ZPP_Interactor=null;
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function alloc():Void{}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function free():Void{
+        elt=null;
+    }
+    public var elt:ZPP_Interactor=null;
+    public function new(){}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function elem():ZPP_Interactor{
+        return elt;
+    }
+}
+#if nape_swc@:keep #end
+class ZNPNode_ZPP_InteractionListener{
+    static public var zpp_pool:ZNPNode_ZPP_InteractionListener=null;
+    #if NAPE_POOL_STATS 
+    /**
+     * @private
+     */
+    static public var POOL_CNT:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_TOT:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_ADD:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_ADDNEW:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_SUB:Int=0;
+    #end
+    
+    public var next:ZNPNode_ZPP_InteractionListener=null;
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function alloc():Void{}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function free():Void{
+        elt=null;
+    }
+    public var elt:ZPP_InteractionListener=null;
+    public function new(){}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function elem():ZPP_InteractionListener{
         return elt;
     }
 }
@@ -15456,49 +15714,6 @@ class ZNPNode_ZPP_PartitionVertex{
     }
 }
 #if nape_swc@:keep #end
-class ZNPNode_ZPP_SimplifyP{
-    static public var zpp_pool:ZNPNode_ZPP_SimplifyP=null;
-    #if NAPE_POOL_STATS 
-    /**
-     * @private
-     */
-    static public var POOL_CNT:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_TOT:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_ADD:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_ADDNEW:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_SUB:Int=0;
-    #end
-    
-    public var next:ZNPNode_ZPP_SimplifyP=null;
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function alloc():Void{}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function free():Void{
-        elt=null;
-    }
-    public var elt:ZPP_SimplifyP=null;
-    public function new(){}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function elem():ZPP_SimplifyP{
-        return elt;
-    }
-}
-#if nape_swc@:keep #end
 class ZNPNode_ZPP_PartitionedPoly{
     static public var zpp_pool:ZNPNode_ZPP_PartitionedPoly=null;
     #if NAPE_POOL_STATS 
@@ -15538,6 +15753,49 @@ class ZNPNode_ZPP_PartitionedPoly{
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
     function elem():ZPP_PartitionedPoly{
+        return elt;
+    }
+}
+#if nape_swc@:keep #end
+class ZNPNode_ZPP_SimplifyP{
+    static public var zpp_pool:ZNPNode_ZPP_SimplifyP=null;
+    #if NAPE_POOL_STATS 
+    /**
+     * @private
+     */
+    static public var POOL_CNT:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_TOT:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_ADD:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_ADDNEW:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_SUB:Int=0;
+    #end
+    
+    public var next:ZNPNode_ZPP_SimplifyP=null;
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function alloc():Void{}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function free():Void{
+        elt=null;
+    }
+    public var elt:ZPP_SimplifyP=null;
+    public function new(){}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function elem():ZPP_SimplifyP{
         return elt;
     }
 }
@@ -15671,393 +15929,6 @@ class ZNPNode_ZPP_SimpleEvent{
     }
 }
 #if nape_swc@:keep #end
-class ZNPNode_ZPP_Vec2{
-    static public var zpp_pool:ZNPNode_ZPP_Vec2=null;
-    #if NAPE_POOL_STATS 
-    /**
-     * @private
-     */
-    static public var POOL_CNT:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_TOT:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_ADD:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_ADDNEW:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_SUB:Int=0;
-    #end
-    
-    public var next:ZNPNode_ZPP_Vec2=null;
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function alloc():Void{}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function free():Void{
-        elt=null;
-    }
-    public var elt:ZPP_Vec2=null;
-    public function new(){}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function elem():ZPP_Vec2{
-        return elt;
-    }
-}
-#if nape_swc@:keep #end
-class ZNPNode_ZPP_AABBPair{
-    static public var zpp_pool:ZNPNode_ZPP_AABBPair=null;
-    #if NAPE_POOL_STATS 
-    /**
-     * @private
-     */
-    static public var POOL_CNT:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_TOT:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_ADD:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_ADDNEW:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_SUB:Int=0;
-    #end
-    
-    public var next:ZNPNode_ZPP_AABBPair=null;
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function alloc():Void{}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function free():Void{
-        elt=null;
-    }
-    public var elt:ZPP_AABBPair=null;
-    public function new(){}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function elem():ZPP_AABBPair{
-        return elt;
-    }
-}
-#if nape_swc@:keep #end
-class ZNPNode_ZPP_Edge{
-    static public var zpp_pool:ZNPNode_ZPP_Edge=null;
-    #if NAPE_POOL_STATS 
-    /**
-     * @private
-     */
-    static public var POOL_CNT:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_TOT:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_ADD:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_ADDNEW:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_SUB:Int=0;
-    #end
-    
-    public var next:ZNPNode_ZPP_Edge=null;
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function alloc():Void{}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function free():Void{
-        elt=null;
-    }
-    public var elt:ZPP_Edge=null;
-    public function new(){}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function elem():ZPP_Edge{
-        return elt;
-    }
-}
-#if nape_swc@:keep #end
-class ZNPNode_ZPP_AABBNode{
-    static public var zpp_pool:ZNPNode_ZPP_AABBNode=null;
-    #if NAPE_POOL_STATS 
-    /**
-     * @private
-     */
-    static public var POOL_CNT:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_TOT:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_ADD:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_ADDNEW:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_SUB:Int=0;
-    #end
-    
-    public var next:ZNPNode_ZPP_AABBNode=null;
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function alloc():Void{}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function free():Void{
-        elt=null;
-    }
-    public var elt:ZPP_AABBNode=null;
-    public function new(){}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function elem():ZPP_AABBNode{
-        return elt;
-    }
-}
-#if nape_swc@:keep #end
-class ZNPNode_ZPP_Component{
-    static public var zpp_pool:ZNPNode_ZPP_Component=null;
-    #if NAPE_POOL_STATS 
-    /**
-     * @private
-     */
-    static public var POOL_CNT:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_TOT:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_ADD:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_ADDNEW:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_SUB:Int=0;
-    #end
-    
-    public var next:ZNPNode_ZPP_Component=null;
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function alloc():Void{}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function free():Void{
-        elt=null;
-    }
-    public var elt:ZPP_Component=null;
-    public function new(){}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function elem():ZPP_Component{
-        return elt;
-    }
-}
-#if nape_swc@:keep #end
-class ZNPNode_ZPP_FluidArbiter{
-    static public var zpp_pool:ZNPNode_ZPP_FluidArbiter=null;
-    #if NAPE_POOL_STATS 
-    /**
-     * @private
-     */
-    static public var POOL_CNT:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_TOT:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_ADD:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_ADDNEW:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_SUB:Int=0;
-    #end
-    
-    public var next:ZNPNode_ZPP_FluidArbiter=null;
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function alloc():Void{}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function free():Void{
-        elt=null;
-    }
-    public var elt:ZPP_FluidArbiter=null;
-    public function new(){}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function elem():ZPP_FluidArbiter{
-        return elt;
-    }
-}
-#if nape_swc@:keep #end
-class ZNPNode_ZPP_SensorArbiter{
-    static public var zpp_pool:ZNPNode_ZPP_SensorArbiter=null;
-    #if NAPE_POOL_STATS 
-    /**
-     * @private
-     */
-    static public var POOL_CNT:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_TOT:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_ADD:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_ADDNEW:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_SUB:Int=0;
-    #end
-    
-    public var next:ZNPNode_ZPP_SensorArbiter=null;
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function alloc():Void{}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function free():Void{
-        elt=null;
-    }
-    public var elt:ZPP_SensorArbiter=null;
-    public function new(){}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function elem():ZPP_SensorArbiter{
-        return elt;
-    }
-}
-#if nape_swc@:keep #end
-class ZNPNode_ZPP_Listener{
-    static public var zpp_pool:ZNPNode_ZPP_Listener=null;
-    #if NAPE_POOL_STATS 
-    /**
-     * @private
-     */
-    static public var POOL_CNT:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_TOT:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_ADD:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_ADDNEW:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_SUB:Int=0;
-    #end
-    
-    public var next:ZNPNode_ZPP_Listener=null;
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function alloc():Void{}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function free():Void{
-        elt=null;
-    }
-    public var elt:ZPP_Listener=null;
-    public function new(){}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function elem():ZPP_Listener{
-        return elt;
-    }
-}
-#if nape_swc@:keep #end
-class ZNPNode_ZPP_ColArbiter{
-    static public var zpp_pool:ZNPNode_ZPP_ColArbiter=null;
-    #if NAPE_POOL_STATS 
-    /**
-     * @private
-     */
-    static public var POOL_CNT:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_TOT:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_ADD:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_ADDNEW:Int=0;
-    /**
-     * @private
-     */
-    static public var POOL_SUB:Int=0;
-    #end
-    
-    public var next:ZNPNode_ZPP_ColArbiter=null;
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function alloc():Void{}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function free():Void{
-        elt=null;
-    }
-    public var elt:ZPP_ColArbiter=null;
-    public function new(){}
-    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
-    public#if NAPE_NO_INLINE#else inline #end
-    function elem():ZPP_ColArbiter{
-        return elt;
-    }
-}
-#if nape_swc@:keep #end
 class ZNPNode_ZPP_InteractionGroup{
     static public var zpp_pool:ZNPNode_ZPP_InteractionGroup=null;
     #if NAPE_POOL_STATS 
@@ -16101,8 +15972,8 @@ class ZNPNode_ZPP_InteractionGroup{
     }
 }
 #if nape_swc@:keep #end
-class ZNPNode_ZPP_ToiEvent{
-    static public var zpp_pool:ZNPNode_ZPP_ToiEvent=null;
+class ZNPNode_ZPP_CbSet{
+    static public var zpp_pool:ZNPNode_ZPP_CbSet=null;
     #if NAPE_POOL_STATS 
     /**
      * @private
@@ -16126,7 +15997,7 @@ class ZNPNode_ZPP_ToiEvent{
     static public var POOL_SUB:Int=0;
     #end
     
-    public var next:ZNPNode_ZPP_ToiEvent=null;
+    public var next:ZNPNode_ZPP_CbSet=null;
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
     function alloc():Void{}
@@ -16135,11 +16006,140 @@ class ZNPNode_ZPP_ToiEvent{
     function free():Void{
         elt=null;
     }
-    public var elt:ZPP_ToiEvent=null;
+    public var elt:ZPP_CbSet=null;
     public function new(){}
     #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
     public#if NAPE_NO_INLINE#else inline #end
-    function elem():ZPP_ToiEvent{
+    function elem():ZPP_CbSet{
+        return elt;
+    }
+}
+#if nape_swc@:keep #end
+class ZNPNode_ZPP_BodyListener{
+    static public var zpp_pool:ZNPNode_ZPP_BodyListener=null;
+    #if NAPE_POOL_STATS 
+    /**
+     * @private
+     */
+    static public var POOL_CNT:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_TOT:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_ADD:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_ADDNEW:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_SUB:Int=0;
+    #end
+    
+    public var next:ZNPNode_ZPP_BodyListener=null;
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function alloc():Void{}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function free():Void{
+        elt=null;
+    }
+    public var elt:ZPP_BodyListener=null;
+    public function new(){}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function elem():ZPP_BodyListener{
+        return elt;
+    }
+}
+#if nape_swc@:keep #end
+class ZNPNode_ZPP_ConstraintListener{
+    static public var zpp_pool:ZNPNode_ZPP_ConstraintListener=null;
+    #if NAPE_POOL_STATS 
+    /**
+     * @private
+     */
+    static public var POOL_CNT:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_TOT:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_ADD:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_ADDNEW:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_SUB:Int=0;
+    #end
+    
+    public var next:ZNPNode_ZPP_ConstraintListener=null;
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function alloc():Void{}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function free():Void{
+        elt=null;
+    }
+    public var elt:ZPP_ConstraintListener=null;
+    public function new(){}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function elem():ZPP_ConstraintListener{
+        return elt;
+    }
+}
+#if nape_swc@:keep #end
+class ZNPNode_ZPP_CbSetPair{
+    static public var zpp_pool:ZNPNode_ZPP_CbSetPair=null;
+    #if NAPE_POOL_STATS 
+    /**
+     * @private
+     */
+    static public var POOL_CNT:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_TOT:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_ADD:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_ADDNEW:Int=0;
+    /**
+     * @private
+     */
+    static public var POOL_SUB:Int=0;
+    #end
+    
+    public var next:ZNPNode_ZPP_CbSetPair=null;
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function alloc():Void{}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function free():Void{
+        elt=null;
+    }
+    public var elt:ZPP_CbSetPair=null;
+    public function new(){}
+    #if NAPE_NO_INLINE#elseif(flash9&&flib)@:ns("flibdel")#end
+    public#if NAPE_NO_INLINE#else inline #end
+    function elem():ZPP_CbSetPair{
         return elt;
     }
 }
@@ -16492,22 +16492,22 @@ class ZPP_MixVec2List extends Vec2List{
 }
 
 #if nape_swc@:keep #end
-class ZPP_ConstraintList{
-    public var outer:ConstraintList=null;
-    public var inner:ZNPList_ZPP_Constraint=null;
+class ZPP_EdgeList{
+    public var outer:EdgeList=null;
+    public var inner:ZNPList_ZPP_Edge=null;
     public var immutable:Bool=false;
     public var _invalidated:Bool=false;
-    public var _invalidate:ZPP_ConstraintList->Void=null;
+    public var _invalidate:ZPP_EdgeList->Void=null;
     public var _validate:Void->Void=null;
     public var _modifiable:Void->Void=null;
     public static var internal:Bool=false;
-    public var adder:Constraint->Bool=null;
-    public var post_adder:Constraint->Void=null;
-    public var subber:Constraint->Void=null;
+    public var adder:Edge->Bool=null;
+    public var post_adder:Edge->Void=null;
+    public var subber:Edge->Void=null;
     public var dontremove:Bool=false;
     public var reverse_flag:Bool=false;
-     public static function get(list:ZNPList_ZPP_Constraint,imm:Bool=false):ConstraintList{
-        var ret=new ConstraintList();
+     public static function get(list:ZNPList_ZPP_Edge,imm:Bool=false):EdgeList{
+        var ret=new EdgeList();
         ret.zpp_inner.inner=list;
         if(imm)ret.zpp_inner.immutable=true;
         ret.zpp_inner.zip_length=true;
@@ -16544,12 +16544,74 @@ class ZPP_ConstraintList{
         if(_invalidate!=null)_invalidate(this);
     }
     public var at_index:Int=0;
-    public var at_ite:ZNPNode_ZPP_Constraint=null;
-    public var push_ite:ZNPNode_ZPP_Constraint=null;
+    public var at_ite:ZNPNode_ZPP_Edge=null;
+    public var push_ite:ZNPNode_ZPP_Edge=null;
     public var zip_length:Bool=false;
     public var user_length:Int=0;
     public function new(){
-        inner=new ZNPList_ZPP_Constraint();
+        inner=new ZNPList_ZPP_Edge();
+        _invalidated=true;
+    }
+}
+#if nape_swc@:keep #end
+class ZPP_ShapeList{
+    public var outer:ShapeList=null;
+    public var inner:ZNPList_ZPP_Shape=null;
+    public var immutable:Bool=false;
+    public var _invalidated:Bool=false;
+    public var _invalidate:ZPP_ShapeList->Void=null;
+    public var _validate:Void->Void=null;
+    public var _modifiable:Void->Void=null;
+    public static var internal:Bool=false;
+    public var adder:Shape->Bool=null;
+    public var post_adder:Shape->Void=null;
+    public var subber:Shape->Void=null;
+    public var dontremove:Bool=false;
+    public var reverse_flag:Bool=false;
+     public static function get(list:ZNPList_ZPP_Shape,imm:Bool=false):ShapeList{
+        var ret=new ShapeList();
+        ret.zpp_inner.inner=list;
+        if(imm)ret.zpp_inner.immutable=true;
+        ret.zpp_inner.zip_length=true;
+        return ret;
+    }
+    public function valmod():Void{
+        validate();
+        if(inner.modified){
+            if(inner.pushmod)push_ite=null;
+            at_ite=null;
+            inner.modified=false;
+            inner.pushmod=false;
+            zip_length=true;
+        }
+    }
+    public function modified():Void{
+        zip_length=true;
+        at_ite=null;
+        push_ite=null;
+    }
+    public function modify_test():Void{
+        #if(!NAPE_RELEASE_BUILD)
+        if(_modifiable!=null)_modifiable();
+        #end
+    }
+    public function validate():Void{
+        if(_invalidated){
+            _invalidated=false;
+            if(_validate!=null)_validate();
+        }
+    }
+    public function invalidate():Void{
+        _invalidated=true;
+        if(_invalidate!=null)_invalidate(this);
+    }
+    public var at_index:Int=0;
+    public var at_ite:ZNPNode_ZPP_Shape=null;
+    public var push_ite:ZNPNode_ZPP_Shape=null;
+    public var zip_length:Bool=false;
+    public var user_length:Int=0;
+    public function new(){
+        inner=new ZNPList_ZPP_Shape();
         _invalidated=true;
     }
 }
@@ -16616,68 +16678,6 @@ class ZPP_BodyList{
     }
 }
 #if nape_swc@:keep #end
-class ZPP_InteractorList{
-    public var outer:InteractorList=null;
-    public var inner:ZNPList_ZPP_Interactor=null;
-    public var immutable:Bool=false;
-    public var _invalidated:Bool=false;
-    public var _invalidate:ZPP_InteractorList->Void=null;
-    public var _validate:Void->Void=null;
-    public var _modifiable:Void->Void=null;
-    public static var internal:Bool=false;
-    public var adder:Interactor->Bool=null;
-    public var post_adder:Interactor->Void=null;
-    public var subber:Interactor->Void=null;
-    public var dontremove:Bool=false;
-    public var reverse_flag:Bool=false;
-     public static function get(list:ZNPList_ZPP_Interactor,imm:Bool=false):InteractorList{
-        var ret=new InteractorList();
-        ret.zpp_inner.inner=list;
-        if(imm)ret.zpp_inner.immutable=true;
-        ret.zpp_inner.zip_length=true;
-        return ret;
-    }
-    public function valmod():Void{
-        validate();
-        if(inner.modified){
-            if(inner.pushmod)push_ite=null;
-            at_ite=null;
-            inner.modified=false;
-            inner.pushmod=false;
-            zip_length=true;
-        }
-    }
-    public function modified():Void{
-        zip_length=true;
-        at_ite=null;
-        push_ite=null;
-    }
-    public function modify_test():Void{
-        #if(!NAPE_RELEASE_BUILD)
-        if(_modifiable!=null)_modifiable();
-        #end
-    }
-    public function validate():Void{
-        if(_invalidated){
-            _invalidated=false;
-            if(_validate!=null)_validate();
-        }
-    }
-    public function invalidate():Void{
-        _invalidated=true;
-        if(_invalidate!=null)_invalidate(this);
-    }
-    public var at_index:Int=0;
-    public var at_ite:ZNPNode_ZPP_Interactor=null;
-    public var push_ite:ZNPNode_ZPP_Interactor=null;
-    public var zip_length:Bool=false;
-    public var user_length:Int=0;
-    public function new(){
-        inner=new ZNPList_ZPP_Interactor();
-        _invalidated=true;
-    }
-}
-#if nape_swc@:keep #end
 class ZPP_CompoundList{
     public var outer:CompoundList=null;
     public var inner:ZNPList_ZPP_Compound=null;
@@ -16740,22 +16740,22 @@ class ZPP_CompoundList{
     }
 }
 #if nape_swc@:keep #end
-class ZPP_ListenerList{
-    public var outer:ListenerList=null;
-    public var inner:ZNPList_ZPP_Listener=null;
+class ZPP_InteractorList{
+    public var outer:InteractorList=null;
+    public var inner:ZNPList_ZPP_Interactor=null;
     public var immutable:Bool=false;
     public var _invalidated:Bool=false;
-    public var _invalidate:ZPP_ListenerList->Void=null;
+    public var _invalidate:ZPP_InteractorList->Void=null;
     public var _validate:Void->Void=null;
     public var _modifiable:Void->Void=null;
     public static var internal:Bool=false;
-    public var adder:Listener->Bool=null;
-    public var post_adder:Listener->Void=null;
-    public var subber:Listener->Void=null;
+    public var adder:Interactor->Bool=null;
+    public var post_adder:Interactor->Void=null;
+    public var subber:Interactor->Void=null;
     public var dontremove:Bool=false;
     public var reverse_flag:Bool=false;
-     public static function get(list:ZNPList_ZPP_Listener,imm:Bool=false):ListenerList{
-        var ret=new ListenerList();
+     public static function get(list:ZNPList_ZPP_Interactor,imm:Bool=false):InteractorList{
+        var ret=new InteractorList();
         ret.zpp_inner.inner=list;
         if(imm)ret.zpp_inner.immutable=true;
         ret.zpp_inner.zip_length=true;
@@ -16792,32 +16792,32 @@ class ZPP_ListenerList{
         if(_invalidate!=null)_invalidate(this);
     }
     public var at_index:Int=0;
-    public var at_ite:ZNPNode_ZPP_Listener=null;
-    public var push_ite:ZNPNode_ZPP_Listener=null;
+    public var at_ite:ZNPNode_ZPP_Interactor=null;
+    public var push_ite:ZNPNode_ZPP_Interactor=null;
     public var zip_length:Bool=false;
     public var user_length:Int=0;
     public function new(){
-        inner=new ZNPList_ZPP_Listener();
+        inner=new ZNPList_ZPP_Interactor();
         _invalidated=true;
     }
 }
 #if nape_swc@:keep #end
-class ZPP_CbTypeList{
-    public var outer:CbTypeList=null;
-    public var inner:ZNPList_ZPP_CbType=null;
+class ZPP_ConvexResultList{
+    public var outer:ConvexResultList=null;
+    public var inner:ZNPList_ConvexResult=null;
     public var immutable:Bool=false;
     public var _invalidated:Bool=false;
-    public var _invalidate:ZPP_CbTypeList->Void=null;
+    public var _invalidate:ZPP_ConvexResultList->Void=null;
     public var _validate:Void->Void=null;
     public var _modifiable:Void->Void=null;
     public static var internal:Bool=false;
-    public var adder:CbType->Bool=null;
-    public var post_adder:CbType->Void=null;
-    public var subber:CbType->Void=null;
+    public var adder:ConvexResult->Bool=null;
+    public var post_adder:ConvexResult->Void=null;
+    public var subber:ConvexResult->Void=null;
     public var dontremove:Bool=false;
     public var reverse_flag:Bool=false;
-     public static function get(list:ZNPList_ZPP_CbType,imm:Bool=false):CbTypeList{
-        var ret=new CbTypeList();
+     public static function get(list:ZNPList_ConvexResult,imm:Bool=false):ConvexResultList{
+        var ret=new ConvexResultList();
         ret.zpp_inner.inner=list;
         if(imm)ret.zpp_inner.immutable=true;
         ret.zpp_inner.zip_length=true;
@@ -16854,74 +16854,12 @@ class ZPP_CbTypeList{
         if(_invalidate!=null)_invalidate(this);
     }
     public var at_index:Int=0;
-    public var at_ite:ZNPNode_ZPP_CbType=null;
-    public var push_ite:ZNPNode_ZPP_CbType=null;
+    public var at_ite:ZNPNode_ConvexResult=null;
+    public var push_ite:ZNPNode_ConvexResult=null;
     public var zip_length:Bool=false;
     public var user_length:Int=0;
     public function new(){
-        inner=new ZNPList_ZPP_CbType();
-        _invalidated=true;
-    }
-}
-#if nape_swc@:keep #end
-class ZPP_Vec2List{
-    public var outer:Vec2List=null;
-    public var inner:ZNPList_ZPP_Vec2=null;
-    public var immutable:Bool=false;
-    public var _invalidated:Bool=false;
-    public var _invalidate:ZPP_Vec2List->Void=null;
-    public var _validate:Void->Void=null;
-    public var _modifiable:Void->Void=null;
-    public static var internal:Bool=false;
-    public var adder:Vec2->Bool=null;
-    public var post_adder:Vec2->Void=null;
-    public var subber:Vec2->Void=null;
-    public var dontremove:Bool=false;
-    public var reverse_flag:Bool=false;
-     public static function get(list:ZNPList_ZPP_Vec2,imm:Bool=false):Vec2List{
-        var ret=new Vec2List();
-        ret.zpp_inner.inner=list;
-        if(imm)ret.zpp_inner.immutable=true;
-        ret.zpp_inner.zip_length=true;
-        return ret;
-    }
-    public function valmod():Void{
-        validate();
-        if(inner.modified){
-            if(inner.pushmod)push_ite=null;
-            at_ite=null;
-            inner.modified=false;
-            inner.pushmod=false;
-            zip_length=true;
-        }
-    }
-    public function modified():Void{
-        zip_length=true;
-        at_ite=null;
-        push_ite=null;
-    }
-    public function modify_test():Void{
-        #if(!NAPE_RELEASE_BUILD)
-        if(_modifiable!=null)_modifiable();
-        #end
-    }
-    public function validate():Void{
-        if(_invalidated){
-            _invalidated=false;
-            if(_validate!=null)_validate();
-        }
-    }
-    public function invalidate():Void{
-        _invalidated=true;
-        if(_invalidate!=null)_invalidate(this);
-    }
-    public var at_index:Int=0;
-    public var at_ite:ZNPNode_ZPP_Vec2=null;
-    public var push_ite:ZNPNode_ZPP_Vec2=null;
-    public var zip_length:Bool=false;
-    public var user_length:Int=0;
-    public function new(){
-        inner=new ZNPList_ZPP_Vec2();
+        inner=new ZNPList_ConvexResult();
         _invalidated=true;
     }
 }
@@ -17050,22 +16988,22 @@ class ZPP_RayResultList{
     }
 }
 #if nape_swc@:keep #end
-class ZPP_ConvexResultList{
-    public var outer:ConvexResultList=null;
-    public var inner:ZNPList_ConvexResult=null;
+class ZPP_Vec2List{
+    public var outer:Vec2List=null;
+    public var inner:ZNPList_ZPP_Vec2=null;
     public var immutable:Bool=false;
     public var _invalidated:Bool=false;
-    public var _invalidate:ZPP_ConvexResultList->Void=null;
+    public var _invalidate:ZPP_Vec2List->Void=null;
     public var _validate:Void->Void=null;
     public var _modifiable:Void->Void=null;
     public static var internal:Bool=false;
-    public var adder:ConvexResult->Bool=null;
-    public var post_adder:ConvexResult->Void=null;
-    public var subber:ConvexResult->Void=null;
+    public var adder:Vec2->Bool=null;
+    public var post_adder:Vec2->Void=null;
+    public var subber:Vec2->Void=null;
     public var dontremove:Bool=false;
     public var reverse_flag:Bool=false;
-     public static function get(list:ZNPList_ConvexResult,imm:Bool=false):ConvexResultList{
-        var ret=new ConvexResultList();
+     public static function get(list:ZNPList_ZPP_Vec2,imm:Bool=false):Vec2List{
+        var ret=new Vec2List();
         ret.zpp_inner.inner=list;
         if(imm)ret.zpp_inner.immutable=true;
         ret.zpp_inner.zip_length=true;
@@ -17102,198 +17040,12 @@ class ZPP_ConvexResultList{
         if(_invalidate!=null)_invalidate(this);
     }
     public var at_index:Int=0;
-    public var at_ite:ZNPNode_ConvexResult=null;
-    public var push_ite:ZNPNode_ConvexResult=null;
+    public var at_ite:ZNPNode_ZPP_Vec2=null;
+    public var push_ite:ZNPNode_ZPP_Vec2=null;
     public var zip_length:Bool=false;
     public var user_length:Int=0;
     public function new(){
-        inner=new ZNPList_ConvexResult();
-        _invalidated=true;
-    }
-}
-#if nape_swc@:keep #end
-class ZPP_EdgeList{
-    public var outer:EdgeList=null;
-    public var inner:ZNPList_ZPP_Edge=null;
-    public var immutable:Bool=false;
-    public var _invalidated:Bool=false;
-    public var _invalidate:ZPP_EdgeList->Void=null;
-    public var _validate:Void->Void=null;
-    public var _modifiable:Void->Void=null;
-    public static var internal:Bool=false;
-    public var adder:Edge->Bool=null;
-    public var post_adder:Edge->Void=null;
-    public var subber:Edge->Void=null;
-    public var dontremove:Bool=false;
-    public var reverse_flag:Bool=false;
-     public static function get(list:ZNPList_ZPP_Edge,imm:Bool=false):EdgeList{
-        var ret=new EdgeList();
-        ret.zpp_inner.inner=list;
-        if(imm)ret.zpp_inner.immutable=true;
-        ret.zpp_inner.zip_length=true;
-        return ret;
-    }
-    public function valmod():Void{
-        validate();
-        if(inner.modified){
-            if(inner.pushmod)push_ite=null;
-            at_ite=null;
-            inner.modified=false;
-            inner.pushmod=false;
-            zip_length=true;
-        }
-    }
-    public function modified():Void{
-        zip_length=true;
-        at_ite=null;
-        push_ite=null;
-    }
-    public function modify_test():Void{
-        #if(!NAPE_RELEASE_BUILD)
-        if(_modifiable!=null)_modifiable();
-        #end
-    }
-    public function validate():Void{
-        if(_invalidated){
-            _invalidated=false;
-            if(_validate!=null)_validate();
-        }
-    }
-    public function invalidate():Void{
-        _invalidated=true;
-        if(_invalidate!=null)_invalidate(this);
-    }
-    public var at_index:Int=0;
-    public var at_ite:ZNPNode_ZPP_Edge=null;
-    public var push_ite:ZNPNode_ZPP_Edge=null;
-    public var zip_length:Bool=false;
-    public var user_length:Int=0;
-    public function new(){
-        inner=new ZNPList_ZPP_Edge();
-        _invalidated=true;
-    }
-}
-#if nape_swc@:keep #end
-class ZPP_ShapeList{
-    public var outer:ShapeList=null;
-    public var inner:ZNPList_ZPP_Shape=null;
-    public var immutable:Bool=false;
-    public var _invalidated:Bool=false;
-    public var _invalidate:ZPP_ShapeList->Void=null;
-    public var _validate:Void->Void=null;
-    public var _modifiable:Void->Void=null;
-    public static var internal:Bool=false;
-    public var adder:Shape->Bool=null;
-    public var post_adder:Shape->Void=null;
-    public var subber:Shape->Void=null;
-    public var dontremove:Bool=false;
-    public var reverse_flag:Bool=false;
-     public static function get(list:ZNPList_ZPP_Shape,imm:Bool=false):ShapeList{
-        var ret=new ShapeList();
-        ret.zpp_inner.inner=list;
-        if(imm)ret.zpp_inner.immutable=true;
-        ret.zpp_inner.zip_length=true;
-        return ret;
-    }
-    public function valmod():Void{
-        validate();
-        if(inner.modified){
-            if(inner.pushmod)push_ite=null;
-            at_ite=null;
-            inner.modified=false;
-            inner.pushmod=false;
-            zip_length=true;
-        }
-    }
-    public function modified():Void{
-        zip_length=true;
-        at_ite=null;
-        push_ite=null;
-    }
-    public function modify_test():Void{
-        #if(!NAPE_RELEASE_BUILD)
-        if(_modifiable!=null)_modifiable();
-        #end
-    }
-    public function validate():Void{
-        if(_invalidated){
-            _invalidated=false;
-            if(_validate!=null)_validate();
-        }
-    }
-    public function invalidate():Void{
-        _invalidated=true;
-        if(_invalidate!=null)_invalidate(this);
-    }
-    public var at_index:Int=0;
-    public var at_ite:ZNPNode_ZPP_Shape=null;
-    public var push_ite:ZNPNode_ZPP_Shape=null;
-    public var zip_length:Bool=false;
-    public var user_length:Int=0;
-    public function new(){
-        inner=new ZNPList_ZPP_Shape();
-        _invalidated=true;
-    }
-}
-#if nape_swc@:keep #end
-class ZPP_InteractionGroupList{
-    public var outer:InteractionGroupList=null;
-    public var inner:ZNPList_ZPP_InteractionGroup=null;
-    public var immutable:Bool=false;
-    public var _invalidated:Bool=false;
-    public var _invalidate:ZPP_InteractionGroupList->Void=null;
-    public var _validate:Void->Void=null;
-    public var _modifiable:Void->Void=null;
-    public static var internal:Bool=false;
-    public var adder:InteractionGroup->Bool=null;
-    public var post_adder:InteractionGroup->Void=null;
-    public var subber:InteractionGroup->Void=null;
-    public var dontremove:Bool=false;
-    public var reverse_flag:Bool=false;
-     public static function get(list:ZNPList_ZPP_InteractionGroup,imm:Bool=false):InteractionGroupList{
-        var ret=new InteractionGroupList();
-        ret.zpp_inner.inner=list;
-        if(imm)ret.zpp_inner.immutable=true;
-        ret.zpp_inner.zip_length=true;
-        return ret;
-    }
-    public function valmod():Void{
-        validate();
-        if(inner.modified){
-            if(inner.pushmod)push_ite=null;
-            at_ite=null;
-            inner.modified=false;
-            inner.pushmod=false;
-            zip_length=true;
-        }
-    }
-    public function modified():Void{
-        zip_length=true;
-        at_ite=null;
-        push_ite=null;
-    }
-    public function modify_test():Void{
-        #if(!NAPE_RELEASE_BUILD)
-        if(_modifiable!=null)_modifiable();
-        #end
-    }
-    public function validate():Void{
-        if(_invalidated){
-            _invalidated=false;
-            if(_validate!=null)_validate();
-        }
-    }
-    public function invalidate():Void{
-        _invalidated=true;
-        if(_invalidate!=null)_invalidate(this);
-    }
-    public var at_index:Int=0;
-    public var at_ite:ZNPNode_ZPP_InteractionGroup=null;
-    public var push_ite:ZNPNode_ZPP_InteractionGroup=null;
-    public var zip_length:Bool=false;
-    public var user_length:Int=0;
-    public function new(){
-        inner=new ZNPList_ZPP_InteractionGroup();
+        inner=new ZNPList_ZPP_Vec2();
         _invalidated=true;
     }
 }
@@ -17418,6 +17170,254 @@ class ZPP_ContactList{
     public var user_length:Int=0;
     public function new(){
         inner=new ZPP_Contact();
+        _invalidated=true;
+    }
+}
+#if nape_swc@:keep #end
+class ZPP_InteractionGroupList{
+    public var outer:InteractionGroupList=null;
+    public var inner:ZNPList_ZPP_InteractionGroup=null;
+    public var immutable:Bool=false;
+    public var _invalidated:Bool=false;
+    public var _invalidate:ZPP_InteractionGroupList->Void=null;
+    public var _validate:Void->Void=null;
+    public var _modifiable:Void->Void=null;
+    public static var internal:Bool=false;
+    public var adder:InteractionGroup->Bool=null;
+    public var post_adder:InteractionGroup->Void=null;
+    public var subber:InteractionGroup->Void=null;
+    public var dontremove:Bool=false;
+    public var reverse_flag:Bool=false;
+     public static function get(list:ZNPList_ZPP_InteractionGroup,imm:Bool=false):InteractionGroupList{
+        var ret=new InteractionGroupList();
+        ret.zpp_inner.inner=list;
+        if(imm)ret.zpp_inner.immutable=true;
+        ret.zpp_inner.zip_length=true;
+        return ret;
+    }
+    public function valmod():Void{
+        validate();
+        if(inner.modified){
+            if(inner.pushmod)push_ite=null;
+            at_ite=null;
+            inner.modified=false;
+            inner.pushmod=false;
+            zip_length=true;
+        }
+    }
+    public function modified():Void{
+        zip_length=true;
+        at_ite=null;
+        push_ite=null;
+    }
+    public function modify_test():Void{
+        #if(!NAPE_RELEASE_BUILD)
+        if(_modifiable!=null)_modifiable();
+        #end
+    }
+    public function validate():Void{
+        if(_invalidated){
+            _invalidated=false;
+            if(_validate!=null)_validate();
+        }
+    }
+    public function invalidate():Void{
+        _invalidated=true;
+        if(_invalidate!=null)_invalidate(this);
+    }
+    public var at_index:Int=0;
+    public var at_ite:ZNPNode_ZPP_InteractionGroup=null;
+    public var push_ite:ZNPNode_ZPP_InteractionGroup=null;
+    public var zip_length:Bool=false;
+    public var user_length:Int=0;
+    public function new(){
+        inner=new ZNPList_ZPP_InteractionGroup();
+        _invalidated=true;
+    }
+}
+#if nape_swc@:keep #end
+class ZPP_ConstraintList{
+    public var outer:ConstraintList=null;
+    public var inner:ZNPList_ZPP_Constraint=null;
+    public var immutable:Bool=false;
+    public var _invalidated:Bool=false;
+    public var _invalidate:ZPP_ConstraintList->Void=null;
+    public var _validate:Void->Void=null;
+    public var _modifiable:Void->Void=null;
+    public static var internal:Bool=false;
+    public var adder:Constraint->Bool=null;
+    public var post_adder:Constraint->Void=null;
+    public var subber:Constraint->Void=null;
+    public var dontremove:Bool=false;
+    public var reverse_flag:Bool=false;
+     public static function get(list:ZNPList_ZPP_Constraint,imm:Bool=false):ConstraintList{
+        var ret=new ConstraintList();
+        ret.zpp_inner.inner=list;
+        if(imm)ret.zpp_inner.immutable=true;
+        ret.zpp_inner.zip_length=true;
+        return ret;
+    }
+    public function valmod():Void{
+        validate();
+        if(inner.modified){
+            if(inner.pushmod)push_ite=null;
+            at_ite=null;
+            inner.modified=false;
+            inner.pushmod=false;
+            zip_length=true;
+        }
+    }
+    public function modified():Void{
+        zip_length=true;
+        at_ite=null;
+        push_ite=null;
+    }
+    public function modify_test():Void{
+        #if(!NAPE_RELEASE_BUILD)
+        if(_modifiable!=null)_modifiable();
+        #end
+    }
+    public function validate():Void{
+        if(_invalidated){
+            _invalidated=false;
+            if(_validate!=null)_validate();
+        }
+    }
+    public function invalidate():Void{
+        _invalidated=true;
+        if(_invalidate!=null)_invalidate(this);
+    }
+    public var at_index:Int=0;
+    public var at_ite:ZNPNode_ZPP_Constraint=null;
+    public var push_ite:ZNPNode_ZPP_Constraint=null;
+    public var zip_length:Bool=false;
+    public var user_length:Int=0;
+    public function new(){
+        inner=new ZNPList_ZPP_Constraint();
+        _invalidated=true;
+    }
+}
+#if nape_swc@:keep #end
+class ZPP_CbTypeList{
+    public var outer:CbTypeList=null;
+    public var inner:ZNPList_ZPP_CbType=null;
+    public var immutable:Bool=false;
+    public var _invalidated:Bool=false;
+    public var _invalidate:ZPP_CbTypeList->Void=null;
+    public var _validate:Void->Void=null;
+    public var _modifiable:Void->Void=null;
+    public static var internal:Bool=false;
+    public var adder:CbType->Bool=null;
+    public var post_adder:CbType->Void=null;
+    public var subber:CbType->Void=null;
+    public var dontremove:Bool=false;
+    public var reverse_flag:Bool=false;
+     public static function get(list:ZNPList_ZPP_CbType,imm:Bool=false):CbTypeList{
+        var ret=new CbTypeList();
+        ret.zpp_inner.inner=list;
+        if(imm)ret.zpp_inner.immutable=true;
+        ret.zpp_inner.zip_length=true;
+        return ret;
+    }
+    public function valmod():Void{
+        validate();
+        if(inner.modified){
+            if(inner.pushmod)push_ite=null;
+            at_ite=null;
+            inner.modified=false;
+            inner.pushmod=false;
+            zip_length=true;
+        }
+    }
+    public function modified():Void{
+        zip_length=true;
+        at_ite=null;
+        push_ite=null;
+    }
+    public function modify_test():Void{
+        #if(!NAPE_RELEASE_BUILD)
+        if(_modifiable!=null)_modifiable();
+        #end
+    }
+    public function validate():Void{
+        if(_invalidated){
+            _invalidated=false;
+            if(_validate!=null)_validate();
+        }
+    }
+    public function invalidate():Void{
+        _invalidated=true;
+        if(_invalidate!=null)_invalidate(this);
+    }
+    public var at_index:Int=0;
+    public var at_ite:ZNPNode_ZPP_CbType=null;
+    public var push_ite:ZNPNode_ZPP_CbType=null;
+    public var zip_length:Bool=false;
+    public var user_length:Int=0;
+    public function new(){
+        inner=new ZNPList_ZPP_CbType();
+        _invalidated=true;
+    }
+}
+#if nape_swc@:keep #end
+class ZPP_ListenerList{
+    public var outer:ListenerList=null;
+    public var inner:ZNPList_ZPP_Listener=null;
+    public var immutable:Bool=false;
+    public var _invalidated:Bool=false;
+    public var _invalidate:ZPP_ListenerList->Void=null;
+    public var _validate:Void->Void=null;
+    public var _modifiable:Void->Void=null;
+    public static var internal:Bool=false;
+    public var adder:Listener->Bool=null;
+    public var post_adder:Listener->Void=null;
+    public var subber:Listener->Void=null;
+    public var dontremove:Bool=false;
+    public var reverse_flag:Bool=false;
+     public static function get(list:ZNPList_ZPP_Listener,imm:Bool=false):ListenerList{
+        var ret=new ListenerList();
+        ret.zpp_inner.inner=list;
+        if(imm)ret.zpp_inner.immutable=true;
+        ret.zpp_inner.zip_length=true;
+        return ret;
+    }
+    public function valmod():Void{
+        validate();
+        if(inner.modified){
+            if(inner.pushmod)push_ite=null;
+            at_ite=null;
+            inner.modified=false;
+            inner.pushmod=false;
+            zip_length=true;
+        }
+    }
+    public function modified():Void{
+        zip_length=true;
+        at_ite=null;
+        push_ite=null;
+    }
+    public function modify_test():Void{
+        #if(!NAPE_RELEASE_BUILD)
+        if(_modifiable!=null)_modifiable();
+        #end
+    }
+    public function validate():Void{
+        if(_invalidated){
+            _invalidated=false;
+            if(_validate!=null)_validate();
+        }
+    }
+    public function invalidate():Void{
+        _invalidated=true;
+        if(_invalidate!=null)_invalidate(this);
+    }
+    public var at_index:Int=0;
+    public var at_ite:ZNPNode_ZPP_Listener=null;
+    public var push_ite:ZNPNode_ZPP_Listener=null;
+    public var zip_length:Bool=false;
+    public var user_length:Int=0;
+    public function new(){
+        inner=new ZNPList_ZPP_Listener();
         _invalidated=true;
     }
 }

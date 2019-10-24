@@ -1,175 +1,175 @@
 package nape.util;
 import zpp_nape.Const;
-import zpp_nape.constraint.PivotJoint;
 import zpp_nape.ID;
-import zpp_nape.constraint.Constraint;
-import zpp_nape.constraint.WeldJoint;
-import zpp_nape.constraint.UserConstraint;
-import zpp_nape.constraint.DistanceJoint;
-import zpp_nape.constraint.LineJoint;
-import zpp_nape.constraint.LinearJoint;
-import zpp_nape.constraint.AngleJoint;
-import zpp_nape.constraint.MotorJoint;
-import zpp_nape.phys.Interactor;
-import zpp_nape.phys.FeatureMix;
-import zpp_nape.phys.Material;
-import zpp_nape.constraint.PulleyJoint;
-import zpp_nape.phys.FluidProperties;
-import zpp_nape.phys.Compound;
-import zpp_nape.callbacks.OptionType;
+import zpp_nape.util.Array2;
+import zpp_nape.util.Circular;
+import zpp_nape.util.DisjointSetForest;
+import zpp_nape.util.FastHash;
+import zpp_nape.util.Flags;
+import zpp_nape.util.Lists;
+import zpp_nape.util.Math;
+import zpp_nape.util.Names;
+import zpp_nape.util.Pool;
+import zpp_nape.util.Queue;
+import zpp_nape.util.RBTree;
+import zpp_nape.util.Debug;
+import zpp_nape.util.UserData;
+import zpp_nape.util.WrapLists;
+import zpp_nape.space.Broadphase;
+import zpp_nape.space.DynAABBPhase;
+import zpp_nape.space.SweepPhase;
+import zpp_nape.shape.Circle;
+import zpp_nape.shape.Edge;
+import zpp_nape.shape.Polygon;
+import zpp_nape.shape.Shape;
 import zpp_nape.phys.Body;
-import zpp_nape.callbacks.CbSetPair;
-import zpp_nape.callbacks.CbType;
-import zpp_nape.callbacks.Callback;
-import zpp_nape.callbacks.CbSet;
-import zpp_nape.callbacks.Listener;
+import zpp_nape.phys.Compound;
+import zpp_nape.phys.FeatureMix;
+import zpp_nape.phys.FluidProperties;
+import zpp_nape.phys.Interactor;
+import zpp_nape.phys.Material;
+import zpp_nape.geom.AABB;
+import zpp_nape.geom.Collide;
+import zpp_nape.geom.Convex;
+import zpp_nape.geom.ConvexRayResult;
+import zpp_nape.space.Space;
+import zpp_nape.geom.Cutter;
+import zpp_nape.geom.Geom;
 import zpp_nape.geom.GeomPoly;
 import zpp_nape.geom.Mat23;
-import zpp_nape.geom.ConvexRayResult;
-import zpp_nape.geom.Cutter;
-import zpp_nape.geom.Ray;
-import zpp_nape.geom.Vec2;
-import zpp_nape.geom.Convex;
+import zpp_nape.geom.MarchingSquares;
+import zpp_nape.geom.MatMN;
 import zpp_nape.geom.MatMath;
+import zpp_nape.geom.Monotone;
+import zpp_nape.geom.PolyIter;
 import zpp_nape.geom.PartitionedPoly;
+import zpp_nape.geom.Ray;
 import zpp_nape.geom.Simplify;
-import zpp_nape.geom.Triangular;
-import zpp_nape.geom.AABB;
 import zpp_nape.geom.Simple;
 import zpp_nape.geom.SweepDistance;
-import zpp_nape.geom.Monotone;
-import zpp_nape.geom.VecMath;
+import zpp_nape.geom.Vec2;
 import zpp_nape.geom.Vec3;
-import zpp_nape.geom.MatMN;
-import zpp_nape.geom.PolyIter;
-import zpp_nape.geom.MarchingSquares;
-import zpp_nape.geom.Geom;
-import zpp_nape.shape.Circle;
-import zpp_nape.geom.Collide;
-import zpp_nape.shape.Shape;
-import zpp_nape.shape.Edge;
-import zpp_nape.space.Broadphase;
-import zpp_nape.shape.Polygon;
-import zpp_nape.space.SweepPhase;
-import zpp_nape.space.DynAABBPhase;
+import zpp_nape.geom.Triangular;
+import zpp_nape.geom.VecMath;
 import zpp_nape.dynamics.Contact;
-import zpp_nape.space.Space;
-import zpp_nape.dynamics.Arbiter;
-import zpp_nape.dynamics.InteractionGroup;
 import zpp_nape.dynamics.InteractionFilter;
+import zpp_nape.dynamics.InteractionGroup;
 import zpp_nape.dynamics.SpaceArbiterList;
-import zpp_nape.util.Array2;
-import zpp_nape.util.Lists;
-import zpp_nape.util.Flags;
-import zpp_nape.util.Queue;
-import zpp_nape.util.Debug;
-import zpp_nape.util.FastHash;
-import zpp_nape.util.RBTree;
-import zpp_nape.util.Pool;
-import zpp_nape.util.Names;
-import zpp_nape.util.Circular;
-import zpp_nape.util.WrapLists;
-import zpp_nape.util.Math;
-import zpp_nape.util.UserData;
-import nape.TArray;
-import zpp_nape.util.DisjointSetForest;
+import zpp_nape.constraint.AngleJoint;
+import zpp_nape.constraint.Constraint;
+import zpp_nape.dynamics.Arbiter;
+import zpp_nape.constraint.DistanceJoint;
+import zpp_nape.constraint.LinearJoint;
+import zpp_nape.constraint.MotorJoint;
+import zpp_nape.constraint.PivotJoint;
+import zpp_nape.constraint.LineJoint;
+import zpp_nape.constraint.UserConstraint;
+import zpp_nape.constraint.WeldJoint;
+import zpp_nape.constraint.PulleyJoint;
+import zpp_nape.callbacks.Callback;
+import zpp_nape.callbacks.CbSetPair;
+import zpp_nape.callbacks.CbType;
+import zpp_nape.callbacks.CbSet;
+import zpp_nape.callbacks.OptionType;
+import zpp_nape.callbacks.Listener;
 import nape.Config;
-import nape.constraint.PivotJoint;
-import nape.constraint.WeldJoint;
-import nape.constraint.Constraint;
-import nape.constraint.UserConstraint;
-import nape.constraint.DistanceJoint;
-import nape.constraint.LineJoint;
-import nape.constraint.LinearJoint;
-import nape.constraint.ConstraintList;
-import nape.constraint.AngleJoint;
-import nape.constraint.MotorJoint;
-import nape.constraint.ConstraintIterator;
-import nape.phys.GravMassMode;
-import nape.phys.BodyList;
-import nape.phys.Interactor;
-import nape.phys.InertiaMode;
-import nape.phys.InteractorList;
-import nape.constraint.PulleyJoint;
-import nape.phys.MassMode;
-import nape.phys.Material;
-import nape.phys.InteractorIterator;
-import nape.phys.FluidProperties;
-import nape.phys.BodyIterator;
-import nape.phys.Compound;
-import nape.phys.CompoundList;
-import nape.phys.BodyType;
-import nape.phys.CompoundIterator;
-import nape.callbacks.InteractionListener;
-import nape.callbacks.OptionType;
-import nape.callbacks.PreListener;
-import nape.callbacks.BodyListener;
-import nape.callbacks.ListenerIterator;
-import nape.callbacks.CbType;
-import nape.callbacks.ListenerType;
-import nape.callbacks.PreFlag;
-import nape.callbacks.CbEvent;
-import nape.callbacks.InteractionType;
-import nape.callbacks.PreCallback;
-import nape.callbacks.InteractionCallback;
-import nape.callbacks.ListenerList;
-import nape.callbacks.ConstraintListener;
-import nape.phys.Body;
-import nape.callbacks.BodyCallback;
-import nape.callbacks.CbTypeList;
-import nape.callbacks.CbTypeIterator;
-import nape.callbacks.Callback;
-import nape.callbacks.ConstraintCallback;
-import nape.callbacks.Listener;
-import nape.geom.Mat23;
-import nape.geom.ConvexResultIterator;
-import nape.geom.GeomPoly;
-import nape.geom.Ray;
-import nape.geom.GeomPolyIterator;
-import nape.geom.Vec2Iterator;
-import nape.geom.RayResult;
-import nape.geom.Winding;
-import nape.geom.Vec2List;
-import nape.geom.RayResultIterator;
-import nape.geom.AABB;
-import nape.geom.IsoFunction;
-import nape.geom.GeomVertexIterator;
-import nape.geom.ConvexResult;
-import nape.geom.GeomPolyList;
-import nape.geom.Vec2;
-import nape.geom.RayResultList;
-import nape.geom.Vec3;
-import nape.geom.MatMN;
-import nape.geom.ConvexResultList;
-import nape.geom.MarchingSquares;
+import nape.TArray;
+import nape.util.BitmapDebug;
+import nape.space.Broadphase;
+import nape.util.ShapeDebug;
 import nape.shape.Circle;
-import nape.geom.Geom;
-import nape.shape.ValidationResult;
-import nape.shape.ShapeIterator;
-import nape.shape.Polygon;
 import nape.shape.Edge;
-import nape.shape.Shape;
-import nape.shape.EdgeList;
 import nape.shape.EdgeIterator;
+import nape.shape.EdgeList;
+import nape.space.Space;
+import nape.shape.Polygon;
+import nape.shape.ShapeIterator;
 import nape.shape.ShapeList;
 import nape.shape.ShapeType;
-import nape.space.Broadphase;
-import nape.dynamics.Contact;
-import nape.dynamics.InteractionGroupList;
+import nape.shape.ValidationResult;
+import nape.shape.Shape;
+import nape.phys.BodyIterator;
+import nape.phys.BodyList;
+import nape.phys.BodyType;
+import nape.phys.Compound;
+import nape.phys.CompoundIterator;
+import nape.phys.CompoundList;
+import nape.phys.FluidProperties;
+import nape.phys.GravMassMode;
+import nape.phys.InertiaMode;
+import nape.phys.Interactor;
+import nape.phys.InteractorIterator;
+import nape.phys.InteractorList;
+import nape.phys.MassMode;
+import nape.phys.Body;
+import nape.phys.Material;
+import nape.geom.ConvexResult;
+import nape.geom.ConvexResultIterator;
+import nape.geom.ConvexResultList;
+import nape.geom.AABB;
+import nape.geom.Geom;
+import nape.geom.GeomPolyIterator;
+import nape.geom.GeomPolyList;
+import nape.geom.GeomVertexIterator;
+import nape.geom.IsoFunction;
+import nape.geom.MarchingSquares;
+import nape.geom.GeomPoly;
+import nape.geom.MatMN;
+import nape.geom.Mat23;
+import nape.geom.Ray;
+import nape.geom.RayResultIterator;
+import nape.geom.RayResultList;
+import nape.geom.RayResult;
+import nape.geom.Vec2Iterator;
+import nape.geom.Vec2List;
+import nape.geom.Vec3;
+import nape.geom.Winding;
 import nape.dynamics.Arbiter;
-import nape.dynamics.InteractionGroup;
-import nape.space.Space;
-import nape.dynamics.ContactIterator;
-import nape.dynamics.ArbiterList;
-import nape.dynamics.InteractionFilter;
 import nape.dynamics.ArbiterIterator;
-import nape.dynamics.InteractionGroupIterator;
-import nape.dynamics.FluidArbiter;
-import nape.dynamics.ContactList;
+import nape.geom.Vec2;
+import nape.dynamics.ArbiterList;
 import nape.dynamics.ArbiterType;
+import nape.dynamics.Contact;
+import nape.dynamics.ContactIterator;
+import nape.dynamics.ContactList;
+import nape.dynamics.FluidArbiter;
 import nape.dynamics.CollisionArbiter;
-import nape.util.BitmapDebug;
-import nape.util.ShapeDebug;
+import nape.dynamics.InteractionFilter;
+import nape.dynamics.InteractionGroupIterator;
+import nape.dynamics.InteractionGroupList;
+import nape.dynamics.InteractionGroup;
+import nape.constraint.AngleJoint;
+import nape.constraint.ConstraintIterator;
+import nape.constraint.ConstraintList;
+import nape.constraint.DistanceJoint;
+import nape.constraint.LinearJoint;
+import nape.constraint.Constraint;
+import nape.constraint.LineJoint;
+import nape.constraint.PivotJoint;
+import nape.constraint.MotorJoint;
+import nape.constraint.PulleyJoint;
+import nape.constraint.UserConstraint;
+import nape.constraint.WeldJoint;
+import nape.callbacks.BodyCallback;
+import nape.callbacks.Callback;
+import nape.callbacks.BodyListener;
+import nape.callbacks.CbEvent;
+import nape.callbacks.CbTypeIterator;
+import nape.callbacks.CbTypeList;
+import nape.callbacks.ConstraintCallback;
+import nape.callbacks.CbType;
+import nape.callbacks.InteractionCallback;
+import nape.callbacks.ConstraintListener;
+import nape.callbacks.InteractionType;
+import nape.callbacks.InteractionListener;
+import nape.callbacks.ListenerIterator;
+import nape.callbacks.ListenerList;
+import nape.callbacks.ListenerType;
+import nape.callbacks.Listener;
+import nape.callbacks.OptionType;
+import nape.callbacks.PreFlag;
+import nape.callbacks.PreCallback;
+import nape.callbacks.PreListener;
 /**
  * Debug class providing general utilities
  * <br/><br/>
@@ -189,17 +189,17 @@ class Debug{
     public static function clearObjectPools(){
         
         {
-            while(ConstraintIterator.zpp_pool!=null){
-                var nxt=ConstraintIterator.zpp_pool.zpp_next;
-                ConstraintIterator.zpp_pool.zpp_next=null;
-                ConstraintIterator.zpp_pool=nxt;
+            while(EdgeIterator.zpp_pool!=null){
+                var nxt=EdgeIterator.zpp_pool.zpp_next;
+                EdgeIterator.zpp_pool.zpp_next=null;
+                EdgeIterator.zpp_pool=nxt;
             }
         }
         {
-            while(InteractorIterator.zpp_pool!=null){
-                var nxt=InteractorIterator.zpp_pool.zpp_next;
-                InteractorIterator.zpp_pool.zpp_next=null;
-                InteractorIterator.zpp_pool=nxt;
+            while(ShapeIterator.zpp_pool!=null){
+                var nxt=ShapeIterator.zpp_pool.zpp_next;
+                ShapeIterator.zpp_pool.zpp_next=null;
+                ShapeIterator.zpp_pool=nxt;
             }
         }
         {
@@ -217,17 +217,10 @@ class Debug{
             }
         }
         {
-            while(ListenerIterator.zpp_pool!=null){
-                var nxt=ListenerIterator.zpp_pool.zpp_next;
-                ListenerIterator.zpp_pool.zpp_next=null;
-                ListenerIterator.zpp_pool=nxt;
-            }
-        }
-        {
-            while(CbTypeIterator.zpp_pool!=null){
-                var nxt=CbTypeIterator.zpp_pool.zpp_next;
-                CbTypeIterator.zpp_pool.zpp_next=null;
-                CbTypeIterator.zpp_pool=nxt;
+            while(InteractorIterator.zpp_pool!=null){
+                var nxt=InteractorIterator.zpp_pool.zpp_next;
+                InteractorIterator.zpp_pool.zpp_next=null;
+                InteractorIterator.zpp_pool=nxt;
             }
         }
         {
@@ -245,13 +238,6 @@ class Debug{
             }
         }
         {
-            while(Vec2Iterator.zpp_pool!=null){
-                var nxt=Vec2Iterator.zpp_pool.zpp_next;
-                Vec2Iterator.zpp_pool.zpp_next=null;
-                Vec2Iterator.zpp_pool=nxt;
-            }
-        }
-        {
             while(RayResultIterator.zpp_pool!=null){
                 var nxt=RayResultIterator.zpp_pool.zpp_next;
                 RayResultIterator.zpp_pool.zpp_next=null;
@@ -259,24 +245,10 @@ class Debug{
             }
         }
         {
-            while(ShapeIterator.zpp_pool!=null){
-                var nxt=ShapeIterator.zpp_pool.zpp_next;
-                ShapeIterator.zpp_pool.zpp_next=null;
-                ShapeIterator.zpp_pool=nxt;
-            }
-        }
-        {
-            while(EdgeIterator.zpp_pool!=null){
-                var nxt=EdgeIterator.zpp_pool.zpp_next;
-                EdgeIterator.zpp_pool.zpp_next=null;
-                EdgeIterator.zpp_pool=nxt;
-            }
-        }
-        {
-            while(ContactIterator.zpp_pool!=null){
-                var nxt=ContactIterator.zpp_pool.zpp_next;
-                ContactIterator.zpp_pool.zpp_next=null;
-                ContactIterator.zpp_pool=nxt;
+            while(Vec2Iterator.zpp_pool!=null){
+                var nxt=Vec2Iterator.zpp_pool.zpp_next;
+                Vec2Iterator.zpp_pool.zpp_next=null;
+                Vec2Iterator.zpp_pool=nxt;
             }
         }
         {
@@ -287,74 +259,57 @@ class Debug{
             }
         }
         {
+            while(ContactIterator.zpp_pool!=null){
+                var nxt=ContactIterator.zpp_pool.zpp_next;
+                ContactIterator.zpp_pool.zpp_next=null;
+                ContactIterator.zpp_pool=nxt;
+            }
+        }
+        {
             while(InteractionGroupIterator.zpp_pool!=null){
                 var nxt=InteractionGroupIterator.zpp_pool.zpp_next;
                 InteractionGroupIterator.zpp_pool.zpp_next=null;
                 InteractionGroupIterator.zpp_pool=nxt;
             }
         }
+        {
+            while(ConstraintIterator.zpp_pool!=null){
+                var nxt=ConstraintIterator.zpp_pool.zpp_next;
+                ConstraintIterator.zpp_pool.zpp_next=null;
+                ConstraintIterator.zpp_pool=nxt;
+            }
+        }
+        {
+            while(CbTypeIterator.zpp_pool!=null){
+                var nxt=CbTypeIterator.zpp_pool.zpp_next;
+                CbTypeIterator.zpp_pool.zpp_next=null;
+                CbTypeIterator.zpp_pool=nxt;
+            }
+        }
+        {
+            while(ListenerIterator.zpp_pool!=null){
+                var nxt=ListenerIterator.zpp_pool.zpp_next;
+                ListenerIterator.zpp_pool.zpp_next=null;
+                ListenerIterator.zpp_pool=nxt;
+            }
+        }
         
         {
-            while(ZNPNode_ZPP_CbType.zpp_pool!=null){
-                var nxt=ZNPNode_ZPP_CbType.zpp_pool.next;
-                ZNPNode_ZPP_CbType.zpp_pool.next=null;
-                ZNPNode_ZPP_CbType.zpp_pool=nxt;
+            while(ZPP_AABBNode.zpp_pool!=null){
+                var nxt=ZPP_AABBNode.zpp_pool.next;
+                ZPP_AABBNode.zpp_pool.next=null;
+                ZPP_AABBNode.zpp_pool=nxt;
             }
-            #if NAPE_POOL_STATS ZNPNode_ZPP_CbType.POOL_TOT=ZNPNode_ZPP_CbType.POOL_CNT=ZNPNode_ZPP_CbType.POOL_ADDNEW=ZNPNode_ZPP_CbType.POOL_ADD=ZNPNode_ZPP_CbType.POOL_SUB=0;
+            #if NAPE_POOL_STATS ZPP_AABBNode.POOL_TOT=ZPP_AABBNode.POOL_CNT=ZPP_AABBNode.POOL_ADDNEW=ZPP_AABBNode.POOL_ADD=ZPP_AABBNode.POOL_SUB=0;
             #end
         }
         {
-            while(ZNPNode_ZPP_CallbackSet.zpp_pool!=null){
-                var nxt=ZNPNode_ZPP_CallbackSet.zpp_pool.next;
-                ZNPNode_ZPP_CallbackSet.zpp_pool.next=null;
-                ZNPNode_ZPP_CallbackSet.zpp_pool=nxt;
+            while(ZPP_AABBPair.zpp_pool!=null){
+                var nxt=ZPP_AABBPair.zpp_pool.next;
+                ZPP_AABBPair.zpp_pool.next=null;
+                ZPP_AABBPair.zpp_pool=nxt;
             }
-            #if NAPE_POOL_STATS ZNPNode_ZPP_CallbackSet.POOL_TOT=ZNPNode_ZPP_CallbackSet.POOL_CNT=ZNPNode_ZPP_CallbackSet.POOL_ADDNEW=ZNPNode_ZPP_CallbackSet.POOL_ADD=ZNPNode_ZPP_CallbackSet.POOL_SUB=0;
-            #end
-        }
-        {
-            while(ZPP_Material.zpp_pool!=null){
-                var nxt=ZPP_Material.zpp_pool.next;
-                ZPP_Material.zpp_pool.next=null;
-                ZPP_Material.zpp_pool=nxt;
-            }
-            #if NAPE_POOL_STATS ZPP_Material.POOL_TOT=ZPP_Material.POOL_CNT=ZPP_Material.POOL_ADDNEW=ZPP_Material.POOL_ADD=ZPP_Material.POOL_SUB=0;
-            #end
-        }
-        {
-            while(ZNPNode_ZPP_Shape.zpp_pool!=null){
-                var nxt=ZNPNode_ZPP_Shape.zpp_pool.next;
-                ZNPNode_ZPP_Shape.zpp_pool.next=null;
-                ZNPNode_ZPP_Shape.zpp_pool=nxt;
-            }
-            #if NAPE_POOL_STATS ZNPNode_ZPP_Shape.POOL_TOT=ZNPNode_ZPP_Shape.POOL_CNT=ZNPNode_ZPP_Shape.POOL_ADDNEW=ZNPNode_ZPP_Shape.POOL_ADD=ZNPNode_ZPP_Shape.POOL_SUB=0;
-            #end
-        }
-        {
-            while(ZPP_FluidProperties.zpp_pool!=null){
-                var nxt=ZPP_FluidProperties.zpp_pool.next;
-                ZPP_FluidProperties.zpp_pool.next=null;
-                ZPP_FluidProperties.zpp_pool=nxt;
-            }
-            #if NAPE_POOL_STATS ZPP_FluidProperties.POOL_TOT=ZPP_FluidProperties.POOL_CNT=ZPP_FluidProperties.POOL_ADDNEW=ZPP_FluidProperties.POOL_ADD=ZPP_FluidProperties.POOL_SUB=0;
-            #end
-        }
-        {
-            while(ZNPNode_ZPP_Body.zpp_pool!=null){
-                var nxt=ZNPNode_ZPP_Body.zpp_pool.next;
-                ZNPNode_ZPP_Body.zpp_pool.next=null;
-                ZNPNode_ZPP_Body.zpp_pool=nxt;
-            }
-            #if NAPE_POOL_STATS ZNPNode_ZPP_Body.POOL_TOT=ZNPNode_ZPP_Body.POOL_CNT=ZNPNode_ZPP_Body.POOL_ADDNEW=ZNPNode_ZPP_Body.POOL_ADD=ZNPNode_ZPP_Body.POOL_SUB=0;
-            #end
-        }
-        {
-            while(ZNPNode_ZPP_Constraint.zpp_pool!=null){
-                var nxt=ZNPNode_ZPP_Constraint.zpp_pool.next;
-                ZNPNode_ZPP_Constraint.zpp_pool.next=null;
-                ZNPNode_ZPP_Constraint.zpp_pool=nxt;
-            }
-            #if NAPE_POOL_STATS ZNPNode_ZPP_Constraint.POOL_TOT=ZNPNode_ZPP_Constraint.POOL_CNT=ZNPNode_ZPP_Constraint.POOL_ADDNEW=ZNPNode_ZPP_Constraint.POOL_ADD=ZNPNode_ZPP_Constraint.POOL_SUB=0;
+            #if NAPE_POOL_STATS ZPP_AABBPair.POOL_TOT=ZPP_AABBPair.POOL_CNT=ZPP_AABBPair.POOL_ADDNEW=ZPP_AABBPair.POOL_ADD=ZPP_AABBPair.POOL_SUB=0;
             #end
         }
         {
@@ -367,12 +322,84 @@ class Debug{
             #end
         }
         {
+            while(ZNPNode_ZPP_AABBNode.zpp_pool!=null){
+                var nxt=ZNPNode_ZPP_AABBNode.zpp_pool.next;
+                ZNPNode_ZPP_AABBNode.zpp_pool.next=null;
+                ZNPNode_ZPP_AABBNode.zpp_pool=nxt;
+            }
+            #if NAPE_POOL_STATS ZNPNode_ZPP_AABBNode.POOL_TOT=ZNPNode_ZPP_AABBNode.POOL_CNT=ZNPNode_ZPP_AABBNode.POOL_ADDNEW=ZNPNode_ZPP_AABBNode.POOL_ADD=ZNPNode_ZPP_AABBNode.POOL_SUB=0;
+            #end
+        }
+        {
+            while(ZPP_SweepData.zpp_pool!=null){
+                var nxt=ZPP_SweepData.zpp_pool.next;
+                ZPP_SweepData.zpp_pool.next=null;
+                ZPP_SweepData.zpp_pool=nxt;
+            }
+            #if NAPE_POOL_STATS ZPP_SweepData.POOL_TOT=ZPP_SweepData.POOL_CNT=ZPP_SweepData.POOL_ADDNEW=ZPP_SweepData.POOL_ADD=ZPP_SweepData.POOL_SUB=0;
+            #end
+        }
+        {
+            while(ZPP_Edge.zpp_pool!=null){
+                var nxt=ZPP_Edge.zpp_pool.next;
+                ZPP_Edge.zpp_pool.next=null;
+                ZPP_Edge.zpp_pool=nxt;
+            }
+            #if NAPE_POOL_STATS ZPP_Edge.POOL_TOT=ZPP_Edge.POOL_CNT=ZPP_Edge.POOL_ADDNEW=ZPP_Edge.POOL_ADD=ZPP_Edge.POOL_SUB=0;
+            #end
+        }
+        {
+            while(ZNPNode_ZPP_Edge.zpp_pool!=null){
+                var nxt=ZNPNode_ZPP_Edge.zpp_pool.next;
+                ZNPNode_ZPP_Edge.zpp_pool.next=null;
+                ZNPNode_ZPP_Edge.zpp_pool=nxt;
+            }
+            #if NAPE_POOL_STATS ZNPNode_ZPP_Edge.POOL_TOT=ZNPNode_ZPP_Edge.POOL_CNT=ZNPNode_ZPP_Edge.POOL_ADDNEW=ZNPNode_ZPP_Edge.POOL_ADD=ZNPNode_ZPP_Edge.POOL_SUB=0;
+            #end
+        }
+        {
+            while(ZNPNode_ZPP_AABBPair.zpp_pool!=null){
+                var nxt=ZNPNode_ZPP_AABBPair.zpp_pool.next;
+                ZNPNode_ZPP_AABBPair.zpp_pool.next=null;
+                ZNPNode_ZPP_AABBPair.zpp_pool=nxt;
+            }
+            #if NAPE_POOL_STATS ZNPNode_ZPP_AABBPair.POOL_TOT=ZNPNode_ZPP_AABBPair.POOL_CNT=ZNPNode_ZPP_AABBPair.POOL_ADDNEW=ZNPNode_ZPP_AABBPair.POOL_ADD=ZNPNode_ZPP_AABBPair.POOL_SUB=0;
+            #end
+        }
+        {
+            while(ZNPNode_ZPP_Shape.zpp_pool!=null){
+                var nxt=ZNPNode_ZPP_Shape.zpp_pool.next;
+                ZNPNode_ZPP_Shape.zpp_pool.next=null;
+                ZNPNode_ZPP_Shape.zpp_pool=nxt;
+            }
+            #if NAPE_POOL_STATS ZNPNode_ZPP_Shape.POOL_TOT=ZNPNode_ZPP_Shape.POOL_CNT=ZNPNode_ZPP_Shape.POOL_ADDNEW=ZNPNode_ZPP_Shape.POOL_ADD=ZNPNode_ZPP_Shape.POOL_SUB=0;
+            #end
+        }
+        {
             while(ZNPNode_ZPP_Arbiter.zpp_pool!=null){
                 var nxt=ZNPNode_ZPP_Arbiter.zpp_pool.next;
                 ZNPNode_ZPP_Arbiter.zpp_pool.next=null;
                 ZNPNode_ZPP_Arbiter.zpp_pool=nxt;
             }
             #if NAPE_POOL_STATS ZNPNode_ZPP_Arbiter.POOL_TOT=ZNPNode_ZPP_Arbiter.POOL_CNT=ZNPNode_ZPP_Arbiter.POOL_ADDNEW=ZNPNode_ZPP_Arbiter.POOL_ADD=ZNPNode_ZPP_Arbiter.POOL_SUB=0;
+            #end
+        }
+        {
+            while(ZNPNode_ZPP_Constraint.zpp_pool!=null){
+                var nxt=ZNPNode_ZPP_Constraint.zpp_pool.next;
+                ZNPNode_ZPP_Constraint.zpp_pool.next=null;
+                ZNPNode_ZPP_Constraint.zpp_pool=nxt;
+            }
+            #if NAPE_POOL_STATS ZNPNode_ZPP_Constraint.POOL_TOT=ZNPNode_ZPP_Constraint.POOL_CNT=ZNPNode_ZPP_Constraint.POOL_ADDNEW=ZNPNode_ZPP_Constraint.POOL_ADD=ZNPNode_ZPP_Constraint.POOL_SUB=0;
+            #end
+        }
+        {
+            while(ZNPNode_ZPP_Body.zpp_pool!=null){
+                var nxt=ZNPNode_ZPP_Body.zpp_pool.next;
+                ZNPNode_ZPP_Body.zpp_pool.next=null;
+                ZNPNode_ZPP_Body.zpp_pool=nxt;
+            }
+            #if NAPE_POOL_STATS ZNPNode_ZPP_Body.POOL_TOT=ZNPNode_ZPP_Body.POOL_CNT=ZNPNode_ZPP_Body.POOL_ADDNEW=ZNPNode_ZPP_Body.POOL_ADD=ZNPNode_ZPP_Body.POOL_SUB=0;
             #end
         }
         {
@@ -385,120 +412,111 @@ class Debug{
             #end
         }
         {
-            while(ZPP_CbSetPair.zpp_pool!=null){
-                var nxt=ZPP_CbSetPair.zpp_pool.next;
-                ZPP_CbSetPair.zpp_pool.next=null;
-                ZPP_CbSetPair.zpp_pool=nxt;
+            while(ZPP_FluidProperties.zpp_pool!=null){
+                var nxt=ZPP_FluidProperties.zpp_pool.next;
+                ZPP_FluidProperties.zpp_pool.next=null;
+                ZPP_FluidProperties.zpp_pool=nxt;
             }
-            #if NAPE_POOL_STATS ZPP_CbSetPair.POOL_TOT=ZPP_CbSetPair.POOL_CNT=ZPP_CbSetPair.POOL_ADDNEW=ZPP_CbSetPair.POOL_ADD=ZPP_CbSetPair.POOL_SUB=0;
+            #if NAPE_POOL_STATS ZPP_FluidProperties.POOL_TOT=ZPP_FluidProperties.POOL_CNT=ZPP_FluidProperties.POOL_ADDNEW=ZPP_FluidProperties.POOL_ADD=ZPP_FluidProperties.POOL_SUB=0;
             #end
         }
         {
-            while(ZNPNode_ZPP_InteractionListener.zpp_pool!=null){
-                var nxt=ZNPNode_ZPP_InteractionListener.zpp_pool.next;
-                ZNPNode_ZPP_InteractionListener.zpp_pool.next=null;
-                ZNPNode_ZPP_InteractionListener.zpp_pool=nxt;
+            while(ZNPNode_ZPP_CallbackSet.zpp_pool!=null){
+                var nxt=ZNPNode_ZPP_CallbackSet.zpp_pool.next;
+                ZNPNode_ZPP_CallbackSet.zpp_pool.next=null;
+                ZNPNode_ZPP_CallbackSet.zpp_pool=nxt;
             }
-            #if NAPE_POOL_STATS ZNPNode_ZPP_InteractionListener.POOL_TOT=ZNPNode_ZPP_InteractionListener.POOL_CNT=ZNPNode_ZPP_InteractionListener.POOL_ADDNEW=ZNPNode_ZPP_InteractionListener.POOL_ADD=ZNPNode_ZPP_InteractionListener.POOL_SUB=0;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_CallbackSet.POOL_TOT=ZNPNode_ZPP_CallbackSet.POOL_CNT=ZNPNode_ZPP_CallbackSet.POOL_ADDNEW=ZNPNode_ZPP_CallbackSet.POOL_ADD=ZNPNode_ZPP_CallbackSet.POOL_SUB=0;
             #end
         }
         {
-            while(ZNPNode_ZPP_CbSet.zpp_pool!=null){
-                var nxt=ZNPNode_ZPP_CbSet.zpp_pool.next;
-                ZNPNode_ZPP_CbSet.zpp_pool.next=null;
-                ZNPNode_ZPP_CbSet.zpp_pool=nxt;
+            while(ZNPNode_ZPP_CbType.zpp_pool!=null){
+                var nxt=ZNPNode_ZPP_CbType.zpp_pool.next;
+                ZNPNode_ZPP_CbType.zpp_pool.next=null;
+                ZNPNode_ZPP_CbType.zpp_pool=nxt;
             }
-            #if NAPE_POOL_STATS ZNPNode_ZPP_CbSet.POOL_TOT=ZNPNode_ZPP_CbSet.POOL_CNT=ZNPNode_ZPP_CbSet.POOL_ADDNEW=ZNPNode_ZPP_CbSet.POOL_ADD=ZNPNode_ZPP_CbSet.POOL_SUB=0;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_CbType.POOL_TOT=ZNPNode_ZPP_CbType.POOL_CNT=ZNPNode_ZPP_CbType.POOL_ADDNEW=ZNPNode_ZPP_CbType.POOL_ADD=ZNPNode_ZPP_CbType.POOL_SUB=0;
             #end
         }
         {
-            while(ZNPNode_ZPP_Interactor.zpp_pool!=null){
-                var nxt=ZNPNode_ZPP_Interactor.zpp_pool.next;
-                ZNPNode_ZPP_Interactor.zpp_pool.next=null;
-                ZNPNode_ZPP_Interactor.zpp_pool=nxt;
+            while(ZPP_Material.zpp_pool!=null){
+                var nxt=ZPP_Material.zpp_pool.next;
+                ZPP_Material.zpp_pool.next=null;
+                ZPP_Material.zpp_pool=nxt;
             }
-            #if NAPE_POOL_STATS ZNPNode_ZPP_Interactor.POOL_TOT=ZNPNode_ZPP_Interactor.POOL_CNT=ZNPNode_ZPP_Interactor.POOL_ADDNEW=ZNPNode_ZPP_Interactor.POOL_ADD=ZNPNode_ZPP_Interactor.POOL_SUB=0;
+            #if NAPE_POOL_STATS ZPP_Material.POOL_TOT=ZPP_Material.POOL_CNT=ZPP_Material.POOL_ADDNEW=ZPP_Material.POOL_ADD=ZPP_Material.POOL_SUB=0;
             #end
         }
         {
-            while(ZNPNode_ZPP_BodyListener.zpp_pool!=null){
-                var nxt=ZNPNode_ZPP_BodyListener.zpp_pool.next;
-                ZNPNode_ZPP_BodyListener.zpp_pool.next=null;
-                ZNPNode_ZPP_BodyListener.zpp_pool=nxt;
+            while(ZPP_AABB.zpp_pool!=null){
+                var nxt=ZPP_AABB.zpp_pool.next;
+                ZPP_AABB.zpp_pool.next=null;
+                ZPP_AABB.zpp_pool=nxt;
             }
-            #if NAPE_POOL_STATS ZNPNode_ZPP_BodyListener.POOL_TOT=ZNPNode_ZPP_BodyListener.POOL_CNT=ZNPNode_ZPP_BodyListener.POOL_ADDNEW=ZNPNode_ZPP_BodyListener.POOL_ADD=ZNPNode_ZPP_BodyListener.POOL_SUB=0;
+            #if NAPE_POOL_STATS ZPP_AABB.POOL_TOT=ZPP_AABB.POOL_CNT=ZPP_AABB.POOL_ADDNEW=ZPP_AABB.POOL_ADD=ZPP_AABB.POOL_SUB=0;
             #end
         }
         {
-            while(ZPP_Callback.zpp_pool!=null){
-                var nxt=ZPP_Callback.zpp_pool.next;
-                ZPP_Callback.zpp_pool.next=null;
-                ZPP_Callback.zpp_pool=nxt;
+            while(ZNPNode_ZPP_Component.zpp_pool!=null){
+                var nxt=ZNPNode_ZPP_Component.zpp_pool.next;
+                ZNPNode_ZPP_Component.zpp_pool.next=null;
+                ZNPNode_ZPP_Component.zpp_pool=nxt;
             }
-            #if NAPE_POOL_STATS ZPP_Callback.POOL_TOT=ZPP_Callback.POOL_CNT=ZPP_Callback.POOL_ADDNEW=ZPP_Callback.POOL_ADD=ZPP_Callback.POOL_SUB=0;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_Component.POOL_TOT=ZNPNode_ZPP_Component.POOL_CNT=ZNPNode_ZPP_Component.POOL_ADDNEW=ZNPNode_ZPP_Component.POOL_ADD=ZNPNode_ZPP_Component.POOL_SUB=0;
             #end
         }
         {
-            while(ZPP_CbSet.zpp_pool!=null){
-                var nxt=ZPP_CbSet.zpp_pool.next;
-                ZPP_CbSet.zpp_pool.next=null;
-                ZPP_CbSet.zpp_pool=nxt;
+            while(ZPP_Island.zpp_pool!=null){
+                var nxt=ZPP_Island.zpp_pool.next;
+                ZPP_Island.zpp_pool.next=null;
+                ZPP_Island.zpp_pool=nxt;
             }
-            #if NAPE_POOL_STATS ZPP_CbSet.POOL_TOT=ZPP_CbSet.POOL_CNT=ZPP_CbSet.POOL_ADDNEW=ZPP_CbSet.POOL_ADD=ZPP_CbSet.POOL_SUB=0;
+            #if NAPE_POOL_STATS ZPP_Island.POOL_TOT=ZPP_Island.POOL_CNT=ZPP_Island.POOL_ADDNEW=ZPP_Island.POOL_ADD=ZPP_Island.POOL_SUB=0;
             #end
         }
         {
-            while(ZNPNode_ZPP_CbSetPair.zpp_pool!=null){
-                var nxt=ZNPNode_ZPP_CbSetPair.zpp_pool.next;
-                ZNPNode_ZPP_CbSetPair.zpp_pool.next=null;
-                ZNPNode_ZPP_CbSetPair.zpp_pool=nxt;
+            while(ZPP_Component.zpp_pool!=null){
+                var nxt=ZPP_Component.zpp_pool.next;
+                ZPP_Component.zpp_pool.next=null;
+                ZPP_Component.zpp_pool=nxt;
             }
-            #if NAPE_POOL_STATS ZNPNode_ZPP_CbSetPair.POOL_TOT=ZNPNode_ZPP_CbSetPair.POOL_CNT=ZNPNode_ZPP_CbSetPair.POOL_ADDNEW=ZNPNode_ZPP_CbSetPair.POOL_ADD=ZNPNode_ZPP_CbSetPair.POOL_SUB=0;
+            #if NAPE_POOL_STATS ZPP_Component.POOL_TOT=ZPP_Component.POOL_CNT=ZPP_Component.POOL_ADDNEW=ZPP_Component.POOL_ADD=ZPP_Component.POOL_SUB=0;
             #end
         }
         {
-            while(ZNPNode_ZPP_ConstraintListener.zpp_pool!=null){
-                var nxt=ZNPNode_ZPP_ConstraintListener.zpp_pool.next;
-                ZNPNode_ZPP_ConstraintListener.zpp_pool.next=null;
-                ZNPNode_ZPP_ConstraintListener.zpp_pool=nxt;
+            while(ZPP_CallbackSet.zpp_pool!=null){
+                var nxt=ZPP_CallbackSet.zpp_pool.next;
+                ZPP_CallbackSet.zpp_pool.next=null;
+                ZPP_CallbackSet.zpp_pool=nxt;
             }
-            #if NAPE_POOL_STATS ZNPNode_ZPP_ConstraintListener.POOL_TOT=ZNPNode_ZPP_ConstraintListener.POOL_CNT=ZNPNode_ZPP_ConstraintListener.POOL_ADDNEW=ZNPNode_ZPP_ConstraintListener.POOL_ADD=ZNPNode_ZPP_ConstraintListener.POOL_SUB=0;
+            #if NAPE_POOL_STATS ZPP_CallbackSet.POOL_TOT=ZPP_CallbackSet.POOL_CNT=ZPP_CallbackSet.POOL_ADDNEW=ZPP_CallbackSet.POOL_ADD=ZPP_CallbackSet.POOL_SUB=0;
             #end
         }
         {
-            while(ZPP_GeomVert.zpp_pool!=null){
-                var nxt=ZPP_GeomVert.zpp_pool.next;
-                ZPP_GeomVert.zpp_pool.next=null;
-                ZPP_GeomVert.zpp_pool=nxt;
+            while(ZPP_Set_ZPP_CbSet.zpp_pool!=null){
+                var nxt=ZPP_Set_ZPP_CbSet.zpp_pool.next;
+                ZPP_Set_ZPP_CbSet.zpp_pool.next=null;
+                ZPP_Set_ZPP_CbSet.zpp_pool=nxt;
             }
-            #if NAPE_POOL_STATS ZPP_GeomVert.POOL_TOT=ZPP_GeomVert.POOL_CNT=ZPP_GeomVert.POOL_ADDNEW=ZPP_GeomVert.POOL_ADD=ZPP_GeomVert.POOL_SUB=0;
+            #if NAPE_POOL_STATS ZPP_Set_ZPP_CbSet.POOL_TOT=ZPP_Set_ZPP_CbSet.POOL_CNT=ZPP_Set_ZPP_CbSet.POOL_ADDNEW=ZPP_Set_ZPP_CbSet.POOL_ADD=ZPP_Set_ZPP_CbSet.POOL_SUB=0;
             #end
         }
         {
-            while(ZPP_GeomVertexIterator.zpp_pool!=null){
-                var nxt=ZPP_GeomVertexIterator.zpp_pool.next;
-                ZPP_GeomVertexIterator.zpp_pool.next=null;
-                ZPP_GeomVertexIterator.zpp_pool=nxt;
+            while(ZNPNode_ZPP_Vec2.zpp_pool!=null){
+                var nxt=ZNPNode_ZPP_Vec2.zpp_pool.next;
+                ZNPNode_ZPP_Vec2.zpp_pool.next=null;
+                ZNPNode_ZPP_Vec2.zpp_pool=nxt;
             }
-            #if NAPE_POOL_STATS ZPP_GeomVertexIterator.POOL_TOT=ZPP_GeomVertexIterator.POOL_CNT=ZPP_GeomVertexIterator.POOL_ADDNEW=ZPP_GeomVertexIterator.POOL_ADD=ZPP_GeomVertexIterator.POOL_SUB=0;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_Vec2.POOL_TOT=ZNPNode_ZPP_Vec2.POOL_CNT=ZNPNode_ZPP_Vec2.POOL_ADDNEW=ZNPNode_ZPP_Vec2.POOL_ADD=ZNPNode_ZPP_Vec2.POOL_SUB=0;
             #end
         }
         {
-            while(ZPP_Mat23.zpp_pool!=null){
-                var nxt=ZPP_Mat23.zpp_pool.next;
-                ZPP_Mat23.zpp_pool.next=null;
-                ZPP_Mat23.zpp_pool=nxt;
+            while(ZNPNode_ZPP_FluidArbiter.zpp_pool!=null){
+                var nxt=ZNPNode_ZPP_FluidArbiter.zpp_pool.next;
+                ZNPNode_ZPP_FluidArbiter.zpp_pool.next=null;
+                ZNPNode_ZPP_FluidArbiter.zpp_pool=nxt;
             }
-            #if NAPE_POOL_STATS ZPP_Mat23.POOL_TOT=ZPP_Mat23.POOL_CNT=ZPP_Mat23.POOL_ADDNEW=ZPP_Mat23.POOL_ADD=ZPP_Mat23.POOL_SUB=0;
-            #end
-        }
-        {
-            while(ZPP_Set_ZPP_CbSetPair.zpp_pool!=null){
-                var nxt=ZPP_Set_ZPP_CbSetPair.zpp_pool.next;
-                ZPP_Set_ZPP_CbSetPair.zpp_pool.next=null;
-                ZPP_Set_ZPP_CbSetPair.zpp_pool=nxt;
-            }
-            #if NAPE_POOL_STATS ZPP_Set_ZPP_CbSetPair.POOL_TOT=ZPP_Set_ZPP_CbSetPair.POOL_CNT=ZPP_Set_ZPP_CbSetPair.POOL_ADDNEW=ZPP_Set_ZPP_CbSetPair.POOL_ADD=ZPP_Set_ZPP_CbSetPair.POOL_SUB=0;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_FluidArbiter.POOL_TOT=ZNPNode_ZPP_FluidArbiter.POOL_CNT=ZNPNode_ZPP_FluidArbiter.POOL_ADDNEW=ZNPNode_ZPP_FluidArbiter.POOL_ADD=ZNPNode_ZPP_FluidArbiter.POOL_SUB=0;
             #end
         }
         {
@@ -529,6 +547,15 @@ class Debug{
             #end
         }
         {
+            while(ZNPNode_ZPP_SensorArbiter.zpp_pool!=null){
+                var nxt=ZNPNode_ZPP_SensorArbiter.zpp_pool.next;
+                ZNPNode_ZPP_SensorArbiter.zpp_pool.next=null;
+                ZNPNode_ZPP_SensorArbiter.zpp_pool=nxt;
+            }
+            #if NAPE_POOL_STATS ZNPNode_ZPP_SensorArbiter.POOL_TOT=ZNPNode_ZPP_SensorArbiter.POOL_CNT=ZNPNode_ZPP_SensorArbiter.POOL_ADDNEW=ZNPNode_ZPP_SensorArbiter.POOL_ADD=ZNPNode_ZPP_SensorArbiter.POOL_SUB=0;
+            #end
+        }
+        {
             while(ZNPNode_ZPP_CutVert.zpp_pool!=null){
                 var nxt=ZNPNode_ZPP_CutVert.zpp_pool.next;
                 ZNPNode_ZPP_CutVert.zpp_pool.next=null;
@@ -538,12 +565,93 @@ class Debug{
             #end
         }
         {
-            while(ZPP_Vec2.zpp_pool!=null){
-                var nxt=ZPP_Vec2.zpp_pool.next;
-                ZPP_Vec2.zpp_pool.next=null;
-                ZPP_Vec2.zpp_pool=nxt;
+            while(ZNPNode_ZPP_Listener.zpp_pool!=null){
+                var nxt=ZNPNode_ZPP_Listener.zpp_pool.next;
+                ZNPNode_ZPP_Listener.zpp_pool.next=null;
+                ZNPNode_ZPP_Listener.zpp_pool=nxt;
             }
-            #if NAPE_POOL_STATS ZPP_Vec2.POOL_TOT=ZPP_Vec2.POOL_CNT=ZPP_Vec2.POOL_ADDNEW=ZPP_Vec2.POOL_ADD=ZPP_Vec2.POOL_SUB=0;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_Listener.POOL_TOT=ZNPNode_ZPP_Listener.POOL_CNT=ZNPNode_ZPP_Listener.POOL_ADDNEW=ZNPNode_ZPP_Listener.POOL_ADD=ZNPNode_ZPP_Listener.POOL_SUB=0;
+            #end
+        }
+        {
+            while(ZNPNode_ZPP_ColArbiter.zpp_pool!=null){
+                var nxt=ZNPNode_ZPP_ColArbiter.zpp_pool.next;
+                ZNPNode_ZPP_ColArbiter.zpp_pool.next=null;
+                ZNPNode_ZPP_ColArbiter.zpp_pool=nxt;
+            }
+            #if NAPE_POOL_STATS ZNPNode_ZPP_ColArbiter.POOL_TOT=ZNPNode_ZPP_ColArbiter.POOL_CNT=ZNPNode_ZPP_ColArbiter.POOL_ADDNEW=ZNPNode_ZPP_ColArbiter.POOL_ADD=ZNPNode_ZPP_ColArbiter.POOL_SUB=0;
+            #end
+        }
+        {
+            while(ZNPNode_ZPP_ToiEvent.zpp_pool!=null){
+                var nxt=ZNPNode_ZPP_ToiEvent.zpp_pool.next;
+                ZNPNode_ZPP_ToiEvent.zpp_pool.next=null;
+                ZNPNode_ZPP_ToiEvent.zpp_pool=nxt;
+            }
+            #if NAPE_POOL_STATS ZNPNode_ZPP_ToiEvent.POOL_TOT=ZNPNode_ZPP_ToiEvent.POOL_CNT=ZNPNode_ZPP_ToiEvent.POOL_ADDNEW=ZNPNode_ZPP_ToiEvent.POOL_ADD=ZNPNode_ZPP_ToiEvent.POOL_SUB=0;
+            #end
+        }
+        {
+            while(ZNPNode_ZPP_Interactor.zpp_pool!=null){
+                var nxt=ZNPNode_ZPP_Interactor.zpp_pool.next;
+                ZNPNode_ZPP_Interactor.zpp_pool.next=null;
+                ZNPNode_ZPP_Interactor.zpp_pool=nxt;
+            }
+            #if NAPE_POOL_STATS ZNPNode_ZPP_Interactor.POOL_TOT=ZNPNode_ZPP_Interactor.POOL_CNT=ZNPNode_ZPP_Interactor.POOL_ADDNEW=ZNPNode_ZPP_Interactor.POOL_ADD=ZNPNode_ZPP_Interactor.POOL_SUB=0;
+            #end
+        }
+        {
+            while(ZNPNode_ZPP_InteractionListener.zpp_pool!=null){
+                var nxt=ZNPNode_ZPP_InteractionListener.zpp_pool.next;
+                ZNPNode_ZPP_InteractionListener.zpp_pool.next=null;
+                ZNPNode_ZPP_InteractionListener.zpp_pool=nxt;
+            }
+            #if NAPE_POOL_STATS ZNPNode_ZPP_InteractionListener.POOL_TOT=ZNPNode_ZPP_InteractionListener.POOL_CNT=ZNPNode_ZPP_InteractionListener.POOL_ADDNEW=ZNPNode_ZPP_InteractionListener.POOL_ADD=ZNPNode_ZPP_InteractionListener.POOL_SUB=0;
+            #end
+        }
+        {
+            while(ZPP_GeomVert.zpp_pool!=null){
+                var nxt=ZPP_GeomVert.zpp_pool.next;
+                ZPP_GeomVert.zpp_pool.next=null;
+                ZPP_GeomVert.zpp_pool=nxt;
+            }
+            #if NAPE_POOL_STATS ZPP_GeomVert.POOL_TOT=ZPP_GeomVert.POOL_CNT=ZPP_GeomVert.POOL_ADDNEW=ZPP_GeomVert.POOL_ADD=ZPP_GeomVert.POOL_SUB=0;
+            #end
+        }
+        {
+            while(ZPP_GeomVertexIterator.zpp_pool!=null){
+                var nxt=ZPP_GeomVertexIterator.zpp_pool.next;
+                ZPP_GeomVertexIterator.zpp_pool.next=null;
+                ZPP_GeomVertexIterator.zpp_pool=nxt;
+            }
+            #if NAPE_POOL_STATS ZPP_GeomVertexIterator.POOL_TOT=ZPP_GeomVertexIterator.POOL_CNT=ZPP_GeomVertexIterator.POOL_ADDNEW=ZPP_GeomVertexIterator.POOL_ADD=ZPP_GeomVertexIterator.POOL_SUB=0;
+            #end
+        }
+        {
+            while(ZPP_Mat23.zpp_pool!=null){
+                var nxt=ZPP_Mat23.zpp_pool.next;
+                ZPP_Mat23.zpp_pool.next=null;
+                ZPP_Mat23.zpp_pool=nxt;
+            }
+            #if NAPE_POOL_STATS ZPP_Mat23.POOL_TOT=ZPP_Mat23.POOL_CNT=ZPP_Mat23.POOL_ADDNEW=ZPP_Mat23.POOL_ADD=ZPP_Mat23.POOL_SUB=0;
+            #end
+        }
+        {
+            while(ZPP_MarchSpan.zpp_pool!=null){
+                var nxt=ZPP_MarchSpan.zpp_pool.next;
+                ZPP_MarchSpan.zpp_pool.next=null;
+                ZPP_MarchSpan.zpp_pool=nxt;
+            }
+            #if NAPE_POOL_STATS ZPP_MarchSpan.POOL_TOT=ZPP_MarchSpan.POOL_CNT=ZPP_MarchSpan.POOL_ADDNEW=ZPP_MarchSpan.POOL_ADD=ZPP_MarchSpan.POOL_SUB=0;
+            #end
+        }
+        {
+            while(ZPP_MarchPair.zpp_pool!=null){
+                var nxt=ZPP_MarchPair.zpp_pool.next;
+                ZPP_MarchPair.zpp_pool.next=null;
+                ZPP_MarchPair.zpp_pool=nxt;
+            }
+            #if NAPE_POOL_STATS ZPP_MarchPair.POOL_TOT=ZPP_MarchPair.POOL_CNT=ZPP_MarchPair.POOL_ADDNEW=ZPP_MarchPair.POOL_ADD=ZPP_MarchPair.POOL_SUB=0;
             #end
         }
         {
@@ -556,6 +664,15 @@ class Debug{
             #end
         }
         {
+            while(ZPP_Set_ZPP_PartitionVertex.zpp_pool!=null){
+                var nxt=ZPP_Set_ZPP_PartitionVertex.zpp_pool.next;
+                ZPP_Set_ZPP_PartitionVertex.zpp_pool.next=null;
+                ZPP_Set_ZPP_PartitionVertex.zpp_pool=nxt;
+            }
+            #if NAPE_POOL_STATS ZPP_Set_ZPP_PartitionVertex.POOL_TOT=ZPP_Set_ZPP_PartitionVertex.POOL_CNT=ZPP_Set_ZPP_PartitionVertex.POOL_ADDNEW=ZPP_Set_ZPP_PartitionVertex.POOL_ADD=ZPP_Set_ZPP_PartitionVertex.POOL_SUB=0;
+            #end
+        }
+        {
             while(ZPP_PartitionVertex.zpp_pool!=null){
                 var nxt=ZPP_PartitionVertex.zpp_pool.next;
                 ZPP_PartitionVertex.zpp_pool.next=null;
@@ -565,12 +682,21 @@ class Debug{
             #end
         }
         {
-            while(ZPP_Set_ZPP_PartitionVertex.zpp_pool!=null){
-                var nxt=ZPP_Set_ZPP_PartitionVertex.zpp_pool.next;
-                ZPP_Set_ZPP_PartitionVertex.zpp_pool.next=null;
-                ZPP_Set_ZPP_PartitionVertex.zpp_pool=nxt;
+            while(ZPP_PartitionedPoly.zpp_pool!=null){
+                var nxt=ZPP_PartitionedPoly.zpp_pool.next;
+                ZPP_PartitionedPoly.zpp_pool.next=null;
+                ZPP_PartitionedPoly.zpp_pool=nxt;
             }
-            #if NAPE_POOL_STATS ZPP_Set_ZPP_PartitionVertex.POOL_TOT=ZPP_Set_ZPP_PartitionVertex.POOL_CNT=ZPP_Set_ZPP_PartitionVertex.POOL_ADDNEW=ZPP_Set_ZPP_PartitionVertex.POOL_ADD=ZPP_Set_ZPP_PartitionVertex.POOL_SUB=0;
+            #if NAPE_POOL_STATS ZPP_PartitionedPoly.POOL_TOT=ZPP_PartitionedPoly.POOL_CNT=ZPP_PartitionedPoly.POOL_ADDNEW=ZPP_PartitionedPoly.POOL_ADD=ZPP_PartitionedPoly.POOL_SUB=0;
+            #end
+        }
+        {
+            while(ZNPNode_ZPP_PartitionedPoly.zpp_pool!=null){
+                var nxt=ZNPNode_ZPP_PartitionedPoly.zpp_pool.next;
+                ZNPNode_ZPP_PartitionedPoly.zpp_pool.next=null;
+                ZNPNode_ZPP_PartitionedPoly.zpp_pool=nxt;
+            }
+            #if NAPE_POOL_STATS ZNPNode_ZPP_PartitionedPoly.POOL_TOT=ZNPNode_ZPP_PartitionedPoly.POOL_CNT=ZNPNode_ZPP_PartitionedPoly.POOL_ADDNEW=ZNPNode_ZPP_PartitionedPoly.POOL_ADD=ZNPNode_ZPP_PartitionedPoly.POOL_SUB=0;
             #end
         }
         {
@@ -592,15 +718,6 @@ class Debug{
             #end
         }
         {
-            while(ZPP_PartitionedPoly.zpp_pool!=null){
-                var nxt=ZPP_PartitionedPoly.zpp_pool.next;
-                ZPP_PartitionedPoly.zpp_pool.next=null;
-                ZPP_PartitionedPoly.zpp_pool=nxt;
-            }
-            #if NAPE_POOL_STATS ZPP_PartitionedPoly.POOL_TOT=ZPP_PartitionedPoly.POOL_CNT=ZPP_PartitionedPoly.POOL_ADDNEW=ZPP_PartitionedPoly.POOL_ADD=ZPP_PartitionedPoly.POOL_SUB=0;
-            #end
-        }
-        {
             while(ZNPNode_ZPP_SimplifyP.zpp_pool!=null){
                 var nxt=ZNPNode_ZPP_SimplifyP.zpp_pool.next;
                 ZNPNode_ZPP_SimplifyP.zpp_pool.next=null;
@@ -610,48 +727,12 @@ class Debug{
             #end
         }
         {
-            while(ZNPNode_ZPP_PartitionedPoly.zpp_pool!=null){
-                var nxt=ZNPNode_ZPP_PartitionedPoly.zpp_pool.next;
-                ZNPNode_ZPP_PartitionedPoly.zpp_pool.next=null;
-                ZNPNode_ZPP_PartitionedPoly.zpp_pool=nxt;
-            }
-            #if NAPE_POOL_STATS ZNPNode_ZPP_PartitionedPoly.POOL_TOT=ZNPNode_ZPP_PartitionedPoly.POOL_CNT=ZNPNode_ZPP_PartitionedPoly.POOL_ADDNEW=ZNPNode_ZPP_PartitionedPoly.POOL_ADD=ZNPNode_ZPP_PartitionedPoly.POOL_SUB=0;
-            #end
-        }
-        {
-            while(ZPP_PartitionPair.zpp_pool!=null){
-                var nxt=ZPP_PartitionPair.zpp_pool.next;
-                ZPP_PartitionPair.zpp_pool.next=null;
-                ZPP_PartitionPair.zpp_pool=nxt;
-            }
-            #if NAPE_POOL_STATS ZPP_PartitionPair.POOL_TOT=ZPP_PartitionPair.POOL_CNT=ZPP_PartitionPair.POOL_ADDNEW=ZPP_PartitionPair.POOL_ADD=ZPP_PartitionPair.POOL_SUB=0;
-            #end
-        }
-        {
-            while(ZPP_Set_ZPP_PartitionPair.zpp_pool!=null){
-                var nxt=ZPP_Set_ZPP_PartitionPair.zpp_pool.next;
-                ZPP_Set_ZPP_PartitionPair.zpp_pool.next=null;
-                ZPP_Set_ZPP_PartitionPair.zpp_pool=nxt;
-            }
-            #if NAPE_POOL_STATS ZPP_Set_ZPP_PartitionPair.POOL_TOT=ZPP_Set_ZPP_PartitionPair.POOL_CNT=ZPP_Set_ZPP_PartitionPair.POOL_ADDNEW=ZPP_Set_ZPP_PartitionPair.POOL_ADD=ZPP_Set_ZPP_PartitionPair.POOL_SUB=0;
-            #end
-        }
-        {
             while(ZNPNode_ZPP_GeomVert.zpp_pool!=null){
                 var nxt=ZNPNode_ZPP_GeomVert.zpp_pool.next;
                 ZNPNode_ZPP_GeomVert.zpp_pool.next=null;
                 ZNPNode_ZPP_GeomVert.zpp_pool=nxt;
             }
             #if NAPE_POOL_STATS ZNPNode_ZPP_GeomVert.POOL_TOT=ZNPNode_ZPP_GeomVert.POOL_CNT=ZNPNode_ZPP_GeomVert.POOL_ADDNEW=ZNPNode_ZPP_GeomVert.POOL_ADD=ZNPNode_ZPP_GeomVert.POOL_SUB=0;
-            #end
-        }
-        {
-            while(ZPP_AABB.zpp_pool!=null){
-                var nxt=ZPP_AABB.zpp_pool.next;
-                ZPP_AABB.zpp_pool.next=null;
-                ZPP_AABB.zpp_pool=nxt;
-            }
-            #if NAPE_POOL_STATS ZPP_AABB.POOL_TOT=ZPP_AABB.POOL_CNT=ZPP_AABB.POOL_ADDNEW=ZPP_AABB.POOL_ADD=ZPP_AABB.POOL_SUB=0;
             #end
         }
         {
@@ -745,93 +826,21 @@ class Debug{
             #end
         }
         {
-            while(ZPP_MarchSpan.zpp_pool!=null){
-                var nxt=ZPP_MarchSpan.zpp_pool.next;
-                ZPP_MarchSpan.zpp_pool.next=null;
-                ZPP_MarchSpan.zpp_pool=nxt;
+            while(ZPP_Vec2.zpp_pool!=null){
+                var nxt=ZPP_Vec2.zpp_pool.next;
+                ZPP_Vec2.zpp_pool.next=null;
+                ZPP_Vec2.zpp_pool=nxt;
             }
-            #if NAPE_POOL_STATS ZPP_MarchSpan.POOL_TOT=ZPP_MarchSpan.POOL_CNT=ZPP_MarchSpan.POOL_ADDNEW=ZPP_MarchSpan.POOL_ADD=ZPP_MarchSpan.POOL_SUB=0;
+            #if NAPE_POOL_STATS ZPP_Vec2.POOL_TOT=ZPP_Vec2.POOL_CNT=ZPP_Vec2.POOL_ADDNEW=ZPP_Vec2.POOL_ADD=ZPP_Vec2.POOL_SUB=0;
             #end
         }
         {
-            while(ZPP_MarchPair.zpp_pool!=null){
-                var nxt=ZPP_MarchPair.zpp_pool.next;
-                ZPP_MarchPair.zpp_pool.next=null;
-                ZPP_MarchPair.zpp_pool=nxt;
+            while(ZPP_PartitionPair.zpp_pool!=null){
+                var nxt=ZPP_PartitionPair.zpp_pool.next;
+                ZPP_PartitionPair.zpp_pool.next=null;
+                ZPP_PartitionPair.zpp_pool=nxt;
             }
-            #if NAPE_POOL_STATS ZPP_MarchPair.POOL_TOT=ZPP_MarchPair.POOL_CNT=ZPP_MarchPair.POOL_ADDNEW=ZPP_MarchPair.POOL_ADD=ZPP_MarchPair.POOL_SUB=0;
-            #end
-        }
-        {
-            while(ZNPNode_ZPP_Vec2.zpp_pool!=null){
-                var nxt=ZNPNode_ZPP_Vec2.zpp_pool.next;
-                ZNPNode_ZPP_Vec2.zpp_pool.next=null;
-                ZNPNode_ZPP_Vec2.zpp_pool=nxt;
-            }
-            #if NAPE_POOL_STATS ZNPNode_ZPP_Vec2.POOL_TOT=ZNPNode_ZPP_Vec2.POOL_CNT=ZNPNode_ZPP_Vec2.POOL_ADDNEW=ZNPNode_ZPP_Vec2.POOL_ADD=ZNPNode_ZPP_Vec2.POOL_SUB=0;
-            #end
-        }
-        {
-            while(ZPP_Edge.zpp_pool!=null){
-                var nxt=ZPP_Edge.zpp_pool.next;
-                ZPP_Edge.zpp_pool.next=null;
-                ZPP_Edge.zpp_pool=nxt;
-            }
-            #if NAPE_POOL_STATS ZPP_Edge.POOL_TOT=ZPP_Edge.POOL_CNT=ZPP_Edge.POOL_ADDNEW=ZPP_Edge.POOL_ADD=ZPP_Edge.POOL_SUB=0;
-            #end
-        }
-        {
-            while(ZNPNode_ZPP_AABBPair.zpp_pool!=null){
-                var nxt=ZNPNode_ZPP_AABBPair.zpp_pool.next;
-                ZNPNode_ZPP_AABBPair.zpp_pool.next=null;
-                ZNPNode_ZPP_AABBPair.zpp_pool=nxt;
-            }
-            #if NAPE_POOL_STATS ZNPNode_ZPP_AABBPair.POOL_TOT=ZNPNode_ZPP_AABBPair.POOL_CNT=ZNPNode_ZPP_AABBPair.POOL_ADDNEW=ZNPNode_ZPP_AABBPair.POOL_ADD=ZNPNode_ZPP_AABBPair.POOL_SUB=0;
-            #end
-        }
-        {
-            while(ZNPNode_ZPP_Edge.zpp_pool!=null){
-                var nxt=ZNPNode_ZPP_Edge.zpp_pool.next;
-                ZNPNode_ZPP_Edge.zpp_pool.next=null;
-                ZNPNode_ZPP_Edge.zpp_pool=nxt;
-            }
-            #if NAPE_POOL_STATS ZNPNode_ZPP_Edge.POOL_TOT=ZNPNode_ZPP_Edge.POOL_CNT=ZNPNode_ZPP_Edge.POOL_ADDNEW=ZNPNode_ZPP_Edge.POOL_ADD=ZNPNode_ZPP_Edge.POOL_SUB=0;
-            #end
-        }
-        {
-            while(ZPP_SweepData.zpp_pool!=null){
-                var nxt=ZPP_SweepData.zpp_pool.next;
-                ZPP_SweepData.zpp_pool.next=null;
-                ZPP_SweepData.zpp_pool=nxt;
-            }
-            #if NAPE_POOL_STATS ZPP_SweepData.POOL_TOT=ZPP_SweepData.POOL_CNT=ZPP_SweepData.POOL_ADDNEW=ZPP_SweepData.POOL_ADD=ZPP_SweepData.POOL_SUB=0;
-            #end
-        }
-        {
-            while(ZPP_AABBNode.zpp_pool!=null){
-                var nxt=ZPP_AABBNode.zpp_pool.next;
-                ZPP_AABBNode.zpp_pool.next=null;
-                ZPP_AABBNode.zpp_pool=nxt;
-            }
-            #if NAPE_POOL_STATS ZPP_AABBNode.POOL_TOT=ZPP_AABBNode.POOL_CNT=ZPP_AABBNode.POOL_ADDNEW=ZPP_AABBNode.POOL_ADD=ZPP_AABBNode.POOL_SUB=0;
-            #end
-        }
-        {
-            while(ZPP_AABBPair.zpp_pool!=null){
-                var nxt=ZPP_AABBPair.zpp_pool.next;
-                ZPP_AABBPair.zpp_pool.next=null;
-                ZPP_AABBPair.zpp_pool=nxt;
-            }
-            #if NAPE_POOL_STATS ZPP_AABBPair.POOL_TOT=ZPP_AABBPair.POOL_CNT=ZPP_AABBPair.POOL_ADDNEW=ZPP_AABBPair.POOL_ADD=ZPP_AABBPair.POOL_SUB=0;
-            #end
-        }
-        {
-            while(ZNPNode_ZPP_AABBNode.zpp_pool!=null){
-                var nxt=ZNPNode_ZPP_AABBNode.zpp_pool.next;
-                ZNPNode_ZPP_AABBNode.zpp_pool.next=null;
-                ZNPNode_ZPP_AABBNode.zpp_pool=nxt;
-            }
-            #if NAPE_POOL_STATS ZNPNode_ZPP_AABBNode.POOL_TOT=ZNPNode_ZPP_AABBNode.POOL_CNT=ZNPNode_ZPP_AABBNode.POOL_ADDNEW=ZNPNode_ZPP_AABBNode.POOL_ADD=ZNPNode_ZPP_AABBNode.POOL_SUB=0;
+            #if NAPE_POOL_STATS ZPP_PartitionPair.POOL_TOT=ZPP_PartitionPair.POOL_CNT=ZPP_PartitionPair.POOL_ADDNEW=ZPP_PartitionPair.POOL_ADD=ZPP_PartitionPair.POOL_SUB=0;
             #end
         }
         {
@@ -844,39 +853,30 @@ class Debug{
             #end
         }
         {
-            while(ZNPNode_ZPP_Component.zpp_pool!=null){
-                var nxt=ZNPNode_ZPP_Component.zpp_pool.next;
-                ZNPNode_ZPP_Component.zpp_pool.next=null;
-                ZNPNode_ZPP_Component.zpp_pool=nxt;
+            while(ZPP_Set_ZPP_PartitionPair.zpp_pool!=null){
+                var nxt=ZPP_Set_ZPP_PartitionPair.zpp_pool.next;
+                ZPP_Set_ZPP_PartitionPair.zpp_pool.next=null;
+                ZPP_Set_ZPP_PartitionPair.zpp_pool=nxt;
             }
-            #if NAPE_POOL_STATS ZNPNode_ZPP_Component.POOL_TOT=ZNPNode_ZPP_Component.POOL_CNT=ZNPNode_ZPP_Component.POOL_ADDNEW=ZNPNode_ZPP_Component.POOL_ADD=ZNPNode_ZPP_Component.POOL_SUB=0;
+            #if NAPE_POOL_STATS ZPP_Set_ZPP_PartitionPair.POOL_TOT=ZPP_Set_ZPP_PartitionPair.POOL_CNT=ZPP_Set_ZPP_PartitionPair.POOL_ADDNEW=ZPP_Set_ZPP_PartitionPair.POOL_ADD=ZPP_Set_ZPP_PartitionPair.POOL_SUB=0;
             #end
         }
         {
-            while(ZPP_Island.zpp_pool!=null){
-                var nxt=ZPP_Island.zpp_pool.next;
-                ZPP_Island.zpp_pool.next=null;
-                ZPP_Island.zpp_pool=nxt;
+            while(ZPP_InteractionFilter.zpp_pool!=null){
+                var nxt=ZPP_InteractionFilter.zpp_pool.next;
+                ZPP_InteractionFilter.zpp_pool.next=null;
+                ZPP_InteractionFilter.zpp_pool=nxt;
             }
-            #if NAPE_POOL_STATS ZPP_Island.POOL_TOT=ZPP_Island.POOL_CNT=ZPP_Island.POOL_ADDNEW=ZPP_Island.POOL_ADD=ZPP_Island.POOL_SUB=0;
+            #if NAPE_POOL_STATS ZPP_InteractionFilter.POOL_TOT=ZPP_InteractionFilter.POOL_CNT=ZPP_InteractionFilter.POOL_ADDNEW=ZPP_InteractionFilter.POOL_ADD=ZPP_InteractionFilter.POOL_SUB=0;
             #end
         }
         {
-            while(ZPP_Component.zpp_pool!=null){
-                var nxt=ZPP_Component.zpp_pool.next;
-                ZPP_Component.zpp_pool.next=null;
-                ZPP_Component.zpp_pool=nxt;
+            while(ZNPNode_ZPP_InteractionGroup.zpp_pool!=null){
+                var nxt=ZNPNode_ZPP_InteractionGroup.zpp_pool.next;
+                ZNPNode_ZPP_InteractionGroup.zpp_pool.next=null;
+                ZNPNode_ZPP_InteractionGroup.zpp_pool=nxt;
             }
-            #if NAPE_POOL_STATS ZPP_Component.POOL_TOT=ZPP_Component.POOL_CNT=ZPP_Component.POOL_ADDNEW=ZPP_Component.POOL_ADD=ZPP_Component.POOL_SUB=0;
-            #end
-        }
-        {
-            while(ZPP_CallbackSet.zpp_pool!=null){
-                var nxt=ZPP_CallbackSet.zpp_pool.next;
-                ZPP_CallbackSet.zpp_pool.next=null;
-                ZPP_CallbackSet.zpp_pool=nxt;
-            }
-            #if NAPE_POOL_STATS ZPP_CallbackSet.POOL_TOT=ZPP_CallbackSet.POOL_CNT=ZPP_CallbackSet.POOL_ADDNEW=ZPP_CallbackSet.POOL_ADD=ZPP_CallbackSet.POOL_SUB=0;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_InteractionGroup.POOL_TOT=ZNPNode_ZPP_InteractionGroup.POOL_CNT=ZNPNode_ZPP_InteractionGroup.POOL_ADDNEW=ZNPNode_ZPP_InteractionGroup.POOL_ADD=ZNPNode_ZPP_InteractionGroup.POOL_SUB=0;
             #end
         }
         {
@@ -898,24 +898,6 @@ class Debug{
             #end
         }
         {
-            while(ZPP_Set_ZPP_CbSet.zpp_pool!=null){
-                var nxt=ZPP_Set_ZPP_CbSet.zpp_pool.next;
-                ZPP_Set_ZPP_CbSet.zpp_pool.next=null;
-                ZPP_Set_ZPP_CbSet.zpp_pool=nxt;
-            }
-            #if NAPE_POOL_STATS ZPP_Set_ZPP_CbSet.POOL_TOT=ZPP_Set_ZPP_CbSet.POOL_CNT=ZPP_Set_ZPP_CbSet.POOL_ADDNEW=ZPP_Set_ZPP_CbSet.POOL_ADD=ZPP_Set_ZPP_CbSet.POOL_SUB=0;
-            #end
-        }
-        {
-            while(ZNPNode_ZPP_FluidArbiter.zpp_pool!=null){
-                var nxt=ZNPNode_ZPP_FluidArbiter.zpp_pool.next;
-                ZNPNode_ZPP_FluidArbiter.zpp_pool.next=null;
-                ZNPNode_ZPP_FluidArbiter.zpp_pool=nxt;
-            }
-            #if NAPE_POOL_STATS ZNPNode_ZPP_FluidArbiter.POOL_TOT=ZNPNode_ZPP_FluidArbiter.POOL_CNT=ZNPNode_ZPP_FluidArbiter.POOL_ADDNEW=ZNPNode_ZPP_FluidArbiter.POOL_ADD=ZNPNode_ZPP_FluidArbiter.POOL_SUB=0;
-            #end
-        }
-        {
             while(ZPP_ColArbiter.zpp_pool!=null){
                 var nxt=ZPP_ColArbiter.zpp_pool.next;
                 ZPP_ColArbiter.zpp_pool.next=null;
@@ -925,57 +907,75 @@ class Debug{
             #end
         }
         {
-            while(ZNPNode_ZPP_SensorArbiter.zpp_pool!=null){
-                var nxt=ZNPNode_ZPP_SensorArbiter.zpp_pool.next;
-                ZNPNode_ZPP_SensorArbiter.zpp_pool.next=null;
-                ZNPNode_ZPP_SensorArbiter.zpp_pool=nxt;
+            while(ZPP_Callback.zpp_pool!=null){
+                var nxt=ZPP_Callback.zpp_pool.next;
+                ZPP_Callback.zpp_pool.next=null;
+                ZPP_Callback.zpp_pool=nxt;
             }
-            #if NAPE_POOL_STATS ZNPNode_ZPP_SensorArbiter.POOL_TOT=ZNPNode_ZPP_SensorArbiter.POOL_CNT=ZNPNode_ZPP_SensorArbiter.POOL_ADDNEW=ZNPNode_ZPP_SensorArbiter.POOL_ADD=ZNPNode_ZPP_SensorArbiter.POOL_SUB=0;
+            #if NAPE_POOL_STATS ZPP_Callback.POOL_TOT=ZPP_Callback.POOL_CNT=ZPP_Callback.POOL_ADDNEW=ZPP_Callback.POOL_ADD=ZPP_Callback.POOL_SUB=0;
             #end
         }
         {
-            while(ZNPNode_ZPP_Listener.zpp_pool!=null){
-                var nxt=ZNPNode_ZPP_Listener.zpp_pool.next;
-                ZNPNode_ZPP_Listener.zpp_pool.next=null;
-                ZNPNode_ZPP_Listener.zpp_pool=nxt;
+            while(ZPP_CbSetPair.zpp_pool!=null){
+                var nxt=ZPP_CbSetPair.zpp_pool.next;
+                ZPP_CbSetPair.zpp_pool.next=null;
+                ZPP_CbSetPair.zpp_pool=nxt;
             }
-            #if NAPE_POOL_STATS ZNPNode_ZPP_Listener.POOL_TOT=ZNPNode_ZPP_Listener.POOL_CNT=ZNPNode_ZPP_Listener.POOL_ADDNEW=ZNPNode_ZPP_Listener.POOL_ADD=ZNPNode_ZPP_Listener.POOL_SUB=0;
+            #if NAPE_POOL_STATS ZPP_CbSetPair.POOL_TOT=ZPP_CbSetPair.POOL_CNT=ZPP_CbSetPair.POOL_ADDNEW=ZPP_CbSetPair.POOL_ADD=ZPP_CbSetPair.POOL_SUB=0;
             #end
         }
         {
-            while(ZNPNode_ZPP_ColArbiter.zpp_pool!=null){
-                var nxt=ZNPNode_ZPP_ColArbiter.zpp_pool.next;
-                ZNPNode_ZPP_ColArbiter.zpp_pool.next=null;
-                ZNPNode_ZPP_ColArbiter.zpp_pool=nxt;
+            while(ZNPNode_ZPP_CbSet.zpp_pool!=null){
+                var nxt=ZNPNode_ZPP_CbSet.zpp_pool.next;
+                ZNPNode_ZPP_CbSet.zpp_pool.next=null;
+                ZNPNode_ZPP_CbSet.zpp_pool=nxt;
             }
-            #if NAPE_POOL_STATS ZNPNode_ZPP_ColArbiter.POOL_TOT=ZNPNode_ZPP_ColArbiter.POOL_CNT=ZNPNode_ZPP_ColArbiter.POOL_ADDNEW=ZNPNode_ZPP_ColArbiter.POOL_ADD=ZNPNode_ZPP_ColArbiter.POOL_SUB=0;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_CbSet.POOL_TOT=ZNPNode_ZPP_CbSet.POOL_CNT=ZNPNode_ZPP_CbSet.POOL_ADDNEW=ZNPNode_ZPP_CbSet.POOL_ADD=ZNPNode_ZPP_CbSet.POOL_SUB=0;
             #end
         }
         {
-            while(ZNPNode_ZPP_InteractionGroup.zpp_pool!=null){
-                var nxt=ZNPNode_ZPP_InteractionGroup.zpp_pool.next;
-                ZNPNode_ZPP_InteractionGroup.zpp_pool.next=null;
-                ZNPNode_ZPP_InteractionGroup.zpp_pool=nxt;
+            while(ZNPNode_ZPP_BodyListener.zpp_pool!=null){
+                var nxt=ZNPNode_ZPP_BodyListener.zpp_pool.next;
+                ZNPNode_ZPP_BodyListener.zpp_pool.next=null;
+                ZNPNode_ZPP_BodyListener.zpp_pool=nxt;
             }
-            #if NAPE_POOL_STATS ZNPNode_ZPP_InteractionGroup.POOL_TOT=ZNPNode_ZPP_InteractionGroup.POOL_CNT=ZNPNode_ZPP_InteractionGroup.POOL_ADDNEW=ZNPNode_ZPP_InteractionGroup.POOL_ADD=ZNPNode_ZPP_InteractionGroup.POOL_SUB=0;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_BodyListener.POOL_TOT=ZNPNode_ZPP_BodyListener.POOL_CNT=ZNPNode_ZPP_BodyListener.POOL_ADDNEW=ZNPNode_ZPP_BodyListener.POOL_ADD=ZNPNode_ZPP_BodyListener.POOL_SUB=0;
             #end
         }
         {
-            while(ZNPNode_ZPP_ToiEvent.zpp_pool!=null){
-                var nxt=ZNPNode_ZPP_ToiEvent.zpp_pool.next;
-                ZNPNode_ZPP_ToiEvent.zpp_pool.next=null;
-                ZNPNode_ZPP_ToiEvent.zpp_pool=nxt;
+            while(ZNPNode_ZPP_ConstraintListener.zpp_pool!=null){
+                var nxt=ZNPNode_ZPP_ConstraintListener.zpp_pool.next;
+                ZNPNode_ZPP_ConstraintListener.zpp_pool.next=null;
+                ZNPNode_ZPP_ConstraintListener.zpp_pool=nxt;
             }
-            #if NAPE_POOL_STATS ZNPNode_ZPP_ToiEvent.POOL_TOT=ZNPNode_ZPP_ToiEvent.POOL_CNT=ZNPNode_ZPP_ToiEvent.POOL_ADDNEW=ZNPNode_ZPP_ToiEvent.POOL_ADD=ZNPNode_ZPP_ToiEvent.POOL_SUB=0;
+            #if NAPE_POOL_STATS ZNPNode_ZPP_ConstraintListener.POOL_TOT=ZNPNode_ZPP_ConstraintListener.POOL_CNT=ZNPNode_ZPP_ConstraintListener.POOL_ADDNEW=ZNPNode_ZPP_ConstraintListener.POOL_ADD=ZNPNode_ZPP_ConstraintListener.POOL_SUB=0;
             #end
         }
         {
-            while(ZPP_InteractionFilter.zpp_pool!=null){
-                var nxt=ZPP_InteractionFilter.zpp_pool.next;
-                ZPP_InteractionFilter.zpp_pool.next=null;
-                ZPP_InteractionFilter.zpp_pool=nxt;
+            while(ZPP_CbSet.zpp_pool!=null){
+                var nxt=ZPP_CbSet.zpp_pool.next;
+                ZPP_CbSet.zpp_pool.next=null;
+                ZPP_CbSet.zpp_pool=nxt;
             }
-            #if NAPE_POOL_STATS ZPP_InteractionFilter.POOL_TOT=ZPP_InteractionFilter.POOL_CNT=ZPP_InteractionFilter.POOL_ADDNEW=ZPP_InteractionFilter.POOL_ADD=ZPP_InteractionFilter.POOL_SUB=0;
+            #if NAPE_POOL_STATS ZPP_CbSet.POOL_TOT=ZPP_CbSet.POOL_CNT=ZPP_CbSet.POOL_ADDNEW=ZPP_CbSet.POOL_ADD=ZPP_CbSet.POOL_SUB=0;
+            #end
+        }
+        {
+            while(ZNPNode_ZPP_CbSetPair.zpp_pool!=null){
+                var nxt=ZNPNode_ZPP_CbSetPair.zpp_pool.next;
+                ZNPNode_ZPP_CbSetPair.zpp_pool.next=null;
+                ZNPNode_ZPP_CbSetPair.zpp_pool=nxt;
+            }
+            #if NAPE_POOL_STATS ZNPNode_ZPP_CbSetPair.POOL_TOT=ZNPNode_ZPP_CbSetPair.POOL_CNT=ZNPNode_ZPP_CbSetPair.POOL_ADDNEW=ZNPNode_ZPP_CbSetPair.POOL_ADD=ZNPNode_ZPP_CbSetPair.POOL_SUB=0;
+            #end
+        }
+        {
+            while(ZPP_Set_ZPP_CbSetPair.zpp_pool!=null){
+                var nxt=ZPP_Set_ZPP_CbSetPair.zpp_pool.next;
+                ZPP_Set_ZPP_CbSetPair.zpp_pool.next=null;
+                ZPP_Set_ZPP_CbSetPair.zpp_pool=nxt;
+            }
+            #if NAPE_POOL_STATS ZPP_Set_ZPP_CbSetPair.POOL_TOT=ZPP_Set_ZPP_CbSetPair.POOL_CNT=ZPP_Set_ZPP_CbSetPair.POOL_ADDNEW=ZPP_Set_ZPP_CbSetPair.POOL_ADD=ZPP_Set_ZPP_CbSetPair.POOL_SUB=0;
             #end
         }
         {
@@ -1016,21 +1016,21 @@ class Debug{
             #end
         }
         {
-            while(ZPP_PubPool.poolVec2!=null){
-                var nxt=ZPP_PubPool.poolVec2.zpp_pool;
-                ZPP_PubPool.poolVec2.zpp_pool=null;
-                ZPP_PubPool.poolVec2=nxt;
-            }
-            #if NAPE_POOL_STATS Vec2.POOL_TOT=Vec2.POOL_CNT=Vec2.POOL_ADDNEW=Vec2.POOL_ADD=Vec2.POOL_SUB=0;
-            #end
-        }
-        {
             while(ZPP_PubPool.poolVec3!=null){
                 var nxt=ZPP_PubPool.poolVec3.zpp_pool;
                 ZPP_PubPool.poolVec3.zpp_pool=null;
                 ZPP_PubPool.poolVec3=nxt;
             }
             #if NAPE_POOL_STATS Vec3.POOL_TOT=Vec3.POOL_CNT=Vec3.POOL_ADDNEW=Vec3.POOL_ADD=Vec3.POOL_SUB=0;
+            #end
+        }
+        {
+            while(ZPP_PubPool.poolVec2!=null){
+                var nxt=ZPP_PubPool.poolVec2.zpp_pool;
+                ZPP_PubPool.poolVec2.zpp_pool=null;
+                ZPP_PubPool.poolVec2=nxt;
+            }
+            #if NAPE_POOL_STATS Vec2.POOL_TOT=Vec2.POOL_CNT=Vec2.POOL_ADDNEW=Vec2.POOL_ADD=Vec2.POOL_SUB=0;
             #end
         }
     }
@@ -1187,7 +1187,7 @@ class Debug{
      * object colours to better fit an idealised background colour.
      */
     #if nape_swc@:isVar #end
-    public var bgColour(get_bgColour,set_bgColour):Int;
+    public var bgColour(get,set):Int;
     inline function get_bgColour():Int{
         return zpp_inner.bg_col;
     }
@@ -1235,7 +1235,7 @@ class Debug{
      * When using debug drawer, you should add this to your display list.
      */
     #if nape_swc@:isVar #end
-    public var display(get_display,never):flash.display.DisplayObject;
+    public var display(get,never):flash.display.DisplayObject;
     inline function get_display():flash.display.DisplayObject{
         #if flash10 var ret:flash.display.DisplayObject;
         if(zpp_inner.isbmp)ret=zpp_inner.d_bmp.bitmap;
@@ -1269,7 +1269,7 @@ class Debug{
      * @default new Mat23()
      */
     #if nape_swc@:isVar #end
-    public var transform(get_transform,set_transform):Mat23;
+    public var transform(get,set):Mat23;
     inline function get_transform():Mat23{
         if(zpp_inner.xform==null)zpp_inner.setform();
         return zpp_inner.xform.outer;

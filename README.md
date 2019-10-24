@@ -2,6 +2,4 @@
 
 Nape physics library by Luca Deltodesco, usable as a git submodule for haxe.
 
-This is simply a clone of [nape library on haxelib](https://lib.haxe.org/p/nape/), but useable without haxelib, as a git submodule.
-
-Files in this repo are usable as is from haxe project. There already have been processed from their [original source](https://github.com/deltaluca/nape) written using [caxe](https://github.com/deltaluca/caxe) preprocessor.
+This is a clone of [nape-haxe4 library on haxelib](https://lib.haxe.org/p/nape-haxe4/) (haxe 4 compatible fork, see https://github.com/HaxeFlixel/nape-haxe4), but useable without haxelib, as a git submodule.

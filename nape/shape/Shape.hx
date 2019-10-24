@@ -1,175 +1,175 @@
 package nape.shape;
 import zpp_nape.Const;
-import zpp_nape.constraint.PivotJoint;
 import zpp_nape.ID;
-import zpp_nape.constraint.Constraint;
-import zpp_nape.constraint.WeldJoint;
-import zpp_nape.constraint.UserConstraint;
-import zpp_nape.constraint.DistanceJoint;
-import zpp_nape.constraint.LineJoint;
-import zpp_nape.constraint.LinearJoint;
-import zpp_nape.constraint.AngleJoint;
-import zpp_nape.constraint.MotorJoint;
-import zpp_nape.phys.Interactor;
-import zpp_nape.phys.FeatureMix;
-import zpp_nape.phys.Material;
-import zpp_nape.constraint.PulleyJoint;
-import zpp_nape.phys.FluidProperties;
-import zpp_nape.phys.Compound;
-import zpp_nape.callbacks.OptionType;
+import zpp_nape.util.Array2;
+import zpp_nape.util.Circular;
+import zpp_nape.util.DisjointSetForest;
+import zpp_nape.util.FastHash;
+import zpp_nape.util.Flags;
+import zpp_nape.util.Lists;
+import zpp_nape.util.Math;
+import zpp_nape.util.Names;
+import zpp_nape.util.Pool;
+import zpp_nape.util.Queue;
+import zpp_nape.util.RBTree;
+import zpp_nape.util.Debug;
+import zpp_nape.util.UserData;
+import zpp_nape.util.WrapLists;
+import zpp_nape.space.Broadphase;
+import zpp_nape.space.DynAABBPhase;
+import zpp_nape.space.SweepPhase;
+import zpp_nape.shape.Circle;
+import zpp_nape.shape.Edge;
+import zpp_nape.shape.Polygon;
+import zpp_nape.shape.Shape;
 import zpp_nape.phys.Body;
-import zpp_nape.callbacks.CbSetPair;
-import zpp_nape.callbacks.CbType;
-import zpp_nape.callbacks.Callback;
-import zpp_nape.callbacks.CbSet;
-import zpp_nape.callbacks.Listener;
+import zpp_nape.phys.Compound;
+import zpp_nape.phys.FeatureMix;
+import zpp_nape.phys.FluidProperties;
+import zpp_nape.phys.Interactor;
+import zpp_nape.phys.Material;
+import zpp_nape.geom.AABB;
+import zpp_nape.geom.Collide;
+import zpp_nape.geom.Convex;
+import zpp_nape.geom.ConvexRayResult;
+import zpp_nape.space.Space;
+import zpp_nape.geom.Cutter;
+import zpp_nape.geom.Geom;
 import zpp_nape.geom.GeomPoly;
 import zpp_nape.geom.Mat23;
-import zpp_nape.geom.ConvexRayResult;
-import zpp_nape.geom.Cutter;
-import zpp_nape.geom.Ray;
-import zpp_nape.geom.Vec2;
-import zpp_nape.geom.Convex;
+import zpp_nape.geom.MarchingSquares;
+import zpp_nape.geom.MatMN;
 import zpp_nape.geom.MatMath;
+import zpp_nape.geom.Monotone;
+import zpp_nape.geom.PolyIter;
 import zpp_nape.geom.PartitionedPoly;
+import zpp_nape.geom.Ray;
 import zpp_nape.geom.Simplify;
-import zpp_nape.geom.Triangular;
-import zpp_nape.geom.AABB;
 import zpp_nape.geom.Simple;
 import zpp_nape.geom.SweepDistance;
-import zpp_nape.geom.Monotone;
-import zpp_nape.geom.VecMath;
+import zpp_nape.geom.Vec2;
 import zpp_nape.geom.Vec3;
-import zpp_nape.geom.MatMN;
-import zpp_nape.geom.PolyIter;
-import zpp_nape.geom.MarchingSquares;
-import zpp_nape.geom.Geom;
-import zpp_nape.shape.Circle;
-import zpp_nape.geom.Collide;
-import zpp_nape.shape.Shape;
-import zpp_nape.shape.Edge;
-import zpp_nape.space.Broadphase;
-import zpp_nape.shape.Polygon;
-import zpp_nape.space.SweepPhase;
-import zpp_nape.space.DynAABBPhase;
+import zpp_nape.geom.Triangular;
+import zpp_nape.geom.VecMath;
 import zpp_nape.dynamics.Contact;
-import zpp_nape.space.Space;
-import zpp_nape.dynamics.Arbiter;
-import zpp_nape.dynamics.InteractionGroup;
 import zpp_nape.dynamics.InteractionFilter;
+import zpp_nape.dynamics.InteractionGroup;
 import zpp_nape.dynamics.SpaceArbiterList;
-import zpp_nape.util.Array2;
-import zpp_nape.util.Lists;
-import zpp_nape.util.Flags;
-import zpp_nape.util.Queue;
-import zpp_nape.util.Debug;
-import zpp_nape.util.FastHash;
-import zpp_nape.util.RBTree;
-import zpp_nape.util.Pool;
-import zpp_nape.util.Names;
-import zpp_nape.util.Circular;
-import zpp_nape.util.WrapLists;
-import zpp_nape.util.Math;
-import zpp_nape.util.UserData;
-import nape.TArray;
-import zpp_nape.util.DisjointSetForest;
+import zpp_nape.constraint.AngleJoint;
+import zpp_nape.constraint.Constraint;
+import zpp_nape.dynamics.Arbiter;
+import zpp_nape.constraint.DistanceJoint;
+import zpp_nape.constraint.LinearJoint;
+import zpp_nape.constraint.MotorJoint;
+import zpp_nape.constraint.PivotJoint;
+import zpp_nape.constraint.LineJoint;
+import zpp_nape.constraint.UserConstraint;
+import zpp_nape.constraint.WeldJoint;
+import zpp_nape.constraint.PulleyJoint;
+import zpp_nape.callbacks.Callback;
+import zpp_nape.callbacks.CbSetPair;
+import zpp_nape.callbacks.CbType;
+import zpp_nape.callbacks.CbSet;
+import zpp_nape.callbacks.OptionType;
+import zpp_nape.callbacks.Listener;
 import nape.Config;
-import nape.constraint.PivotJoint;
-import nape.constraint.WeldJoint;
-import nape.constraint.Constraint;
-import nape.constraint.UserConstraint;
-import nape.constraint.DistanceJoint;
-import nape.constraint.LineJoint;
-import nape.constraint.LinearJoint;
-import nape.constraint.ConstraintList;
-import nape.constraint.AngleJoint;
-import nape.constraint.MotorJoint;
-import nape.constraint.ConstraintIterator;
-import nape.phys.GravMassMode;
-import nape.phys.BodyList;
-import nape.phys.Interactor;
-import nape.phys.InertiaMode;
-import nape.phys.InteractorList;
-import nape.constraint.PulleyJoint;
-import nape.phys.MassMode;
-import nape.phys.Material;
-import nape.phys.InteractorIterator;
-import nape.phys.FluidProperties;
-import nape.phys.BodyIterator;
-import nape.phys.Compound;
-import nape.phys.CompoundList;
-import nape.phys.BodyType;
-import nape.phys.CompoundIterator;
-import nape.callbacks.InteractionListener;
-import nape.callbacks.OptionType;
-import nape.callbacks.PreListener;
-import nape.callbacks.BodyListener;
-import nape.callbacks.ListenerIterator;
-import nape.callbacks.CbType;
-import nape.callbacks.ListenerType;
-import nape.callbacks.PreFlag;
-import nape.callbacks.CbEvent;
-import nape.callbacks.InteractionType;
-import nape.callbacks.PreCallback;
-import nape.callbacks.InteractionCallback;
-import nape.callbacks.ListenerList;
-import nape.callbacks.ConstraintListener;
-import nape.phys.Body;
-import nape.callbacks.BodyCallback;
-import nape.callbacks.CbTypeList;
-import nape.callbacks.CbTypeIterator;
-import nape.callbacks.Callback;
-import nape.callbacks.ConstraintCallback;
-import nape.callbacks.Listener;
-import nape.geom.Mat23;
-import nape.geom.ConvexResultIterator;
-import nape.geom.GeomPoly;
-import nape.geom.Ray;
-import nape.geom.GeomPolyIterator;
-import nape.geom.Vec2Iterator;
-import nape.geom.RayResult;
-import nape.geom.Winding;
-import nape.geom.Vec2List;
-import nape.geom.RayResultIterator;
-import nape.geom.AABB;
-import nape.geom.IsoFunction;
-import nape.geom.GeomVertexIterator;
-import nape.geom.ConvexResult;
-import nape.geom.GeomPolyList;
-import nape.geom.Vec2;
-import nape.geom.RayResultList;
-import nape.geom.Vec3;
-import nape.geom.MatMN;
-import nape.geom.ConvexResultList;
-import nape.geom.MarchingSquares;
-import nape.shape.Circle;
-import nape.geom.Geom;
-import nape.shape.ValidationResult;
-import nape.shape.ShapeIterator;
-import nape.shape.Polygon;
-import nape.shape.Edge;
-import nape.shape.EdgeList;
-import nape.shape.EdgeIterator;
-import nape.shape.ShapeList;
-import nape.shape.ShapeType;
-import nape.space.Broadphase;
-import nape.dynamics.Contact;
-import nape.dynamics.InteractionGroupList;
-import nape.dynamics.Arbiter;
-import nape.dynamics.InteractionGroup;
-import nape.space.Space;
-import nape.dynamics.ContactIterator;
-import nape.dynamics.ArbiterList;
-import nape.dynamics.InteractionFilter;
-import nape.dynamics.ArbiterIterator;
-import nape.dynamics.InteractionGroupIterator;
-import nape.dynamics.FluidArbiter;
-import nape.dynamics.ContactList;
-import nape.dynamics.ArbiterType;
-import nape.dynamics.CollisionArbiter;
+import nape.TArray;
 import nape.util.Debug;
 import nape.util.BitmapDebug;
+import nape.space.Broadphase;
 import nape.util.ShapeDebug;
+import nape.shape.Circle;
+import nape.shape.Edge;
+import nape.shape.EdgeIterator;
+import nape.shape.EdgeList;
+import nape.space.Space;
+import nape.shape.Polygon;
+import nape.shape.ShapeIterator;
+import nape.shape.ShapeList;
+import nape.shape.ShapeType;
+import nape.shape.ValidationResult;
+import nape.phys.BodyIterator;
+import nape.phys.BodyList;
+import nape.phys.BodyType;
+import nape.phys.Compound;
+import nape.phys.CompoundIterator;
+import nape.phys.CompoundList;
+import nape.phys.FluidProperties;
+import nape.phys.GravMassMode;
+import nape.phys.InertiaMode;
+import nape.phys.Interactor;
+import nape.phys.InteractorIterator;
+import nape.phys.InteractorList;
+import nape.phys.MassMode;
+import nape.phys.Body;
+import nape.phys.Material;
+import nape.geom.ConvexResult;
+import nape.geom.ConvexResultIterator;
+import nape.geom.ConvexResultList;
+import nape.geom.AABB;
+import nape.geom.Geom;
+import nape.geom.GeomPolyIterator;
+import nape.geom.GeomPolyList;
+import nape.geom.GeomVertexIterator;
+import nape.geom.IsoFunction;
+import nape.geom.MarchingSquares;
+import nape.geom.GeomPoly;
+import nape.geom.MatMN;
+import nape.geom.Mat23;
+import nape.geom.Ray;
+import nape.geom.RayResultIterator;
+import nape.geom.RayResultList;
+import nape.geom.RayResult;
+import nape.geom.Vec2Iterator;
+import nape.geom.Vec2List;
+import nape.geom.Vec3;
+import nape.geom.Winding;
+import nape.dynamics.Arbiter;
+import nape.dynamics.ArbiterIterator;
+import nape.geom.Vec2;
+import nape.dynamics.ArbiterList;
+import nape.dynamics.ArbiterType;
+import nape.dynamics.Contact;
+import nape.dynamics.ContactIterator;
+import nape.dynamics.ContactList;
+import nape.dynamics.FluidArbiter;
+import nape.dynamics.CollisionArbiter;
+import nape.dynamics.InteractionFilter;
+import nape.dynamics.InteractionGroupIterator;
+import nape.dynamics.InteractionGroupList;
+import nape.dynamics.InteractionGroup;
+import nape.constraint.AngleJoint;
+import nape.constraint.ConstraintIterator;
+import nape.constraint.ConstraintList;
+import nape.constraint.DistanceJoint;
+import nape.constraint.LinearJoint;
+import nape.constraint.Constraint;
+import nape.constraint.LineJoint;
+import nape.constraint.PivotJoint;
+import nape.constraint.MotorJoint;
+import nape.constraint.PulleyJoint;
+import nape.constraint.UserConstraint;
+import nape.constraint.WeldJoint;
+import nape.callbacks.BodyCallback;
+import nape.callbacks.Callback;
+import nape.callbacks.BodyListener;
+import nape.callbacks.CbEvent;
+import nape.callbacks.CbTypeIterator;
+import nape.callbacks.CbTypeList;
+import nape.callbacks.ConstraintCallback;
+import nape.callbacks.CbType;
+import nape.callbacks.InteractionCallback;
+import nape.callbacks.ConstraintListener;
+import nape.callbacks.InteractionType;
+import nape.callbacks.InteractionListener;
+import nape.callbacks.ListenerIterator;
+import nape.callbacks.ListenerList;
+import nape.callbacks.ListenerType;
+import nape.callbacks.Listener;
+import nape.callbacks.OptionType;
+import nape.callbacks.PreFlag;
+import nape.callbacks.PreCallback;
+import nape.callbacks.PreListener;
 /**
  * Base type for Nape Shape's
  */
@@ -183,7 +183,7 @@ class Shape extends Interactor{
      * Type of shape.
      */
     #if nape_swc@:isVar #end
-    public var type(get_type,never):ShapeType;
+    public var type(get,never):ShapeType;
     inline function get_type():ShapeType{
         return ZPP_Shape.types[zpp_inner.type];
     }
@@ -235,7 +235,7 @@ class Shape extends Interactor{
      * @default null
      */
     #if nape_swc@:isVar #end
-    public var body(get_body,set_body):Null<Body>;
+    public var body(get,set):Null<Body>;
     inline function get_body():Null<Body>{
         return if(zpp_inner.body!=null)zpp_inner.body.outer else null;
     }
@@ -253,7 +253,7 @@ class Shape extends Interactor{
      * Faster equivalent to casting this to Circle type
      */
     #if nape_swc@:isVar #end
-    public var castCircle(get_castCircle,never):Null<Circle>;
+    public var castCircle(get,never):Null<Circle>;
     inline function get_castCircle():Null<Circle>{
         return if(isCircle())zpp_inner.circle.outer_zn else null;
     }
@@ -261,7 +261,7 @@ class Shape extends Interactor{
      * Faster equivalent to casting this to Polygon type
      */
     #if nape_swc@:isVar #end
-    public var castPolygon(get_castPolygon,never):Null<Polygon>;
+    public var castPolygon(get,never):Null<Polygon>;
     inline function get_castPolygon():Null<Polygon>{
         return if(isPolygon())zpp_inner.polygon.outer_zn else null;
     }
@@ -275,7 +275,7 @@ class Shape extends Interactor{
      * This Vec2 is immutable.
      */
     #if nape_swc@:isVar #end
-    public var worldCOM(get_worldCOM,never):Vec2;
+    public var worldCOM(get,never):Vec2;
     inline function get_worldCOM():Vec2{
         if(zpp_inner.wrap_worldCOM==null){
             zpp_inner.wrap_worldCOM=Vec2.get(zpp_inner.worldCOMx,zpp_inner.worldCOMy);
@@ -296,7 +296,7 @@ class Shape extends Interactor{
      * is part of a Space is not permitted.
      */
     #if nape_swc@:isVar #end
-    public var localCOM(get_localCOM,set_localCOM):Vec2;
+    public var localCOM(get,set):Vec2;
     inline function get_localCOM():Vec2{
         if(zpp_inner.wrap_localCOM==null){
             if(isCircle())zpp_inner.circle.setupLocalCOM();
@@ -324,7 +324,7 @@ class Shape extends Interactor{
      * Area of the Hhape.
      */
     #if nape_swc@:isVar #end
-    public var area(get_area,never):Float;
+    public var area(get,never):Float;
     inline function get_area():Float{
         zpp_inner.validate_area_inertia();
         return zpp_inner.area;
@@ -333,7 +333,7 @@ class Shape extends Interactor{
      * Non-mass weighted moment of inertia for Shape.
      */
     #if nape_swc@:isVar #end
-    public var inertia(get_inertia,never):Float;
+    public var inertia(get,never):Float;
     inline function get_inertia():Float{
         zpp_inner.validate_area_inertia();
         return zpp_inner.inertia;
@@ -342,7 +342,7 @@ class Shape extends Interactor{
      * Coeffecient of angular fluid drag for this Shape.
      */
     #if nape_swc@:isVar #end
-    public var angDrag(get_angDrag,never):Float;
+    public var angDrag(get,never):Float;
     inline function get_angDrag():Float{
         zpp_inner.validate_angDrag();
         return zpp_inner.angDrag;
@@ -353,7 +353,7 @@ class Shape extends Interactor{
      * @default new Material()
      */
     #if nape_swc@:isVar #end
-    public var material(get_material,set_material):Material;
+    public var material(get,set):Material;
     inline function get_material():Material{
         return zpp_inner.material.wrapper();
     }
@@ -373,7 +373,7 @@ class Shape extends Interactor{
      * @default new InteractionFilter()
      */
     #if nape_swc@:isVar #end
-    public var filter(get_filter,set_filter):InteractionFilter;
+    public var filter(get,set):InteractionFilter;
     inline function get_filter():InteractionFilter{
         return zpp_inner.filter.wrapper();
     }
@@ -396,7 +396,7 @@ class Shape extends Interactor{
      * @default new FluidProperties();
      */
     #if nape_swc@:isVar #end
-    public var fluidProperties(get_fluidProperties,set_fluidProperties):FluidProperties;
+    public var fluidProperties(get,set):FluidProperties;
     inline function get_fluidProperties():FluidProperties{
         zpp_inner.immutable_midstep("Shape::fluidProperties");
         if(zpp_inner.fluidProperties==null)zpp_inner.setFluid(new FluidProperties().zpp_inner);
@@ -424,7 +424,7 @@ class Shape extends Interactor{
      * @default false
      */
     #if nape_swc@:isVar #end
-    public var fluidEnabled(get_fluidEnabled,set_fluidEnabled):Bool;
+    public var fluidEnabled(get,set):Bool;
     inline function get_fluidEnabled():Bool{
         return zpp_inner.fluidEnabled;
     }
@@ -449,7 +449,7 @@ class Shape extends Interactor{
      * @default false
      */
     #if nape_swc@:isVar #end
-    public var sensorEnabled(get_sensorEnabled,set_sensorEnabled):Bool;
+    public var sensorEnabled(get,set):Bool;
     inline function get_sensorEnabled():Bool{
         return zpp_inner.sensorEnabled;
     }
@@ -471,7 +471,7 @@ class Shape extends Interactor{
      * This AABB is immutable.
      */
     #if nape_swc@:isVar #end
-    public var bounds(get_bounds,never):AABB;
+    public var bounds(get,never):AABB;
     inline function get_bounds():AABB{
         return zpp_inner.aabb.wrapper();
     }

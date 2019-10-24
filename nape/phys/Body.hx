@@ -1,175 +1,175 @@
 package nape.phys;
 import zpp_nape.Const;
-import zpp_nape.constraint.PivotJoint;
 import zpp_nape.ID;
-import zpp_nape.constraint.Constraint;
-import zpp_nape.constraint.WeldJoint;
-import zpp_nape.constraint.UserConstraint;
-import zpp_nape.constraint.DistanceJoint;
-import zpp_nape.constraint.LineJoint;
-import zpp_nape.constraint.LinearJoint;
-import zpp_nape.constraint.AngleJoint;
-import zpp_nape.constraint.MotorJoint;
-import zpp_nape.phys.Interactor;
-import zpp_nape.phys.FeatureMix;
-import zpp_nape.phys.Material;
-import zpp_nape.constraint.PulleyJoint;
-import zpp_nape.phys.FluidProperties;
-import zpp_nape.phys.Compound;
-import zpp_nape.callbacks.OptionType;
+import zpp_nape.util.Array2;
+import zpp_nape.util.Circular;
+import zpp_nape.util.DisjointSetForest;
+import zpp_nape.util.FastHash;
+import zpp_nape.util.Flags;
+import zpp_nape.util.Lists;
+import zpp_nape.util.Math;
+import zpp_nape.util.Names;
+import zpp_nape.util.Pool;
+import zpp_nape.util.Queue;
+import zpp_nape.util.RBTree;
+import zpp_nape.util.Debug;
+import zpp_nape.util.UserData;
+import zpp_nape.util.WrapLists;
+import zpp_nape.space.Broadphase;
+import zpp_nape.space.DynAABBPhase;
+import zpp_nape.space.SweepPhase;
+import zpp_nape.shape.Circle;
+import zpp_nape.shape.Edge;
+import zpp_nape.shape.Polygon;
+import zpp_nape.shape.Shape;
 import zpp_nape.phys.Body;
-import zpp_nape.callbacks.CbSetPair;
-import zpp_nape.callbacks.CbType;
-import zpp_nape.callbacks.Callback;
-import zpp_nape.callbacks.CbSet;
-import zpp_nape.callbacks.Listener;
+import zpp_nape.phys.Compound;
+import zpp_nape.phys.FeatureMix;
+import zpp_nape.phys.FluidProperties;
+import zpp_nape.phys.Interactor;
+import zpp_nape.phys.Material;
+import zpp_nape.geom.AABB;
+import zpp_nape.geom.Collide;
+import zpp_nape.geom.Convex;
+import zpp_nape.geom.ConvexRayResult;
+import zpp_nape.space.Space;
+import zpp_nape.geom.Cutter;
+import zpp_nape.geom.Geom;
 import zpp_nape.geom.GeomPoly;
 import zpp_nape.geom.Mat23;
-import zpp_nape.geom.ConvexRayResult;
-import zpp_nape.geom.Cutter;
-import zpp_nape.geom.Ray;
-import zpp_nape.geom.Vec2;
-import zpp_nape.geom.Convex;
+import zpp_nape.geom.MarchingSquares;
+import zpp_nape.geom.MatMN;
 import zpp_nape.geom.MatMath;
+import zpp_nape.geom.Monotone;
+import zpp_nape.geom.PolyIter;
 import zpp_nape.geom.PartitionedPoly;
+import zpp_nape.geom.Ray;
 import zpp_nape.geom.Simplify;
-import zpp_nape.geom.Triangular;
-import zpp_nape.geom.AABB;
 import zpp_nape.geom.Simple;
 import zpp_nape.geom.SweepDistance;
-import zpp_nape.geom.Monotone;
-import zpp_nape.geom.VecMath;
+import zpp_nape.geom.Vec2;
 import zpp_nape.geom.Vec3;
-import zpp_nape.geom.MatMN;
-import zpp_nape.geom.PolyIter;
-import zpp_nape.geom.MarchingSquares;
-import zpp_nape.geom.Geom;
-import zpp_nape.shape.Circle;
-import zpp_nape.geom.Collide;
-import zpp_nape.shape.Shape;
-import zpp_nape.shape.Edge;
-import zpp_nape.space.Broadphase;
-import zpp_nape.shape.Polygon;
-import zpp_nape.space.SweepPhase;
-import zpp_nape.space.DynAABBPhase;
+import zpp_nape.geom.Triangular;
+import zpp_nape.geom.VecMath;
 import zpp_nape.dynamics.Contact;
-import zpp_nape.space.Space;
-import zpp_nape.dynamics.Arbiter;
-import zpp_nape.dynamics.InteractionGroup;
 import zpp_nape.dynamics.InteractionFilter;
+import zpp_nape.dynamics.InteractionGroup;
 import zpp_nape.dynamics.SpaceArbiterList;
-import zpp_nape.util.Array2;
-import zpp_nape.util.Lists;
-import zpp_nape.util.Flags;
-import zpp_nape.util.Queue;
-import zpp_nape.util.Debug;
-import zpp_nape.util.FastHash;
-import zpp_nape.util.RBTree;
-import zpp_nape.util.Pool;
-import zpp_nape.util.Names;
-import zpp_nape.util.Circular;
-import zpp_nape.util.WrapLists;
-import zpp_nape.util.Math;
-import zpp_nape.util.UserData;
-import nape.TArray;
-import zpp_nape.util.DisjointSetForest;
+import zpp_nape.constraint.AngleJoint;
+import zpp_nape.constraint.Constraint;
+import zpp_nape.dynamics.Arbiter;
+import zpp_nape.constraint.DistanceJoint;
+import zpp_nape.constraint.LinearJoint;
+import zpp_nape.constraint.MotorJoint;
+import zpp_nape.constraint.PivotJoint;
+import zpp_nape.constraint.LineJoint;
+import zpp_nape.constraint.UserConstraint;
+import zpp_nape.constraint.WeldJoint;
+import zpp_nape.constraint.PulleyJoint;
+import zpp_nape.callbacks.Callback;
+import zpp_nape.callbacks.CbSetPair;
+import zpp_nape.callbacks.CbType;
+import zpp_nape.callbacks.CbSet;
+import zpp_nape.callbacks.OptionType;
+import zpp_nape.callbacks.Listener;
 import nape.Config;
-import nape.constraint.PivotJoint;
-import nape.constraint.WeldJoint;
-import nape.constraint.Constraint;
-import nape.constraint.UserConstraint;
-import nape.constraint.DistanceJoint;
-import nape.constraint.LineJoint;
-import nape.constraint.LinearJoint;
-import nape.constraint.ConstraintList;
-import nape.constraint.AngleJoint;
-import nape.constraint.MotorJoint;
-import nape.constraint.ConstraintIterator;
-import nape.phys.GravMassMode;
-import nape.phys.BodyList;
-import nape.phys.Interactor;
-import nape.phys.InertiaMode;
-import nape.phys.InteractorList;
-import nape.constraint.PulleyJoint;
-import nape.phys.MassMode;
-import nape.phys.Material;
-import nape.phys.InteractorIterator;
-import nape.phys.FluidProperties;
-import nape.phys.BodyIterator;
-import nape.phys.Compound;
-import nape.phys.CompoundList;
-import nape.phys.BodyType;
-import nape.phys.CompoundIterator;
-import nape.callbacks.InteractionListener;
-import nape.callbacks.OptionType;
-import nape.callbacks.PreListener;
-import nape.callbacks.BodyListener;
-import nape.callbacks.ListenerIterator;
-import nape.callbacks.CbType;
-import nape.callbacks.ListenerType;
-import nape.callbacks.PreFlag;
-import nape.callbacks.CbEvent;
-import nape.callbacks.InteractionType;
-import nape.callbacks.PreCallback;
-import nape.callbacks.InteractionCallback;
-import nape.callbacks.ListenerList;
-import nape.callbacks.ConstraintListener;
-import nape.callbacks.BodyCallback;
-import nape.callbacks.CbTypeList;
-import nape.callbacks.CbTypeIterator;
-import nape.callbacks.Callback;
-import nape.callbacks.ConstraintCallback;
-import nape.callbacks.Listener;
-import nape.geom.Mat23;
-import nape.geom.ConvexResultIterator;
-import nape.geom.GeomPoly;
-import nape.geom.Ray;
-import nape.geom.GeomPolyIterator;
-import nape.geom.Vec2Iterator;
-import nape.geom.RayResult;
-import nape.geom.Winding;
-import nape.geom.Vec2List;
-import nape.geom.RayResultIterator;
-import nape.geom.AABB;
-import nape.geom.IsoFunction;
-import nape.geom.GeomVertexIterator;
-import nape.geom.ConvexResult;
-import nape.geom.GeomPolyList;
-import nape.geom.Vec2;
-import nape.geom.RayResultList;
-import nape.geom.Vec3;
-import nape.geom.MatMN;
-import nape.geom.ConvexResultList;
-import nape.geom.MarchingSquares;
-import nape.shape.Circle;
-import nape.geom.Geom;
-import nape.shape.ValidationResult;
-import nape.shape.ShapeIterator;
-import nape.shape.Polygon;
-import nape.shape.Edge;
-import nape.shape.Shape;
-import nape.shape.EdgeList;
-import nape.shape.EdgeIterator;
-import nape.shape.ShapeList;
-import nape.shape.ShapeType;
-import nape.space.Broadphase;
-import nape.dynamics.Contact;
-import nape.dynamics.InteractionGroupList;
-import nape.dynamics.Arbiter;
-import nape.dynamics.InteractionGroup;
-import nape.space.Space;
-import nape.dynamics.ContactIterator;
-import nape.dynamics.ArbiterList;
-import nape.dynamics.InteractionFilter;
-import nape.dynamics.ArbiterIterator;
-import nape.dynamics.InteractionGroupIterator;
-import nape.dynamics.FluidArbiter;
-import nape.dynamics.ContactList;
-import nape.dynamics.ArbiterType;
-import nape.dynamics.CollisionArbiter;
+import nape.TArray;
 import nape.util.Debug;
 import nape.util.BitmapDebug;
+import nape.space.Broadphase;
 import nape.util.ShapeDebug;
+import nape.shape.Circle;
+import nape.shape.Edge;
+import nape.shape.EdgeIterator;
+import nape.shape.EdgeList;
+import nape.space.Space;
+import nape.shape.Polygon;
+import nape.shape.ShapeIterator;
+import nape.shape.ShapeList;
+import nape.shape.ShapeType;
+import nape.shape.ValidationResult;
+import nape.shape.Shape;
+import nape.phys.BodyIterator;
+import nape.phys.BodyList;
+import nape.phys.BodyType;
+import nape.phys.Compound;
+import nape.phys.CompoundIterator;
+import nape.phys.CompoundList;
+import nape.phys.FluidProperties;
+import nape.phys.GravMassMode;
+import nape.phys.InertiaMode;
+import nape.phys.Interactor;
+import nape.phys.InteractorIterator;
+import nape.phys.InteractorList;
+import nape.phys.MassMode;
+import nape.phys.Material;
+import nape.geom.ConvexResult;
+import nape.geom.ConvexResultIterator;
+import nape.geom.ConvexResultList;
+import nape.geom.AABB;
+import nape.geom.Geom;
+import nape.geom.GeomPolyIterator;
+import nape.geom.GeomPolyList;
+import nape.geom.GeomVertexIterator;
+import nape.geom.IsoFunction;
+import nape.geom.MarchingSquares;
+import nape.geom.GeomPoly;
+import nape.geom.MatMN;
+import nape.geom.Mat23;
+import nape.geom.Ray;
+import nape.geom.RayResultIterator;
+import nape.geom.RayResultList;
+import nape.geom.RayResult;
+import nape.geom.Vec2Iterator;
+import nape.geom.Vec2List;
+import nape.geom.Vec3;
+import nape.geom.Winding;
+import nape.dynamics.Arbiter;
+import nape.dynamics.ArbiterIterator;
+import nape.geom.Vec2;
+import nape.dynamics.ArbiterList;
+import nape.dynamics.ArbiterType;
+import nape.dynamics.Contact;
+import nape.dynamics.ContactIterator;
+import nape.dynamics.ContactList;
+import nape.dynamics.FluidArbiter;
+import nape.dynamics.CollisionArbiter;
+import nape.dynamics.InteractionFilter;
+import nape.dynamics.InteractionGroupIterator;
+import nape.dynamics.InteractionGroupList;
+import nape.dynamics.InteractionGroup;
+import nape.constraint.AngleJoint;
+import nape.constraint.ConstraintIterator;
+import nape.constraint.ConstraintList;
+import nape.constraint.DistanceJoint;
+import nape.constraint.LinearJoint;
+import nape.constraint.Constraint;
+import nape.constraint.LineJoint;
+import nape.constraint.PivotJoint;
+import nape.constraint.MotorJoint;
+import nape.constraint.PulleyJoint;
+import nape.constraint.UserConstraint;
+import nape.constraint.WeldJoint;
+import nape.callbacks.BodyCallback;
+import nape.callbacks.Callback;
+import nape.callbacks.BodyListener;
+import nape.callbacks.CbEvent;
+import nape.callbacks.CbTypeIterator;
+import nape.callbacks.CbTypeList;
+import nape.callbacks.ConstraintCallback;
+import nape.callbacks.CbType;
+import nape.callbacks.InteractionCallback;
+import nape.callbacks.ConstraintListener;
+import nape.callbacks.InteractionType;
+import nape.callbacks.InteractionListener;
+import nape.callbacks.ListenerIterator;
+import nape.callbacks.ListenerList;
+import nape.callbacks.ListenerType;
+import nape.callbacks.Listener;
+import nape.callbacks.OptionType;
+import nape.callbacks.PreFlag;
+import nape.callbacks.PreCallback;
+import nape.callbacks.PreListener;
 /**
  * Class representing a physics Rigid Body.
  */
@@ -193,7 +193,7 @@ class Body extends Interactor{
      * This value can be changed even if Body is inside of a Space.
      */
     #if nape_swc@:isVar #end
-    public var type(get_type,set_type):BodyType;
+    public var type(get,set):BodyType;
     inline function get_type():BodyType{
         return ZPP_Body.types[zpp_inner.type];
     }
@@ -255,7 +255,7 @@ class Body extends Interactor{
      * @default false
      */
     #if nape_swc@:isVar #end
-    public var isBullet(get_isBullet,set_isBullet):Bool;
+    public var isBullet(get,set):Bool;
     inline function get_isBullet():Bool{
         return zpp_inner.bulletEnabled;
     }
@@ -274,7 +274,7 @@ class Body extends Interactor{
      * @default false
      */
     #if nape_swc@:isVar #end
-    public var disableCCD(get_disableCCD,set_disableCCD):Bool;
+    public var disableCCD(get,set):Bool;
     inline function get_disableCCD():Bool{
         return zpp_inner.disableCCD;
     }
@@ -345,7 +345,7 @@ class Body extends Interactor{
      * @default []
      */
     #if nape_swc@:isVar #end
-    public var shapes(get_shapes,never):ShapeList;
+    public var shapes(get,never):ShapeList;
     inline function get_shapes():ShapeList{
         return zpp_inner.wrap_shapes;
     }
@@ -359,7 +359,7 @@ class Body extends Interactor{
      * @default null
      */
     #if nape_swc@:isVar #end
-    public var compound(get_compound,set_compound):Null<Compound>;
+    public var compound(get,set):Null<Compound>;
     inline function get_compound():Null<Compound>{
         return if(zpp_inner.compound==null)null else zpp_inner.compound.outer;
     }
@@ -381,7 +381,7 @@ class Body extends Interactor{
      * is the Compound that is added/removed from a Space.
      */
     #if nape_swc@:isVar #end
-    public var space(get_space,set_space):Null<Space>;
+    public var space(get,set):Null<Space>;
     inline function get_space():Null<Space>{
         return if(zpp_inner.space==null)null else zpp_inner.space.outer;
     }
@@ -408,7 +408,7 @@ class Body extends Interactor{
      * This list is immutable.
      */
     #if nape_swc@:isVar #end
-    public var arbiters(get_arbiters,never):ArbiterList;
+    public var arbiters(get,never):ArbiterList;
     inline function get_arbiters():ArbiterList{
         if(zpp_inner.wrap_arbiters==null)zpp_inner.wrap_arbiters=ZPP_ArbiterList.get(zpp_inner.arbiters,true);
         return zpp_inner.wrap_arbiters;
@@ -424,7 +424,7 @@ class Body extends Interactor{
      * then you should make use of the nape-hacks module.
      */
     #if nape_swc@:isVar #end
-    public var isSleeping(get_isSleeping,never):Bool;
+    public var isSleeping(get,never):Bool;
     inline function get_isSleeping():Bool{
         #if(!NAPE_RELEASE_BUILD)
         if(zpp_inner.space==null)throw "Error: isSleeping makes no sense if the object is not contained within a Space";
@@ -439,7 +439,7 @@ class Body extends Interactor{
      * This list is immutable.
      */
     #if nape_swc@:isVar #end
-    public var constraints(get_constraints,never):ConstraintList;
+    public var constraints(get,never):ConstraintList;
     inline function get_constraints():ConstraintList{
         if(zpp_inner.wrap_constraints==null)zpp_inner.wrap_constraints=ZPP_ConstraintList.get(zpp_inner.constraints,true);
         return zpp_inner.wrap_constraints;
@@ -560,7 +560,7 @@ class Body extends Interactor{
      * @default (0,0)
      */
     #if nape_swc@:isVar #end
-    public var position(get_position,set_position):Vec2;
+    public var position(get,set):Vec2;
     inline function get_position():Vec2{
         if(zpp_inner.wrap_pos==null)zpp_inner.setupPosition();
         return zpp_inner.wrap_pos;
@@ -589,7 +589,7 @@ class Body extends Interactor{
      * @default (0,0)
      */
     #if nape_swc@:isVar #end
-    public var velocity(get_velocity,set_velocity):Vec2;
+    public var velocity(get,set):Vec2;
     inline function get_velocity():Vec2{
         if(zpp_inner.wrap_vel==null)zpp_inner.setupVelocity();
         return zpp_inner.wrap_vel;
@@ -664,7 +664,7 @@ class Body extends Interactor{
      * @default (0,0)
      */
     #if nape_swc@:isVar #end
-    public var kinematicVel(get_kinematicVel,set_kinematicVel):Vec2;
+    public var kinematicVel(get,set):Vec2;
     inline function get_kinematicVel():Vec2{
         if(zpp_inner.wrap_kinvel==null)zpp_inner.setupkinvel();
         return zpp_inner.wrap_kinvel;
@@ -696,7 +696,7 @@ class Body extends Interactor{
      * @default (0,0)
      */
     #if nape_swc@:isVar #end
-    public var surfaceVel(get_surfaceVel,set_surfaceVel):Vec2;
+    public var surfaceVel(get,set):Vec2;
     inline function get_surfaceVel():Vec2{
         if(zpp_inner.wrap_svel==null)zpp_inner.setupsvel();
         return zpp_inner.wrap_svel;
@@ -725,7 +725,7 @@ class Body extends Interactor{
      * @default (0,0)
      */
     #if nape_swc@:isVar #end
-    public var force(get_force,set_force):Vec2;
+    public var force(get,set):Vec2;
     inline function get_force():Vec2{
         if(zpp_inner.wrap_force==null)zpp_inner.setupForce();
         return zpp_inner.wrap_force;
@@ -751,7 +751,7 @@ class Body extends Interactor{
      * constraints using the UserConstraint API.
      */
     #if nape_swc@:isVar #end
-    public var constraintVelocity(get_constraintVelocity,never):Vec3;
+    public var constraintVelocity(get,never):Vec3;
     inline function get_constraintVelocity():Vec3{
         if(zpp_inner.wrapcvel==null)zpp_inner.setup_cvel();
         return zpp_inner.wrapcvel;
@@ -769,7 +769,7 @@ class Body extends Interactor{
      * @default 0
      */
     #if nape_swc@:isVar #end
-    public var rotation(get_rotation,set_rotation):Float;
+    public var rotation(get,set):Float;
     inline function get_rotation():Float{
         return zpp_inner.rot;
     }
@@ -801,7 +801,7 @@ class Body extends Interactor{
      * @default 0
      */
     #if nape_swc@:isVar #end
-    public var angularVel(get_angularVel,set_angularVel):Float;
+    public var angularVel(get,set):Float;
     inline function get_angularVel():Float{
         return zpp_inner.angvel;
     }
@@ -836,7 +836,7 @@ class Body extends Interactor{
      * @default 0
      */
     #if nape_swc@:isVar #end
-    public var kinAngVel(get_kinAngVel,set_kinAngVel):Float;
+    public var kinAngVel(get,set):Float;
     inline function get_kinAngVel():Float{
         return zpp_inner.kinangvel;
     }
@@ -865,7 +865,7 @@ class Body extends Interactor{
      * @default 0
      */
     #if nape_swc@:isVar #end
-    public var torque(get_torque,set_torque):Float;
+    public var torque(get,set):Float;
     inline function get_torque():Float{
         return zpp_inner.torque;
     }
@@ -897,7 +897,7 @@ class Body extends Interactor{
      * This AABB is immutable.
      */
     #if nape_swc@:isVar #end
-    public var bounds(get_bounds,never):AABB;
+    public var bounds(get,never):AABB;
     inline function get_bounds():AABB{
         #if(!NAPE_RELEASE_BUILD)
         if(zpp_inner.world)throw "Error: Space::world has no bounds";
@@ -914,7 +914,7 @@ class Body extends Interactor{
      * @default true
      */
     #if nape_swc@:isVar #end
-    public var allowMovement(get_allowMovement,set_allowMovement):Bool;
+    public var allowMovement(get,set):Bool;
     inline function get_allowMovement():Bool{
         return!zpp_inner.nomove;
     }
@@ -938,7 +938,7 @@ class Body extends Interactor{
      * @default true
      */
     #if nape_swc@:isVar #end
-    public var allowRotation(get_allowRotation,set_allowRotation):Bool;
+    public var allowRotation(get,set):Bool;
     inline function get_allowRotation():Bool{
         return!zpp_inner.norotate;
     }
@@ -962,7 +962,7 @@ class Body extends Interactor{
      * @default MassMode.DEFAULT
      */
     #if nape_swc@:isVar #end
-    public var massMode(get_massMode,set_massMode):MassMode;
+    public var massMode(get,set):MassMode;
     inline function get_massMode():MassMode{
         return[MassMode.DEFAULT,MassMode.FIXED][zpp_inner.massMode];
     }
@@ -988,7 +988,7 @@ class Body extends Interactor{
      * as well as properties like allowMovement.
      */
     #if nape_swc@:isVar #end
-    public var constraintMass(get_constraintMass,never):Float;
+    public var constraintMass(get,never):Float;
     inline function get_constraintMass():Float{
         if(!zpp_inner.world)zpp_inner.validate_mass();
         return zpp_inner.smass;
@@ -1006,7 +1006,7 @@ class Body extends Interactor{
      * implicitly changing the massMode to MassMode.FIXED
      */
     #if nape_swc@:isVar #end
-    public var mass(get_mass,set_mass):Float;
+    public var mass(get,set):Float;
     inline function get_mass():Float{
         #if(!NAPE_RELEASE_BUILD)
         if(zpp_inner.world)throw "Error: Space::world has no mass";
@@ -1042,7 +1042,7 @@ class Body extends Interactor{
      * @default GravMassMode.DEFAULT
      */
     #if nape_swc@:isVar #end
-    public var gravMassMode(get_gravMassMode,set_gravMassMode):GravMassMode;
+    public var gravMassMode(get,set):GravMassMode;
     inline function get_gravMassMode():GravMassMode{
         return[GravMassMode.DEFAULT,GravMassMode.FIXED,GravMassMode.SCALED][zpp_inner.massMode];
     }
@@ -1068,7 +1068,7 @@ class Body extends Interactor{
      * Set to 0 to disable gravity for this Body.
      */
     #if nape_swc@:isVar #end
-    public var gravMass(get_gravMass,set_gravMass):Float;
+    public var gravMass(get,set):Float;
     inline function get_gravMass():Float{
         #if(!NAPE_RELEASE_BUILD)
         if(zpp_inner.world)throw "Error: Space::world has no gravMass";
@@ -1105,7 +1105,7 @@ class Body extends Interactor{
      * multiplied with the Body's mass.
      */
     #if nape_swc@:isVar #end
-    public var gravMassScale(get_gravMassScale,set_gravMassScale):Float;
+    public var gravMassScale(get,set):Float;
     inline function get_gravMassScale():Float{
         zpp_inner.validate_gravMassScale();
         #if(!NAPE_RELEASE_BUILD)
@@ -1138,7 +1138,7 @@ class Body extends Interactor{
      * @default InertiaMode.DEFAULT
      */
     #if nape_swc@:isVar #end
-    public var inertiaMode(get_inertiaMode,set_inertiaMode):InertiaMode;
+    public var inertiaMode(get,set):InertiaMode;
     inline function get_inertiaMode():InertiaMode{
         return[InertiaMode.DEFAULT,InertiaMode.FIXED][zpp_inner.inertiaMode];
     }
@@ -1164,7 +1164,7 @@ class Body extends Interactor{
      * As well as properties like allowRotation.
      */
     #if nape_swc@:isVar #end
-    public var constraintInertia(get_constraintInertia,never):Float;
+    public var constraintInertia(get,never):Float;
     inline function get_constraintInertia():Float{
         if(!zpp_inner.world)zpp_inner.validate_inertia();
         return zpp_inner.sinertia;
@@ -1175,7 +1175,7 @@ class Body extends Interactor{
      * Setting this value will implicitly change the inertiaMode to FIXED.
      */
     #if nape_swc@:isVar #end
-    public var inertia(get_inertia,set_inertia):Float;
+    public var inertia(get,set):Float;
     inline function get_inertia():Float{
         #if(!NAPE_RELEASE_BUILD)
         if(zpp_inner.world)throw "Error: Space::world has no inertia";
@@ -1903,7 +1903,7 @@ class Body extends Interactor{
      * This Vec2 is immutable.
      */
     #if nape_swc@:isVar #end
-    public var localCOM(get_localCOM,never):Vec2;
+    public var localCOM(get,never):Vec2;
     inline function get_localCOM():Vec2{
         #if(!NAPE_RELEASE_BUILD)
         if(zpp_inner.world)throw "Error: Space::world has no "+"localCOM";
@@ -1925,7 +1925,7 @@ class Body extends Interactor{
      * This Vec2 is immutable.
      */
     #if nape_swc@:isVar #end
-    public var worldCOM(get_worldCOM,never):Vec2;
+    public var worldCOM(get,never):Vec2;
     inline function get_worldCOM():Vec2{
         #if(!NAPE_RELEASE_BUILD)
         if(zpp_inner.world)throw "Error: Space::world has no "+"worldCOM";
