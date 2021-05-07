@@ -955,14 +955,14 @@ class GeomPoly{
         zpp_inner=new ZPP_GeomPoly(this);
         if(vertices!=null){
             {
-                if(#if flash untyped __is__(vertices,Array)#else Std.is(vertices,Array)#end){
+                if(#if flash untyped __is__(vertices,Array)#else Std.isOfType(vertices,Array)#end){
                     var lv:Array<Dynamic>=vertices;
                     for(vite in lv){
                         #if(!NAPE_RELEASE_BUILD)
                         if(vite==null)throw "Error: Array<Vec2> contains null objects";
                         #end
                         #if(!NAPE_RELEASE_BUILD)
-                        if(!#if flash untyped __is__(vite,Vec2)#else Std.is(vite,Vec2)#end)throw "Error: Array<Vec2> contains non Vec2 objects";
+                        if(!#if flash untyped __is__(vite,Vec2)#else Std.isOfType(vite,Vec2)#end)throw "Error: Array<Vec2> contains non Vec2 objects";
                         #end
                         var v:Vec2=vite;
                         {
@@ -1013,7 +1013,7 @@ class GeomPoly{
                     }
                     #end
                 }
-                else if(#if flash untyped __is__(vertices,Vec2List)#else Std.is(vertices,Vec2List)#end){
+                else if(#if flash untyped __is__(vertices,Vec2List)#else Std.isOfType(vertices,Vec2List)#end){
                     var lv:Vec2List=vertices;
                     for(v in lv){
                         #if(!NAPE_RELEASE_BUILD)
@@ -1039,7 +1039,7 @@ class GeomPoly{
                         };
                     }
                 }
-                else if(#if flash untyped __is__(vertices,GeomPoly)#else Std.is(vertices,GeomPoly)#end){
+                else if(#if flash untyped __is__(vertices,GeomPoly)#else Std.isOfType(vertices,GeomPoly)#end){
                     var lv:GeomPoly=vertices;
                     {
                         #if(!NAPE_RELEASE_BUILD)
@@ -1078,7 +1078,7 @@ class GeomPoly{
             };
             skipForward(1);
             {
-                if(#if flash untyped __is__(vertices,Array)#else Std.is(vertices,Array)#end){
+                if(#if flash untyped __is__(vertices,Array)#else Std.isOfType(vertices,Array)#end){
                     var lv:Array<Vec2>=vertices;
                     var i=0;
                     while(i<lv.length){
@@ -1125,7 +1125,7 @@ class GeomPoly{
                     }
                     #end
                 }
-                else if(#if flash untyped __is__(vertices,Vec2List)#else Std.is(vertices,Vec2List)#end){
+                else if(#if flash untyped __is__(vertices,Vec2List)#else Std.isOfType(vertices,Vec2List)#end){
                     var lv:Vec2List=vertices;
                     if(lv.zpp_inner._validate!=null)lv.zpp_inner._validate();
                     var ins=lv.zpp_inner.inner;
@@ -1196,14 +1196,14 @@ class GeomPoly{
         };
         if(vertices!=null){
             {
-                if(#if flash untyped __is__(vertices,Array)#else Std.is(vertices,Array)#end){
+                if(#if flash untyped __is__(vertices,Array)#else Std.isOfType(vertices,Array)#end){
                     var lv:Array<Dynamic>=vertices;
                     for(vite in lv){
                         #if(!NAPE_RELEASE_BUILD)
                         if(vite==null)throw "Error: Array<Vec2> contains null objects";
                         #end
                         #if(!NAPE_RELEASE_BUILD)
-                        if(!#if flash untyped __is__(vite,Vec2)#else Std.is(vite,Vec2)#end)throw "Error: Array<Vec2> contains non Vec2 objects";
+                        if(!#if flash untyped __is__(vite,Vec2)#else Std.isOfType(vite,Vec2)#end)throw "Error: Array<Vec2> contains non Vec2 objects";
                         #end
                         var v:Vec2=vite;
                         {
@@ -1254,7 +1254,7 @@ class GeomPoly{
                     }
                     #end
                 }
-                else if(#if flash untyped __is__(vertices,Vec2List)#else Std.is(vertices,Vec2List)#end){
+                else if(#if flash untyped __is__(vertices,Vec2List)#else Std.isOfType(vertices,Vec2List)#end){
                     var lv:Vec2List=vertices;
                     for(v in lv){
                         #if(!NAPE_RELEASE_BUILD)
@@ -1280,7 +1280,7 @@ class GeomPoly{
                         };
                     }
                 }
-                else if(#if flash untyped __is__(vertices,GeomPoly)#else Std.is(vertices,GeomPoly)#end){
+                else if(#if flash untyped __is__(vertices,GeomPoly)#else Std.isOfType(vertices,GeomPoly)#end){
                     var lv:GeomPoly=vertices;
                     {
                         #if(!NAPE_RELEASE_BUILD)
@@ -1319,7 +1319,7 @@ class GeomPoly{
             };
             ret.skipForward(1);
             {
-                if(#if flash untyped __is__(vertices,Array)#else Std.is(vertices,Array)#end){
+                if(#if flash untyped __is__(vertices,Array)#else Std.isOfType(vertices,Array)#end){
                     var lv:Array<Vec2>=vertices;
                     var i=0;
                     while(i<lv.length){
@@ -1366,7 +1366,7 @@ class GeomPoly{
                     }
                     #end
                 }
-                else if(#if flash untyped __is__(vertices,Vec2List)#else Std.is(vertices,Vec2List)#end){
+                else if(#if flash untyped __is__(vertices,Vec2List)#else Std.isOfType(vertices,Vec2List)#end){
                     var lv:Vec2List=vertices;
                     if(lv.zpp_inner._validate!=null)lv.zpp_inner._validate();
                     var ins=lv.zpp_inner.inner;

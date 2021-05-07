@@ -310,7 +310,7 @@ class ShapeList{
         var ret=new ShapeList();
         for(i in array){
             #if flash9#if(!NAPE_RELEASE_BUILD)
-            if(!#if flash untyped __is__(i,Shape)#else Std.is(i,Shape)#end)throw "Error: Array contains non "+"Shape"+" types.";
+            if(!#if flash untyped __is__(i,Shape)#else Std.isOfType(i,Shape)#end)throw "Error: Array contains non "+"Shape"+" types.";
             #end
             #end
             ret.push(i);

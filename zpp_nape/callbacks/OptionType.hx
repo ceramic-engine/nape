@@ -315,25 +315,25 @@ class ZPP_OptionType{
             throw "Error: Cannot append null, only CbType and CbType list values";
         }
         #end
-        if(#if flash untyped __is__(val,CbType)#else Std.is(val,CbType)#end){
+        if(#if flash untyped __is__(val,CbType)#else Std.isOfType(val,CbType)#end){
             var cb:CbType=val;
             append_type(list,cb.zpp_inner);
         }
-        else if(#if flash untyped __is__(val,CbTypeList)#else Std.is(val,CbTypeList)#end){
+        else if(#if flash untyped __is__(val,CbTypeList)#else Std.isOfType(val,CbTypeList)#end){
             var cbs:CbTypeList=val;
             for(cb in cbs)append_type(list,cb.zpp_inner);
         }
-        else if(#if flash10#if flash untyped __is__(val,ZPP_Const.cbtypevector)#else Std.is(val,ZPP_Const.cbtypevector)#end
+        else if(#if flash10#if flash untyped __is__(val,ZPP_Const.cbtypevector)#else Std.isOfType(val,ZPP_Const.cbtypevector)#end
         #else false #end){
             #if flash10 var cbs:flash.Vector<CbType>=val;
             for(cb in cbs)append_type(list,cb.zpp_inner);
             #end
         }
-        else if(#if flash untyped __is__(val,Array)#else Std.is(val,Array)#end){
+        else if(#if flash untyped __is__(val,Array)#else Std.isOfType(val,Array)#end){
             var cbs:Array<Dynamic>=val;
             for(cb in cbs){
                 #if(!NAPE_RELEASE_BUILD)
-                if(!#if flash untyped __is__(cb,CbType)#else Std.is(cb,CbType)#end){
+                if(!#if flash untyped __is__(cb,CbType)#else Std.isOfType(cb,CbType)#end){
                     throw "Error: Cannot append non-CbType or CbType list value";
                 }
                 #end
@@ -349,7 +349,7 @@ class ZPP_OptionType{
     }
     public static function argument(val:Dynamic):OptionType{
         return if(val==null)new OptionType();
-        else if(#if flash untyped __is__(val,OptionType)#else Std.is(val,OptionType)#end)val;
+        else if(#if flash untyped __is__(val,OptionType)#else Std.isOfType(val,OptionType)#end)val;
         else new OptionType().including(val);
     }
 }

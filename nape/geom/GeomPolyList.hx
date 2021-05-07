@@ -310,7 +310,7 @@ class GeomPolyList{
         var ret=new GeomPolyList();
         for(i in array){
             #if flash9#if(!NAPE_RELEASE_BUILD)
-            if(!#if flash untyped __is__(i,GeomPoly)#else Std.is(i,GeomPoly)#end)throw "Error: Array contains non "+"GeomPoly"+" types.";
+            if(!#if flash untyped __is__(i,GeomPoly)#else Std.isOfType(i,GeomPoly)#end)throw "Error: Array contains non "+"GeomPoly"+" types.";
             #end
             #end
             ret.push(i);

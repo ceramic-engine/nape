@@ -310,7 +310,7 @@ class ContactList{
         var ret=new ContactList();
         for(i in array){
             #if flash9#if(!NAPE_RELEASE_BUILD)
-            if(!#if flash untyped __is__(i,Contact)#else Std.is(i,Contact)#end)throw "Error: Array contains non "+"Contact"+" types.";
+            if(!#if flash untyped __is__(i,Contact)#else Std.isOfType(i,Contact)#end)throw "Error: Array contains non "+"Contact"+" types.";
             #end
             #end
             ret.push(i);

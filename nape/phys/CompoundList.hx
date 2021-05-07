@@ -310,7 +310,7 @@ class CompoundList{
         var ret=new CompoundList();
         for(i in array){
             #if flash9#if(!NAPE_RELEASE_BUILD)
-            if(!#if flash untyped __is__(i,Compound)#else Std.is(i,Compound)#end)throw "Error: Array contains non "+"Compound"+" types.";
+            if(!#if flash untyped __is__(i,Compound)#else Std.isOfType(i,Compound)#end)throw "Error: Array contains non "+"Compound"+" types.";
             #end
             #end
             ret.push(i);

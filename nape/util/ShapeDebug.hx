@@ -570,14 +570,14 @@ class ShapeDebug extends Debug{
         var fsttime=true;
         if(zpp_inner.xnull){
             {
-                if(#if flash untyped __is__(polygon,Array)#else Std.is(polygon,Array)#end){
+                if(#if flash untyped __is__(polygon,Array)#else Std.isOfType(polygon,Array)#end){
                     var lv:Array<Dynamic>=polygon;
                     for(vite in lv){
                         #if(!NAPE_RELEASE_BUILD)
                         if(vite==null)throw "Error: Array<Vec2> contains null objects";
                         #end
                         #if(!NAPE_RELEASE_BUILD)
-                        if(!#if flash untyped __is__(vite,Vec2)#else Std.is(vite,Vec2)#end)throw "Error: Array<Vec2> contains non Vec2 objects";
+                        if(!#if flash untyped __is__(vite,Vec2)#else Std.isOfType(vite,Vec2)#end)throw "Error: Array<Vec2> contains non Vec2 objects";
                         #end
                         var p:Vec2=vite;
                         {
@@ -618,7 +618,7 @@ class ShapeDebug extends Debug{
                     }
                     #end
                 }
-                else if(#if flash untyped __is__(polygon,Vec2List)#else Std.is(polygon,Vec2List)#end){
+                else if(#if flash untyped __is__(polygon,Vec2List)#else Std.isOfType(polygon,Vec2List)#end){
                     var lv:Vec2List=polygon;
                     for(p in lv){
                         #if(!NAPE_RELEASE_BUILD)
@@ -639,7 +639,7 @@ class ShapeDebug extends Debug{
                         };
                     }
                 }
-                else if(#if flash untyped __is__(polygon,GeomPoly)#else Std.is(polygon,GeomPoly)#end){
+                else if(#if flash untyped __is__(polygon,GeomPoly)#else Std.isOfType(polygon,GeomPoly)#end){
                     var lv:GeomPoly=polygon;
                     {
                         #if(!NAPE_RELEASE_BUILD)
@@ -676,14 +676,14 @@ class ShapeDebug extends Debug{
         }
         else{
             {
-                if(#if flash untyped __is__(polygon,Array)#else Std.is(polygon,Array)#end){
+                if(#if flash untyped __is__(polygon,Array)#else Std.isOfType(polygon,Array)#end){
                     var lv:Array<Dynamic>=polygon;
                     for(vite in lv){
                         #if(!NAPE_RELEASE_BUILD)
                         if(vite==null)throw "Error: Array<Vec2> contains null objects";
                         #end
                         #if(!NAPE_RELEASE_BUILD)
-                        if(!#if flash untyped __is__(vite,Vec2)#else Std.is(vite,Vec2)#end)throw "Error: Array<Vec2> contains non Vec2 objects";
+                        if(!#if flash untyped __is__(vite,Vec2)#else Std.isOfType(vite,Vec2)#end)throw "Error: Array<Vec2> contains non Vec2 objects";
                         #end
                         var p:Vec2=vite;
                         {
@@ -728,7 +728,7 @@ class ShapeDebug extends Debug{
                     }
                     #end
                 }
-                else if(#if flash untyped __is__(polygon,Vec2List)#else Std.is(polygon,Vec2List)#end){
+                else if(#if flash untyped __is__(polygon,Vec2List)#else Std.isOfType(polygon,Vec2List)#end){
                     var lv:Vec2List=polygon;
                     for(p in lv){
                         #if(!NAPE_RELEASE_BUILD)
@@ -751,7 +751,7 @@ class ShapeDebug extends Debug{
                         };
                     }
                 }
-                else if(#if flash untyped __is__(polygon,GeomPoly)#else Std.is(polygon,GeomPoly)#end){
+                else if(#if flash untyped __is__(polygon,GeomPoly)#else Std.isOfType(polygon,GeomPoly)#end){
                     var lv:GeomPoly=polygon;
                     {
                         #if(!NAPE_RELEASE_BUILD)
@@ -789,7 +789,7 @@ class ShapeDebug extends Debug{
             fst.dispose();
         }
         {
-            if(#if flash untyped __is__(polygon,Array)#else Std.is(polygon,Array)#end){
+            if(#if flash untyped __is__(polygon,Array)#else Std.isOfType(polygon,Array)#end){
                 var lv:Array<Vec2>=polygon;
                 var i=0;
                 while(i<lv.length){
@@ -836,7 +836,7 @@ class ShapeDebug extends Debug{
                 }
                 #end
             }
-            else if(#if flash untyped __is__(polygon,Vec2List)#else Std.is(polygon,Vec2List)#end){
+            else if(#if flash untyped __is__(polygon,Vec2List)#else Std.isOfType(polygon,Vec2List)#end){
                 var lv:Vec2List=polygon;
                 if(lv.zpp_inner._validate!=null)lv.zpp_inner._validate();
                 var ins=lv.zpp_inner.inner;
@@ -885,14 +885,14 @@ class ShapeDebug extends Debug{
         var fsttime=true;
         if(zpp_inner.xnull){
             {
-                if(#if flash untyped __is__(polygon,Array)#else Std.is(polygon,Array)#end){
+                if(#if flash untyped __is__(polygon,Array)#else Std.isOfType(polygon,Array)#end){
                     var lv:Array<Dynamic>=polygon;
                     for(vite in lv){
                         #if(!NAPE_RELEASE_BUILD)
                         if(vite==null)throw "Error: Array<Vec2> contains null objects";
                         #end
                         #if(!NAPE_RELEASE_BUILD)
-                        if(!#if flash untyped __is__(vite,Vec2)#else Std.is(vite,Vec2)#end)throw "Error: Array<Vec2> contains non Vec2 objects";
+                        if(!#if flash untyped __is__(vite,Vec2)#else Std.isOfType(vite,Vec2)#end)throw "Error: Array<Vec2> contains non Vec2 objects";
                         #end
                         var p:Vec2=vite;
                         {
@@ -933,7 +933,7 @@ class ShapeDebug extends Debug{
                     }
                     #end
                 }
-                else if(#if flash untyped __is__(polygon,Vec2List)#else Std.is(polygon,Vec2List)#end){
+                else if(#if flash untyped __is__(polygon,Vec2List)#else Std.isOfType(polygon,Vec2List)#end){
                     var lv:Vec2List=polygon;
                     for(p in lv){
                         #if(!NAPE_RELEASE_BUILD)
@@ -954,7 +954,7 @@ class ShapeDebug extends Debug{
                         };
                     }
                 }
-                else if(#if flash untyped __is__(polygon,GeomPoly)#else Std.is(polygon,GeomPoly)#end){
+                else if(#if flash untyped __is__(polygon,GeomPoly)#else Std.isOfType(polygon,GeomPoly)#end){
                     var lv:GeomPoly=polygon;
                     {
                         #if(!NAPE_RELEASE_BUILD)
@@ -991,14 +991,14 @@ class ShapeDebug extends Debug{
         }
         else{
             {
-                if(#if flash untyped __is__(polygon,Array)#else Std.is(polygon,Array)#end){
+                if(#if flash untyped __is__(polygon,Array)#else Std.isOfType(polygon,Array)#end){
                     var lv:Array<Dynamic>=polygon;
                     for(vite in lv){
                         #if(!NAPE_RELEASE_BUILD)
                         if(vite==null)throw "Error: Array<Vec2> contains null objects";
                         #end
                         #if(!NAPE_RELEASE_BUILD)
-                        if(!#if flash untyped __is__(vite,Vec2)#else Std.is(vite,Vec2)#end)throw "Error: Array<Vec2> contains non Vec2 objects";
+                        if(!#if flash untyped __is__(vite,Vec2)#else Std.isOfType(vite,Vec2)#end)throw "Error: Array<Vec2> contains non Vec2 objects";
                         #end
                         var p:Vec2=vite;
                         {
@@ -1043,7 +1043,7 @@ class ShapeDebug extends Debug{
                     }
                     #end
                 }
-                else if(#if flash untyped __is__(polygon,Vec2List)#else Std.is(polygon,Vec2List)#end){
+                else if(#if flash untyped __is__(polygon,Vec2List)#else Std.isOfType(polygon,Vec2List)#end){
                     var lv:Vec2List=polygon;
                     for(p in lv){
                         #if(!NAPE_RELEASE_BUILD)
@@ -1066,7 +1066,7 @@ class ShapeDebug extends Debug{
                         };
                     }
                 }
-                else if(#if flash untyped __is__(polygon,GeomPoly)#else Std.is(polygon,GeomPoly)#end){
+                else if(#if flash untyped __is__(polygon,GeomPoly)#else Std.isOfType(polygon,GeomPoly)#end){
                     var lv:GeomPoly=polygon;
                     {
                         #if(!NAPE_RELEASE_BUILD)
@@ -1105,7 +1105,7 @@ class ShapeDebug extends Debug{
         }
         g.endFill();
         {
-            if(#if flash untyped __is__(polygon,Array)#else Std.is(polygon,Array)#end){
+            if(#if flash untyped __is__(polygon,Array)#else Std.isOfType(polygon,Array)#end){
                 var lv:Array<Vec2>=polygon;
                 var i=0;
                 while(i<lv.length){
@@ -1152,7 +1152,7 @@ class ShapeDebug extends Debug{
                 }
                 #end
             }
-            else if(#if flash untyped __is__(polygon,Vec2List)#else Std.is(polygon,Vec2List)#end){
+            else if(#if flash untyped __is__(polygon,Vec2List)#else Std.isOfType(polygon,Vec2List)#end){
                 var lv:Vec2List=polygon;
                 if(lv.zpp_inner._validate!=null)lv.zpp_inner._validate();
                 var ins=lv.zpp_inner.inner;
@@ -1193,11 +1193,11 @@ class ShapeDebug extends Debug{
             if(zpp_inner.xform!=null&&!zpp_inner.xform.outer.equiorthogonal())throw "Error: Debug draw can only operate with an equiorthogonal transform!";
             #end
             if(zpp_inner.xnull){
-                if(#if flash untyped __is__(object,Space)#else Std.is(object,Space)#end)zpp_inner_zn.draw_space(cast(object,Space).zpp_inner,null,1.0,true);
-                else if(#if flash untyped __is__(object,Compound)#else Std.is(object,Compound)#end)zpp_inner_zn.draw_compound(cast(object,Compound).zpp_inner,null,1.0,true);
-                else if(#if flash untyped __is__(object,Body)#else Std.is(object,Body)#end)zpp_inner_zn.draw_body(cast(object,Body).zpp_inner,null,1.0,true);
-                else if(#if flash untyped __is__(object,Shape)#else Std.is(object,Shape)#end)zpp_inner_zn.draw_shape(cast(object,Shape).zpp_inner,null,1.0,true);
-                else if(#if flash untyped __is__(object,Constraint)#else Std.is(object,Constraint)#end)cast(object,Constraint).zpp_inner.draw(this);
+                if(#if flash untyped __is__(object,Space)#else Std.isOfType(object,Space)#end)zpp_inner_zn.draw_space(cast(object,Space).zpp_inner,null,1.0,true);
+                else if(#if flash untyped __is__(object,Compound)#else Std.isOfType(object,Compound)#end)zpp_inner_zn.draw_compound(cast(object,Compound).zpp_inner,null,1.0,true);
+                else if(#if flash untyped __is__(object,Body)#else Std.isOfType(object,Body)#end)zpp_inner_zn.draw_body(cast(object,Body).zpp_inner,null,1.0,true);
+                else if(#if flash untyped __is__(object,Shape)#else Std.isOfType(object,Shape)#end)zpp_inner_zn.draw_shape(cast(object,Shape).zpp_inner,null,1.0,true);
+                else if(#if flash untyped __is__(object,Constraint)#else Std.isOfType(object,Constraint)#end)cast(object,Constraint).zpp_inner.draw(this);
                 else{
                     #if(!NAPE_RELEASE_BUILD)
                     throw "Error: Unhandled object type for Debug draw";
@@ -1205,10 +1205,10 @@ class ShapeDebug extends Debug{
                 }
             }
             else{
-                if(#if flash untyped __is__(object,Space)#else Std.is(object,Space)#end)zpp_inner_zn.draw_space(cast(object,Space).zpp_inner,zpp_inner.xform,zpp_inner.xdet,false);
-                else if(#if flash untyped __is__(object,Body)#else Std.is(object,Body)#end)zpp_inner_zn.draw_body(cast(object,Body).zpp_inner,zpp_inner.xform,zpp_inner.xdet,false);
-                else if(#if flash untyped __is__(object,Shape)#else Std.is(object,Shape)#end)zpp_inner_zn.draw_shape(cast(object,Shape).zpp_inner,zpp_inner.xform,zpp_inner.xdet,false);
-                else if(#if flash untyped __is__(object,Constraint)#else Std.is(object,Constraint)#end)cast(object,Constraint).zpp_inner.draw(this);
+                if(#if flash untyped __is__(object,Space)#else Std.isOfType(object,Space)#end)zpp_inner_zn.draw_space(cast(object,Space).zpp_inner,zpp_inner.xform,zpp_inner.xdet,false);
+                else if(#if flash untyped __is__(object,Body)#else Std.isOfType(object,Body)#end)zpp_inner_zn.draw_body(cast(object,Body).zpp_inner,zpp_inner.xform,zpp_inner.xdet,false);
+                else if(#if flash untyped __is__(object,Shape)#else Std.isOfType(object,Shape)#end)zpp_inner_zn.draw_shape(cast(object,Shape).zpp_inner,zpp_inner.xform,zpp_inner.xdet,false);
+                else if(#if flash untyped __is__(object,Constraint)#else Std.isOfType(object,Constraint)#end)cast(object,Constraint).zpp_inner.draw(this);
                 else{
                     #if(!NAPE_RELEASE_BUILD)
                     throw "Error: Unhandled object type for Debug draw";

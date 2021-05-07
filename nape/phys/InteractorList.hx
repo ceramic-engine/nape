@@ -310,7 +310,7 @@ class InteractorList{
         var ret=new InteractorList();
         for(i in array){
             #if flash9#if(!NAPE_RELEASE_BUILD)
-            if(!#if flash untyped __is__(i,Interactor)#else Std.is(i,Interactor)#end)throw "Error: Array contains non "+"Interactor"+" types.";
+            if(!#if flash untyped __is__(i,Interactor)#else Std.isOfType(i,Interactor)#end)throw "Error: Array contains non "+"Interactor"+" types.";
             #end
             #end
             ret.push(i);

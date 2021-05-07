@@ -310,7 +310,7 @@ class ArbiterList{
         var ret=new ArbiterList();
         for(i in array){
             #if flash9#if(!NAPE_RELEASE_BUILD)
-            if(!#if flash untyped __is__(i,Arbiter)#else Std.is(i,Arbiter)#end)throw "Error: Array contains non "+"Arbiter"+" types.";
+            if(!#if flash untyped __is__(i,Arbiter)#else Std.isOfType(i,Arbiter)#end)throw "Error: Array contains non "+"Arbiter"+" types.";
             #end
             #end
             ret.push(i);

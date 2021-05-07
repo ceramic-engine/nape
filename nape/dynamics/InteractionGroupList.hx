@@ -310,7 +310,7 @@ class InteractionGroupList{
         var ret=new InteractionGroupList();
         for(i in array){
             #if flash9#if(!NAPE_RELEASE_BUILD)
-            if(!#if flash untyped __is__(i,InteractionGroup)#else Std.is(i,InteractionGroup)#end)throw "Error: Array contains non "+"InteractionGroup"+" types.";
+            if(!#if flash untyped __is__(i,InteractionGroup)#else Std.isOfType(i,InteractionGroup)#end)throw "Error: Array contains non "+"InteractionGroup"+" types.";
             #end
             #end
             ret.push(i);

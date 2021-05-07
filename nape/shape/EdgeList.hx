@@ -310,7 +310,7 @@ class EdgeList{
         var ret=new EdgeList();
         for(i in array){
             #if flash9#if(!NAPE_RELEASE_BUILD)
-            if(!#if flash untyped __is__(i,Edge)#else Std.is(i,Edge)#end)throw "Error: Array contains non "+"Edge"+" types.";
+            if(!#if flash untyped __is__(i,Edge)#else Std.isOfType(i,Edge)#end)throw "Error: Array contains non "+"Edge"+" types.";
             #end
             #end
             ret.push(i);

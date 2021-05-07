@@ -310,7 +310,7 @@ class BodyList{
         var ret=new BodyList();
         for(i in array){
             #if flash9#if(!NAPE_RELEASE_BUILD)
-            if(!#if flash untyped __is__(i,Body)#else Std.is(i,Body)#end)throw "Error: Array contains non "+"Body"+" types.";
+            if(!#if flash untyped __is__(i,Body)#else Std.isOfType(i,Body)#end)throw "Error: Array contains non "+"Body"+" types.";
             #end
             #end
             ret.push(i);

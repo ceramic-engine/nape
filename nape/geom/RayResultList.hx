@@ -310,7 +310,7 @@ class RayResultList{
         var ret=new RayResultList();
         for(i in array){
             #if flash9#if(!NAPE_RELEASE_BUILD)
-            if(!#if flash untyped __is__(i,RayResult)#else Std.is(i,RayResult)#end)throw "Error: Array contains non "+"RayResult"+" types.";
+            if(!#if flash untyped __is__(i,RayResult)#else Std.isOfType(i,RayResult)#end)throw "Error: Array contains non "+"RayResult"+" types.";
             #end
             #end
             ret.push(i);

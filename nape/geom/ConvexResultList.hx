@@ -310,7 +310,7 @@ class ConvexResultList{
         var ret=new ConvexResultList();
         for(i in array){
             #if flash9#if(!NAPE_RELEASE_BUILD)
-            if(!#if flash untyped __is__(i,ConvexResult)#else Std.is(i,ConvexResult)#end)throw "Error: Array contains non "+"ConvexResult"+" types.";
+            if(!#if flash untyped __is__(i,ConvexResult)#else Std.isOfType(i,ConvexResult)#end)throw "Error: Array contains non "+"ConvexResult"+" types.";
             #end
             #end
             ret.push(i);

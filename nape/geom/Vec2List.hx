@@ -310,7 +310,7 @@ class Vec2List{
         var ret=new Vec2List();
         for(i in array){
             #if flash9#if(!NAPE_RELEASE_BUILD)
-            if(!#if flash untyped __is__(i,Vec2)#else Std.is(i,Vec2)#end)throw "Error: Array contains non "+"Vec2"+" types.";
+            if(!#if flash untyped __is__(i,Vec2)#else Std.isOfType(i,Vec2)#end)throw "Error: Array contains non "+"Vec2"+" types.";
             #end
             #end
             ret.push(i);

@@ -204,7 +204,7 @@ class Interactor{
         return zpp_inner_i.userData;
     }
     /**
-     * Fast equivalent to <code>Std.is(interactor, Shape)</code>
+     * Fast equivalent to <code>Std.isOfType(interactor, Shape)</code>
      * @return true if this Interactor is a Shape.
      */
     public#if NAPE_NO_INLINE#else inline #end
@@ -212,7 +212,7 @@ class Interactor{
         return zpp_inner_i.ishape!=null;
     }
     /**
-     * Fast equivalent to <code>Std.is(interactor, Body)</code>
+     * Fast equivalent to <code>Std.isOfType(interactor, Body)</code>
      * @return true if this Interactor is a Body.
      */
     public#if NAPE_NO_INLINE#else inline #end
@@ -220,7 +220,7 @@ class Interactor{
         return zpp_inner_i.ibody!=null;
     }
     /**
-     * Fast equivalent to <code>Std.is(interactor, Compound)</code>
+     * Fast equivalent to <code>Std.isOfType(interactor, Compound)</code>
      * @return true if this Interactor is a Compound.
      */
     public#if NAPE_NO_INLINE#else inline #end

@@ -347,14 +347,14 @@ class Polygon extends Shape{
         zpp_inner_i=zpp_inner;
         zpp_inner_i.outer_i=this;
         {
-            if(#if flash untyped __is__(localVerts,Array)#else Std.is(localVerts,Array)#end){
+            if(#if flash untyped __is__(localVerts,Array)#else Std.isOfType(localVerts,Array)#end){
                 var lv:Array<Dynamic>=localVerts;
                 for(vite in lv){
                     #if(!NAPE_RELEASE_BUILD)
                     if(vite==null)throw "Error: Array<Vec2> contains null objects";
                     #end
                     #if(!NAPE_RELEASE_BUILD)
-                    if(!#if flash untyped __is__(vite,Vec2)#else Std.is(vite,Vec2)#end)throw "Error: Array<Vec2> contains non Vec2 objects";
+                    if(!#if flash untyped __is__(vite,Vec2)#else Std.isOfType(vite,Vec2)#end)throw "Error: Array<Vec2> contains non Vec2 objects";
                     #end
                     var x:Vec2=vite;
                     {
@@ -381,7 +381,7 @@ class Polygon extends Shape{
                 }
                 #end
             }
-            else if(#if flash untyped __is__(localVerts,Vec2List)#else Std.is(localVerts,Vec2List)#end){
+            else if(#if flash untyped __is__(localVerts,Vec2List)#else Std.isOfType(localVerts,Vec2List)#end){
                 var lv:Vec2List=localVerts;
                 for(x in lv){
                     #if(!NAPE_RELEASE_BUILD)
@@ -395,7 +395,7 @@ class Polygon extends Shape{
                     this.localVerts.push(x.copy());
                 }
             }
-            else if(#if flash untyped __is__(localVerts,GeomPoly)#else Std.is(localVerts,GeomPoly)#end){
+            else if(#if flash untyped __is__(localVerts,GeomPoly)#else Std.isOfType(localVerts,GeomPoly)#end){
                 var lv:GeomPoly=localVerts;
                 {
                     #if(!NAPE_RELEASE_BUILD)
@@ -421,7 +421,7 @@ class Polygon extends Shape{
             }
         };
         {
-            if(#if flash untyped __is__(localVerts,Array)#else Std.is(localVerts,Array)#end){
+            if(#if flash untyped __is__(localVerts,Array)#else Std.isOfType(localVerts,Array)#end){
                 var lv:Array<Vec2>=localVerts;
                 var i=0;
                 while(i<lv.length){
@@ -468,7 +468,7 @@ class Polygon extends Shape{
                 }
                 #end
             }
-            else if(#if flash untyped __is__(localVerts,Vec2List)#else Std.is(localVerts,Vec2List)#end){
+            else if(#if flash untyped __is__(localVerts,Vec2List)#else Std.isOfType(localVerts,Vec2List)#end){
                 var lv:Vec2List=localVerts;
                 if(lv.zpp_inner._validate!=null)lv.zpp_inner._validate();
                 var ins=lv.zpp_inner.inner;

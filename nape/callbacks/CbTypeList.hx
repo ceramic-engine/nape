@@ -310,7 +310,7 @@ class CbTypeList{
         var ret=new CbTypeList();
         for(i in array){
             #if flash9#if(!NAPE_RELEASE_BUILD)
-            if(!#if flash untyped __is__(i,CbType)#else Std.is(i,CbType)#end)throw "Error: Array contains non "+"CbType"+" types.";
+            if(!#if flash untyped __is__(i,CbType)#else Std.isOfType(i,CbType)#end)throw "Error: Array contains non "+"CbType"+" types.";
             #end
             #end
             ret.push(i);

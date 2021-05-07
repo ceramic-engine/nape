@@ -310,7 +310,7 @@ class ConstraintList{
         var ret=new ConstraintList();
         for(i in array){
             #if flash9#if(!NAPE_RELEASE_BUILD)
-            if(!#if flash untyped __is__(i,Constraint)#else Std.is(i,Constraint)#end)throw "Error: Array contains non "+"Constraint"+" types.";
+            if(!#if flash untyped __is__(i,Constraint)#else Std.isOfType(i,Constraint)#end)throw "Error: Array contains non "+"Constraint"+" types.";
             #end
             #end
             ret.push(i);

@@ -310,7 +310,7 @@ class ListenerList{
         var ret=new ListenerList();
         for(i in array){
             #if flash9#if(!NAPE_RELEASE_BUILD)
-            if(!#if flash untyped __is__(i,Listener)#else Std.is(i,Listener)#end)throw "Error: Array contains non "+"Listener"+" types.";
+            if(!#if flash untyped __is__(i,Listener)#else Std.isOfType(i,Listener)#end)throw "Error: Array contains non "+"Listener"+" types.";
             #end
             #end
             ret.push(i);
